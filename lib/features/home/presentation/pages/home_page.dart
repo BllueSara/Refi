@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/home_entity.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
@@ -7,6 +8,10 @@ import '../widgets/home_header.dart';
 import '../widgets/home_empty_body.dart';
 import '../widgets/home_populated_body.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/di/injection_container.dart' as di;
+import '../../../profile/domain/usecases/get_profile_usecase.dart';
+import '../../../library/domain/usecases/fetch_user_library_usecase.dart';
+import '../../../quotes/domain/usecases/get_user_quotes_usecase.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,10 +19,12 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => HomeCubit()
-        ..loadHomeData(
-          isNewUser: false,
-        ), // Set isNewUser: false to show Populated state
+      create: (context) => HomeCubit(
+        getProfileUseCase: di.sl<GetProfileUseCase>(),
+        fetchUserLibraryUseCase: di.sl<FetchUserLibraryUseCase>(),
+        getUserQuotesUseCase: di.sl<GetUserQuotesUseCase>(),
+        supabaseClient: di.sl<SupabaseClient>(),
+      )..loadHomeData(),
       child: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
           // Default data for Initial/Loading to avoid null errors in Header

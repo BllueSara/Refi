@@ -3,32 +3,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/dimensions.dart';
+import '../../../../core/di/injection_container.dart' as di;
+import '../../domain/entities/book_entity.dart';
+import '../../domain/usecases/update_book_usecase.dart';
 import '../cubit/book_details/book_details_cubit.dart';
 import '../cubit/book_details/book_details_state.dart';
-import '../widgets/book_metadata.dart';
 import '../widgets/progress_card.dart';
+import '../../../quotes/domain/usecases/get_book_quotes_usecase.dart';
 
 class BookDetailsPage extends StatelessWidget {
-  final String bookTitle;
-  final String author;
-  final int currentPage;
-  final int totalPages;
-  final List<String> tags;
+  final BookEntity book;
 
-  const BookDetailsPage({
-    super.key,
-    required this.bookTitle,
-    required this.author,
-    this.currentPage = 0,
-    this.totalPages = 0,
-    this.tags = const [],
-  });
+  const BookDetailsPage({super.key, required this.book});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          BookDetailsCubit(currentPage: currentPage, totalPages: totalPages),
+      create: (context) => BookDetailsCubit(
+        book: book,
+        updateBookUseCase: di.sl<UpdateBookUseCase>(),
+        getBookQuotesUseCase: di.sl<GetBookQuotesUseCase>(),
+      ),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -71,22 +66,37 @@ class BookDetailsPage extends StatelessWidget {
                           offset: const Offset(0, 10),
                         ),
                       ],
-                      // Placeholder color/image
+                      // Fallback color if image fails or doesn't exist
                       color: const Color(0xFFA8C6CB),
                     ),
-                    child: Center(
-                      child: Icon(
-                        Icons.book,
-                        size: 48,
-                        color: Colors.white.withValues(alpha: 0.5),
-                      ),
-                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: (book.imageUrl != null && book.imageUrl!.isNotEmpty)
+                        ? Image.network(
+                            book.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Icon(
+                                  Icons.book,
+                                  size: 48,
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                ),
+                              );
+                            },
+                          )
+                        : Center(
+                            child: Icon(
+                              Icons.book,
+                              size: 48,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                          ),
                   ),
                   const SizedBox(height: AppDimensions.paddingL),
 
                   // Title & Author
                   Text(
-                    bookTitle,
+                    book.title,
                     textAlign: TextAlign.center,
                     style: Theme.of(
                       context,
@@ -94,24 +104,26 @@ class BookDetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    author,
+                    book.author,
                     textAlign: TextAlign.center,
                     style: Theme.of(
                       context,
                     ).textTheme.bodyLarge?.copyWith(color: AppColors.textSub),
                   ),
+
+                  // Status Chips Selection (Simple View)
+                  const SizedBox(height: AppDimensions.paddingM),
+                  _buildStatusSelector(context, state),
+
                   const SizedBox(height: AppDimensions.paddingL),
 
-                  // Metadata (Tags)
-                  BookMetadata(tags: tags),
-
-                  const SizedBox(height: AppDimensions.paddingXL),
-
-                  // Progress
-                  ProgressCard(
-                    state: state,
-                    onUpdatePressed: () => _showUpdateDialog(context),
-                  ),
+                  // Progress (Only if reading or completed)
+                  if (state.status == BookStatus.reading ||
+                      state.status == BookStatus.completed)
+                    ProgressCard(
+                      state: state,
+                      onUpdatePressed: () => _showUpdateDialog(context),
+                    ),
 
                   const SizedBox(height: AppDimensions.paddingXL),
 
@@ -121,6 +133,67 @@ class BookDetailsPage extends StatelessWidget {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusSelector(BuildContext context, BookDetailsState state) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _statusChip(
+          context,
+          BookStatus.reading,
+          AppStrings.statusReading,
+          state.status,
+          (s) => context.read<BookDetailsCubit>().changeStatus(s),
+        ),
+        const SizedBox(width: 8),
+        _statusChip(
+          context,
+          BookStatus.wishlist,
+          AppStrings.statusWantToRead,
+          state.status,
+          (s) => context.read<BookDetailsCubit>().changeStatus(s),
+        ),
+        const SizedBox(width: 8),
+        _statusChip(
+          context,
+          BookStatus.completed,
+          AppStrings.statusFinished,
+          state.status,
+          (s) => context.read<BookDetailsCubit>().changeStatus(s),
+        ),
+      ],
+    );
+  }
+
+  Widget _statusChip(
+    BuildContext context,
+    BookStatus status,
+    String label,
+    BookStatus currentStatus,
+    Function(BookStatus) onSelect,
+  ) {
+    final isSelected = status == currentStatus;
+    return GestureDetector(
+      onTap: () => onSelect(status),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryBlue
+              : AppColors.inputBorder.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : AppColors.textSub,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );
@@ -182,8 +255,75 @@ class BookDetailsPage extends StatelessWidget {
             ),
           )
         else
-          // ... Build list if needed (Placeholder for now as logic implies empty starts)
-          const SizedBox(),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: state.quotes.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final quote = state.quotes[index];
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.inputBorder.withValues(alpha: 0.5),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      quote.text,
+                      style: const TextStyle(
+                        fontFamily: 'Tajawal',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        height: 1.6,
+                      ),
+                    ),
+                    if (quote.notes != null && quote.notes!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        quote.notes!,
+                        style: TextStyle(
+                          fontFamily: 'Tajawal',
+                          fontSize: 12,
+                          color: AppColors.textSub,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            quote.feeling,
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontSize: 10,
+                              color: AppColors.primaryBlue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
       ],
     );
   }

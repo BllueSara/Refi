@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../quotes/presentation/widgets/quote_review_modal.dart';
 
 import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
+import '../cubit/scanner_cubit.dart';
 
 class ScannerPage extends StatefulWidget {
   const ScannerPage({super.key});
@@ -20,6 +23,7 @@ class _ScannerPageState extends State<ScannerPage>
 
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -53,9 +57,21 @@ class _ScannerPageState extends State<ScannerPage>
             _isCameraInitialized = true;
           });
         }
+      } else {
+        debugPrint("No cameras found");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('لم يتم العثور على الكاميرا')),
+          );
+        }
       }
     } catch (e) {
       debugPrint("Camera error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('خطأ في تشغيل الكاميرا: $e')));
+      }
     }
   }
 
@@ -66,8 +82,29 @@ class _ScannerPageState extends State<ScannerPage>
     super.dispose();
   }
 
-  void _onShutterPressed() {
-    // Show Modal
+  void _onShutterPressed() async {
+    if (_cameraController == null || !_isCameraInitialized || _isProcessing)
+      return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final XFile image = await _cameraController!.takePicture();
+      if (!mounted) return;
+
+      // Use ScannerCubit to scan
+      context.read<ScannerCubit>().scanImageFromPath(image.path);
+    } catch (e) {
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('خطأ في التصوير: $e')));
+    }
+  }
+
+  void _onScanSuccess(String text) {
+    setState(() => _isProcessing = false);
+    // Show Quote Review Modal
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -76,231 +113,255 @@ class _ScannerPageState extends State<ScannerPage>
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: const QuoteReviewModal(),
+        child: QuoteReviewModal(initialText: text),
       ),
     );
   }
 
+  void _onScanFailure(String message) {
+    setState(() => _isProcessing = false);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // 1. Camera Viewfinder
-          SizedBox.expand(
-            child: _isCameraInitialized
-                ? CameraPreview(_cameraController!)
-                : Container(
-                    color: Colors.black,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
-                  ),
-          ),
-
-          // 2. Dark Overlay
-          Container(color: Colors.black.withValues(alpha: 0.4)),
-
-          // 3. Top Bar
-          Positioned(
-            top: 60,
-            left: 20,
-            right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const Text(
-                  AppStrings.scanPointCamera,
-                  style: TextStyle(
-                    fontFamily: 'Tajawal',
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.flash_off,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
-
-          // 4. Scanning Frame (Center)
-          Center(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              height: MediaQuery.of(context).size.height * 0.5,
-              child: Stack(
-                children: [
-                  // Corners
-                  _buildCorner(top: true, left: true),
-                  _buildCorner(top: true, left: false),
-                  _buildCorner(top: false, left: true),
-                  _buildCorner(top: false, left: false),
-
-                  // Text Highlights (Simulated Blue Overlays)
-                  Positioned(
-                    top: 100,
-                    left: 20,
-                    right: 40,
-                    child: Container(
-                      height: 20,
-                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  Positioned(
-                    top: 130,
-                    left: 30,
-                    right: 20,
-                    child: Container(
-                      height: 20,
-                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  Positioned(
-                    top: 180,
-                    left: 20,
-                    right: 20,
-                    child: Container(
-                      height: 20,
-                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 5. Status Toast
-          Positioned(
-            bottom: 200,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ScaleTransition(
-                      scale: _pulseAnimation,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
+    return BlocListener<ScannerCubit, ScannerState>(
+      listener: (context, state) {
+        if (state is ScannerSuccess) {
+          _onScanSuccess(state.text);
+        } else if (state is ScannerFailure) {
+          _onScanFailure(state.message);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            // 1. Camera Viewfinder
+            SizedBox.expand(
+              child: _isCameraInitialized
+                  ? CameraPreview(_cameraController!)
+                  : Container(
+                      color: Colors.black,
+                      child: const Center(
+                        child: CircularProgressIndicator(
                           color: AppColors.primaryBlue,
-                          shape: BoxShape.circle,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      AppStrings.scanDetecting,
-                      style: TextStyle(
-                        fontFamily: 'Tajawal',
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
-          ),
 
-          // 6. Controls & Mode Switcher
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 40, top: 20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.8),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: Column(
+            // 2. Dark Overlay
+            Container(color: Colors.black.withValues(alpha: 0.4)),
+
+            // 3. Top Bar
+            Positioned(
+              top: 60,
+              left: 20,
+              right: 20,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Shutter Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.photo_library,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        onPressed: () {},
-                      ),
-                      GestureDetector(
-                        onTap: _onShutterPressed,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 4),
-                            gradient: AppColors.refiMeshGradient,
-                          ),
-                          child: const Icon(
-                            Icons.camera,
-                            color: Colors.transparent,
-                          ), // Just circle
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.settings,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        onPressed: () {},
-                      ),
-                    ],
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(height: 32),
-                  // Mode Switcher
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildModeItem(AppStrings.modeFile, 0),
-                      const SizedBox(width: 24),
-                      _buildModeItem(AppStrings.modeQuote, 1),
-                      const SizedBox(width: 24),
-                      _buildModeItem(AppStrings.modeTranslate, 2),
-                    ],
+                  const Text(
+                    AppStrings.scanPointCamera,
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.flash_off,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    onPressed: () {},
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // 4. Scanning Frame (Center)
+            Center(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: Stack(
+                  children: [
+                    // Corners
+                    _buildCorner(top: true, left: true),
+                    _buildCorner(top: true, left: false),
+                    _buildCorner(top: false, left: true),
+                    _buildCorner(top: false, left: false),
+
+                    // Text Highlights (Simulated Blue Overlays)
+                    Positioned(
+                      top: 100,
+                      left: 20,
+                      right: 40,
+                      child: Container(
+                        height: 20,
+                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    Positioned(
+                      top: 130,
+                      left: 30,
+                      right: 20,
+                      child: Container(
+                        height: 20,
+                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    Positioned(
+                      top: 180,
+                      left: 20,
+                      right: 20,
+                      child: Container(
+                        height: 20,
+                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 5. Status Toast
+            Positioned(
+              bottom: 200,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ScaleTransition(
+                        scale: _pulseAnimation,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryBlue,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        AppStrings.scanDetecting,
+                        style: TextStyle(
+                          fontFamily: 'Tajawal',
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // 6. Controls & Mode Switcher
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.only(bottom: 40, top: 20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.8),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Shutter Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.photo_library,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          onPressed: () {
+                            context.read<ScannerCubit>().scanImage(
+                              ImageSource.gallery,
+                            );
+                          },
+                        ),
+                        GestureDetector(
+                          onTap: _onShutterPressed,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 4),
+                              gradient: AppColors.refiMeshGradient,
+                            ),
+                            child: const Icon(
+                              Icons.camera,
+                              color: Colors.transparent,
+                            ), // Just circle
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.settings,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    // Mode Switcher
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildModeItem(AppStrings.modeFile, 0),
+                        const SizedBox(width: 24),
+                        _buildModeItem(AppStrings.modeQuote, 1),
+                        const SizedBox(width: 24),
+                        _buildModeItem(AppStrings.modeTranslate, 2),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -35,7 +35,20 @@ class BookCard extends StatelessWidget {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: const Center(child: Icon(Icons.book, color: Colors.grey)),
+            child: (book.coverUrl.isNotEmpty)
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      book.coverUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.book, color: Colors.grey),
+                        );
+                      },
+                    ),
+                  )
+                : const Center(child: Icon(Icons.book, color: Colors.grey)),
           ),
           const SizedBox(width: 16),
 

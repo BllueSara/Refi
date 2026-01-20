@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
-
-enum BookStatus { reading, completed, wishlist }
+import '../../../domain/entities/book_entity.dart';
+import '../../../../quotes/domain/entities/quote_entity.dart';
 
 class BookDetailsState extends Equatable {
   final int currentPage;
   final int totalPages;
   final BookStatus status;
-  final List<String> quotes; // Mock list of quotes
+  final List<QuoteEntity> quotes;
   final bool isUpdating;
 
   const BookDetailsState({
@@ -21,7 +21,7 @@ class BookDetailsState extends Equatable {
     int? currentPage,
     int? totalPages,
     BookStatus? status,
-    List<String>? quotes,
+    List<QuoteEntity>? quotes,
     bool? isUpdating,
   }) {
     return BookDetailsState(

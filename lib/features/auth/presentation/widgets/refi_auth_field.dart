@@ -49,18 +49,15 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
         if (widget.label != null) ...[
           Text(
             widget.label!,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textMain,
-              fontFamily: 'Tajawal',
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
         ],
         Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: Theme.of(context).inputDecorationTheme.fillColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.inputBorder),
           ),
@@ -68,24 +65,23 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
             controller: widget.controller,
             obscureText: widget.isPassword ? _obscureText : false,
             keyboardType: widget.keyboardType,
-            style: const TextStyle(
-              color: AppColors.textMain,
-              fontFamily: 'Tajawal',
-              fontSize: 14,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium,
             decoration: InputDecoration(
               hintText: widget.hintText,
-              hintStyle: const TextStyle(
-                color: AppColors.textPlaceholder,
-                fontFamily: 'Tajawal',
-                fontSize: 14,
-              ),
+              hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.p16,
-                vertical: 14, // Vertically centered
+                vertical: 14,
               ),
-              prefixIcon: widget.prefixIcon,
+              prefixIcon: widget.prefixIcon != null
+                  ? IconTheme(
+                      data: Theme.of(
+                        context,
+                      ).iconTheme.copyWith(color: AppColors.textPlaceholder),
+                      child: widget.prefixIcon!,
+                    )
+                  : null,
               suffixIcon: widget.isPassword
                   ? IconButton(
                       icon: Icon(
@@ -97,7 +93,14 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
                       ),
                       onPressed: _toggleVisibility,
                     )
-                  : widget.suffixIcon,
+                  : (widget.suffixIcon != null
+                        ? IconTheme(
+                            data: Theme.of(context).iconTheme.copyWith(
+                              color: AppColors.textPlaceholder,
+                            ),
+                            child: widget.suffixIcon!,
+                          )
+                        : null),
             ),
           ),
         ),

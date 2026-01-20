@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
-import '../../data/repositories/add_book_repository_impl.dart';
-import '../cubit/search_cubit.dart';
+import '../../../../core/di/injection_container.dart' as di;
+import '../../../library/domain/entities/book_entity.dart';
+import '../../../library/domain/usecases/add_book_to_library_usecase.dart';
+import '../../../library/presentation/cubit/search_cubit.dart';
 import '../widgets/search_states_widgets.dart';
 import 'manual_entry_screen.dart';
 
@@ -13,7 +15,7 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SearchCubit(AddBookRepositoryImpl()),
+      create: (context) => di.sl<SearchCubit>(),
       child: const SearchScreenContent(),
     );
   }
@@ -37,13 +39,60 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
 
   void _onSearchChanged(String query, BuildContext context) {
     // Debounce can be added here
-    context.read<SearchCubit>().searchBooks(query);
+    context.read<SearchCubit>().search(query);
   }
 
   void _navigateToAddManually() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ManualEntryScreen()),
+    );
+  }
+
+  Future<void> _addBook(BookEntity book) async {
+    // Show a loading indicator (optional) or just add
+    final result = await di.sl<AddBookToLibraryUseCase>().call(book);
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${failure.message}")));
+      },
+      (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("تمت إضافة الكتاب للمكتبة بنجاح")),
+        );
+        // Pop to return to library
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  void _showAddDialog(BookEntity book) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(book.title, textAlign: TextAlign.center),
+        content: const Text(
+          "هل تريد إضافة هذا الكتاب إلى مكتبتك؟",
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(AppStrings.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _addBook(book);
+            },
+            child: const Text("إضافة"),
+          ),
+        ],
+      ),
     );
   }
 
@@ -54,7 +103,10 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: const BackButton(color: AppColors.textMain),
+        leading: BackButton(
+          color: AppColors.textMain,
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           AppStrings.searchTitle,
           style: TextStyle(
@@ -63,19 +115,6 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              AppStrings.cancel,
-              style: TextStyle(
-                fontFamily: 'Tajawal',
-                color: AppColors.primaryBlue,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -102,7 +141,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                   ),
                   onPressed: () {
                     _searchController.clear();
-                    context.read<SearchCubit>().searchBooks("");
+                    context.read<SearchCubit>().search("");
                   },
                 ),
                 filled: true,
@@ -125,9 +164,10 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.primaryBlue),
             );
-          } else if (state is SearchEmpty) {
-            return SearchEmptyWidget(onAddManually: _navigateToAddManually);
-          } else if (state is SearchLoaded) {
+          } else if (state is SearchSuccess) {
+            if (state.books.isEmpty) {
+              return SearchEmptyWidget(onAddManually: _navigateToAddManually);
+            }
             return Column(
               children: [
                 Padding(
@@ -158,8 +198,18 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                         leading: Container(
                           width: 48,
                           height: 72,
-                          color: Colors.grey[200], // Placeholder cover
-                          child: const Icon(Icons.book, color: Colors.grey),
+                          color: Colors.grey[200],
+                          child: book.imageUrl != null
+                              ? Image.network(
+                                  book.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                        Icons.book,
+                                        color: Colors.grey,
+                                      ),
+                                )
+                              : const Icon(Icons.book, color: Colors.grey),
                         ),
                         title: Text(
                           book.title,
@@ -173,13 +223,15 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              book.author,
+                              book.authors.isNotEmpty
+                                  ? book.authors.first
+                                  : 'Unknown',
                               style: const TextStyle(
                                 fontFamily: 'Tajawal',
                                 color: AppColors.textSub,
                               ),
                             ),
-                            if (book.rating > 0)
+                            if (book.rating != null && book.rating! > 0)
                               Row(
                                 children: [
                                   const Icon(
@@ -200,11 +252,11 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                           ],
                         ),
                         trailing: const Icon(
-                          Icons.chevron_right,
-                          color: AppColors.textPlaceholder,
+                          Icons.add_circle_outline, // Hint to add
+                          color: AppColors.primaryBlue,
                         ),
                         onTap: () {
-                          // Select book logic
+                          _showAddDialog(book);
                         },
                       );
                     },

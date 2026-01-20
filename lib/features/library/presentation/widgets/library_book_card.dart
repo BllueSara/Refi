@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-
 import '../../../../core/constants/colors.dart';
-import '../../domain/entities/library_entity.dart'; // Add this import
+import '../../domain/entities/book_entity.dart';
 
 class LibraryBookCard extends StatelessWidget {
-  final LibraryBookEntity book;
+  final BookEntity book;
   final VoidCallback onTap;
 
   const LibraryBookCard({super.key, required this.book, required this.onTap});
@@ -20,7 +19,7 @@ class LibraryBookCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                color: Colors.grey[200], // Placeholder
+                color: Colors.grey[200],
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.05),
@@ -28,11 +27,25 @@ class LibraryBookCard extends StatelessWidget {
                     offset: const Offset(0, 4),
                   ),
                 ],
-                // Add Image logic here later
               ),
-              child: const Center(
-                child: Icon(Icons.book, size: 48, color: Colors.grey),
-              ),
+              clipBehavior: Clip.antiAlias,
+              child: book.imageUrl != null
+                  ? Image.network(
+                      book.imageUrl!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
+                            child: Icon(
+                              Icons.book,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                          ),
+                    )
+                  : const Center(
+                      child: Icon(Icons.book, size: 48, color: Colors.grey),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
@@ -49,7 +62,7 @@ class LibraryBookCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            book.author,
+            book.authors.isNotEmpty ? book.authors.first : 'Unknown Author',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -60,11 +73,11 @@ class LibraryBookCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           // Progress Bar
-          if (book.status == ReadingStatus.reading) ...[
+          if (book.status == BookStatus.reading) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
-                value: book.progress, // e.g. 0.6
+                value: book.progress,
                 backgroundColor: AppColors.inputBorder,
                 color: AppColors.primaryBlue,
                 minHeight: 6,

@@ -1,12 +1,12 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/library_entity.dart';
-import '../../../../core/constants/app_strings.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/book_entity.dart';
+import '../../domain/usecases/add_book_to_library_usecase.dart';
+import '../../domain/usecases/fetch_user_library_usecase.dart';
 
 // States
 abstract class LibraryState extends Equatable {
   const LibraryState();
-
   @override
   List<Object> get props => [];
 }
@@ -18,101 +18,61 @@ class LibraryLoading extends LibraryState {}
 class LibraryEmpty extends LibraryState {}
 
 class LibraryLoaded extends LibraryState {
-  final List<LibraryBookEntity> allBooks;
-  final List<LibraryBookEntity> filteredBooks;
-  final String activeTab;
-
-  const LibraryLoaded({
-    required this.allBooks,
-    required this.filteredBooks,
-    this.activeTab = AppStrings.tabAll,
-  });
-
+  final List<BookEntity> books;
+  const LibraryLoaded(this.books);
   @override
-  List<Object> get props => [allBooks, filteredBooks, activeTab];
+  List<Object> get props => [books];
+}
+
+class LibraryError extends LibraryState {
+  final String message;
+  const LibraryError(this.message);
+  @override
+  List<Object> get props => [message];
 }
 
 // Cubit
 class LibraryCubit extends Cubit<LibraryState> {
-  LibraryCubit() : super(LibraryInitial());
+  final FetchUserLibraryUseCase fetchUserLibraryUseCase;
+  final AddBookToLibraryUseCase addBookToLibraryUseCase;
 
-  // Mock Data Loading
-  void loadLibrary({bool isEmpty = false}) async {
+  // Note: Search might be handled by a separate Cubit or here if we want to mix.
+  // For Clean Arch compatibility with "SearchScreen" needing to "add" books that reflected in Library,
+  // keeping them tied via injection or listeners is key.
+  // I will create a separate SearchCubit for the Search UI to avoid polluting LibraryState with SearchResults.
+
+  LibraryCubit({
+    required this.fetchUserLibraryUseCase,
+    required this.addBookToLibraryUseCase,
+  }) : super(LibraryInitial());
+
+  Future<void> loadLibrary() async {
     emit(LibraryLoading());
-    await Future.delayed(const Duration(seconds: 1)); // Simulate API
-
-    if (isEmpty) {
-      emit(LibraryEmpty());
-    } else {
-      final mockBooks = [
-        const LibraryBookEntity(
-          id: "1",
-          title: "قوة العادات",
-          author: "تشارلز ديويج",
-          status: ReadingStatus.reading,
-          currentPage: 240,
-          totalPages: 370,
-          tags: [AppStrings.catSelfHelp, AppStrings.catDevelopment],
-          quotes: [],
-        ),
-        LibraryBookEntity(
-          id: "2",
-          title:
-              "فن اللامبالاة", // Using English text for variety if needed but adhering to Arabic
-          author: "مارك مانسون",
-          status: ReadingStatus.completed,
-          currentPage: 200,
-          totalPages: 200,
-          tags: [AppStrings.catSelfHelp],
-        ),
-        LibraryBookEntity(
-          id: "3",
-          title: "الخيميائي",
-          author: "باولو كويلو",
-          status: ReadingStatus.wishlist,
-          currentPage: 0,
-          totalPages: 180,
-          tags: [AppStrings.catNovel],
-        ),
-      ];
-      emit(LibraryLoaded(allBooks: mockBooks, filteredBooks: mockBooks));
-    }
+    final result = await fetchUserLibraryUseCase();
+    result.fold(
+      (failure) {
+        emit(LibraryError(failure.message));
+      },
+      (books) {
+        if (books.isEmpty) {
+          emit(LibraryEmpty());
+        } else {
+          emit(LibraryLoaded(books));
+        }
+      },
+    );
   }
 
-  void filterBooks(String tab) {
-    if (state is LibraryLoaded) {
-      final currentState = state as LibraryLoaded;
-      List<LibraryBookEntity> filtered;
+  Future<void> addBook(BookEntity book) async {
+    // We don't emit loading here necessarily to avoid full screen spinner on main user library if not visible,
+    // but better to optimistic update or simple reload.
+    // For now, simple reload.
+    // emit(LibraryLoading()); // Maybe don't block?
 
-      switch (tab) {
-        case AppStrings.tabReading:
-          filtered = currentState.allBooks
-              .where((b) => b.status == ReadingStatus.reading)
-              .toList();
-          break;
-        case AppStrings.tabCompleted:
-          filtered = currentState.allBooks
-              .where((b) => b.status == ReadingStatus.completed)
-              .toList();
-          break;
-        case AppStrings.tabWishlist:
-          filtered = currentState.allBooks
-              .where((b) => b.status == ReadingStatus.wishlist)
-              .toList();
-          break;
-        case AppStrings.tabAll:
-        default:
-          filtered = currentState.allBooks;
-          break;
-      }
-
-      emit(
-        LibraryLoaded(
-          allBooks: currentState.allBooks,
-          filteredBooks: filtered,
-          activeTab: tab,
-        ),
-      );
-    }
+    final result = await addBookToLibraryUseCase(book);
+    result.fold(
+      (failure) => emit(LibraryError(failure.message)),
+      (_) => loadLibrary(), // Refresh list
+    );
   }
 }

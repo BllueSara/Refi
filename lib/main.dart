@@ -2,10 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
-
 import 'features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'core/widgets/main_navigation_screen.dart';
 
-void main() {
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'core/secrets/app_secrets.dart';
+import 'core/di/injection_container.dart' as di;
+import 'features/auth/presentation/cubit/auth_cubit.dart';
+import 'features/library/presentation/cubit/library_cubit.dart';
+import 'features/scanner/presentation/cubit/scanner_cubit.dart';
+import 'features/quotes/presentation/cubit/quote_cubit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase
+  try {
+    await Supabase.initialize(
+      url: AppSecrets.supabaseUrl,
+      anonKey: AppSecrets.supabaseAnonKey,
+    );
+    debugPrint('✅ Supabase Initialized!');
+  } catch (e) {
+    debugPrint('❌ Supabase Init Failed: $e');
+  }
+
+  // Initialize DI
+  await di.init();
+
   runApp(const RefiApp());
 }
 
@@ -14,22 +39,40 @@ class RefiApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppStrings.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      // Localization setup for RTL
-      locale: const Locale('ar', 'AE'),
-      supportedLocales: const [
-        Locale('ar', 'AE'), // Arabic
-        Locale('en', 'US'), // English
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => di.sl<AuthCubit>()..checkAuthStatus(),
+        ),
+        BlocProvider(create: (context) => di.sl<LibraryCubit>()..loadLibrary()),
+        BlocProvider(create: (context) => di.sl<ScannerCubit>()),
+        BlocProvider(create: (context) => di.sl<QuoteCubit>()),
       ],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: const OnboardingScreen(),
+      child: MaterialApp(
+        title: AppStrings.appName,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        // themeMode: ThemeMode.dark, // Disabled Dark Mode as per request
+        // Localization setup for RTL
+        locale: const Locale('ar', 'AE'),
+        supportedLocales: const [
+          Locale('ar', 'AE'), // Arabic
+          Locale('en', 'US'), // English
+        ],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, state) {
+            if (state is AuthAuthenticated) {
+              return const MainNavigationScreen();
+            }
+            return const OnboardingScreen();
+          },
+        ),
+      ),
     );
   }
 }

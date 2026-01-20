@@ -1,0 +1,103 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/quote_model.dart';
+
+abstract class QuoteRemoteDataSource {
+  Future<void> saveQuote({
+    required String text,
+    String? bookId,
+    required String feeling,
+    String? notes,
+  });
+
+  Future<List<QuoteModel>> getUserQuotes();
+  Future<List<QuoteModel>> getBookQuotes(String bookId);
+}
+
+class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
+  final SupabaseClient supabaseClient;
+
+  QuoteRemoteDataSourceImpl({required this.supabaseClient});
+
+  @override
+  Future<void> saveQuote({
+    required String text,
+    String? bookId,
+    required String feeling,
+    String? notes,
+  }) async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    print('🔍 Saving quote: userId=$userId, bookId=$bookId, feeling=$feeling');
+
+    try {
+      await supabaseClient.from('quotes').insert({
+        'user_id': userId,
+        'content': text,
+        'book_id': bookId,
+        'emotion': feeling,
+        'personal_note': notes,
+      });
+      print('✅ Quote saved successfully!');
+    } catch (e) {
+      print('❌ Error saving quote: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<QuoteModel>> getUserQuotes() async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    final response = await supabaseClient
+        .from('quotes')
+        .select('*, books(title, author)')
+        .eq('user_id', userId)
+        .order('created_at', ascending: false);
+
+    return (response as List).map((json) {
+      // Extract book info from join
+      String? bookTitle;
+      String? bookAuthor;
+      if (json['books'] != null) {
+        bookTitle = json['books']['title'];
+        bookAuthor = json['books']['author'];
+      }
+
+      return QuoteModel.fromJson({
+        ...json,
+        'book_title': bookTitle,
+        'book_author': bookAuthor,
+      });
+    }).toList();
+  }
+
+  @override
+  Future<List<QuoteModel>> getBookQuotes(String bookId) async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    final response = await supabaseClient
+        .from('quotes')
+        .select('*, books(title, author)')
+        .eq('user_id', userId)
+        .eq('book_id', bookId)
+        .order('created_at', ascending: false);
+
+    return (response as List).map((json) {
+      String? bookTitle;
+      String? bookAuthor;
+      if (json['books'] != null) {
+        bookTitle = json['books']['title'];
+        bookAuthor = json['books']['author'];
+      }
+
+      return QuoteModel.fromJson({
+        ...json,
+        'book_title': bookTitle,
+        'book_author': bookAuthor,
+      });
+    }).toList();
+  }
+}

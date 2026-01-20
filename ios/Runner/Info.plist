@@ -46,7 +46,9 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Refi needs access to the camera to scan book quotes.</string>
+	<string>Refi needs access to the camera to scan book quotes and capture covers.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Refi needs access to your photo library to select book covers.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Refi needs access to the microphone for video recording.</string>
 </dict>

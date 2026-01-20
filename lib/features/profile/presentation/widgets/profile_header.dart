@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/dimensions.dart';
+import '../../domain/entities/profile_entity.dart';
 
 class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+  final ProfileEntity? profile;
+  final String? email;
+
+  const ProfileHeader({super.key, this.profile, this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +33,11 @@ class ProfileHeader extends StatelessWidget {
               backgroundColor: Theme.of(
                 context,
               ).colorScheme.onSurface.withValues(alpha: 0.1),
-              backgroundImage: const NetworkImage(
-                "https://i.pravatar.cc/300?img=5",
-              ),
+              backgroundImage: (profile?.avatarUrl != null)
+                  ? NetworkImage(profile!.avatarUrl!)
+                  : const NetworkImage(
+                      "https://i.pravatar.cc/300?img=5",
+                    ), // Fallback/Placeholder
               radius: 46,
             ),
           ),
@@ -43,14 +49,16 @@ class ProfileHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              AppStrings.userNamePlaceholder,
+              profile?.fullName ?? AppStrings.userNamePlaceholder,
               style: Theme.of(
                 context,
               ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: AppDimensions.paddingS),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // Edit Profile Logic
+              },
               child: ShaderMask(
                 shaderCallback: (bounds) =>
                     AppColors.refiMeshGradient.createShader(bounds),
@@ -61,7 +69,7 @@ class ProfileHeader extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          AppStrings.userEmailPlaceholder,
+          email ?? AppStrings.userEmailPlaceholder,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],

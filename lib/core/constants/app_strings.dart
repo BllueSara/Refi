@@ -182,4 +182,5 @@ class AppStrings {
   static const String appVersion = "إصدار ١.٠.٠";
   static const String userNamePlaceholder = "سارة";
   static const String userEmailPlaceholder = "sara@example.com";
+  static const String book = "كتاب";
 }

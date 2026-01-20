@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../scanner/presentation/pages/scanner_page.dart';
+import '../cubit/quote_cubit.dart';
+import '../../domain/entities/quote_entity.dart';
 
 class QuotesPage extends StatefulWidget {
   const QuotesPage({super.key});
@@ -11,7 +14,7 @@ class QuotesPage extends StatefulWidget {
 }
 
 class _QuotesPageState extends State<QuotesPage> {
-  String _activeTab = AppStrings.tabAll; // Reusing "الكل"
+  String _activeTab = AppStrings.tabAll;
 
   final List<String> _tabs = [
     AppStrings.tabAll,
@@ -19,25 +22,12 @@ class _QuotesPageState extends State<QuotesPage> {
     AppStrings.filterFavorites,
   ];
 
-  final List<Map<String, String>> _mockQuotes = [
-    {
-      "text": "العلم يبني بيوتاً لا عماد لها\nوالجهل يهدم بيت العز والكرم",
-      "book": "مقدمة ابن خلدون",
-    },
-    {
-      "text": "إنما الأمم الأخلاق ما بقيت\nفإن هم ذهبت أخلاقهم ذهبوا",
-      "book": "ديوان أحمد شوقي",
-    },
-    {
-      "text":
-          "القراءة تمد العقل فقط بلوازم المعرفة، أما التفكير فهو الذي يجعل ما نقرأه ملكاً لنا",
-      "book": "التربية والتعليم",
-    },
-    {
-      "text": "ليس الفتى من يقول كان أبي،\nولكن الفتى من قال ها أنا ذا",
-      "book": "الأدب العربي",
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Load quotes when page opens
+    context.read<QuoteCubit>().loadUserQuotes();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +42,7 @@ class _QuotesPageState extends State<QuotesPage> {
           onPressed: () {},
         ),
         title: const Text(
-          AppStrings.quotesVaultTitle, // "اقتباساتي"
+          AppStrings.quotesVaultTitle,
           style: TextStyle(
             fontFamily: 'Tajawal',
             fontWeight: FontWeight.bold,
@@ -60,7 +50,7 @@ class _QuotesPageState extends State<QuotesPage> {
             color: AppColors.textMain,
           ),
         ),
-        actions: const [SizedBox(width: 48)], // Balance leading
+        actions: const [SizedBox(width: 48)],
       ),
       body: Column(
         children: [
@@ -102,71 +92,97 @@ class _QuotesPageState extends State<QuotesPage> {
 
           // Quote List
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: _mockQuotes.length,
-              separatorBuilder: (c, i) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final quote = _mockQuotes[index];
-                return Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                    border: Border.all(color: AppColors.inputBorder),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        quote["text"]!,
-                        style: const TextStyle(
-                          fontFamily: 'Tajawal',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          height: 1.6,
-                          color: Colors.black, // "bold black"
+            child: BlocBuilder<QuoteCubit, QuoteState>(
+              builder: (context, state) {
+                if (state is QuoteLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is QuoteError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: AppColors.textPlaceholder,
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.bookmark,
-                                size: 16,
-                                color: AppColors.textSub,
-                              ), // Book icon
-                              const SizedBox(width: 8),
-                              Text(
-                                quote["book"]!,
-                                style: const TextStyle(
-                                  fontFamily: 'Tajawal',
-                                  fontSize: 12,
-                                  color: AppColors.textSub,
-                                ),
-                              ),
-                            ],
+                        const SizedBox(height: 16),
+                        Text(
+                          state.message,
+                          style: const TextStyle(
+                            fontFamily: 'Tajawal',
+                            color: AppColors.textSub,
                           ),
-                          const Icon(
-                            Icons.share,
-                            size: 20,
-                            color: AppColors.textPlaceholder,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<QuoteCubit>().loadUserQuotes();
+                          },
+                          child: const Text('إعادة المحاولة'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (state is QuotesLoaded) {
+                  final quotes = state.quotes;
+
+                  if (quotes.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.format_quote,
+                            size: 80,
+                            color: AppColors.textPlaceholder.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'لا توجد اقتباسات بعد',
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textSub,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'ابدأ بإضافة اقتباساتك المفضلة',
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              color: AppColors.textPlaceholder,
+                            ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                );
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<QuoteCubit>().loadUserQuotes();
+                    },
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: quotes.length,
+                      separatorBuilder: (c, i) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final quote = quotes[index];
+                        return _QuoteCard(quote: quote);
+                      },
+                    ),
+                  );
+                }
+
+                return const SizedBox.shrink();
               },
             ),
           ),
@@ -174,7 +190,6 @@ class _QuotesPageState extends State<QuotesPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Open Scanner
           Navigator.push(
             context,
             MaterialPageRoute(builder: (c) => const ScannerPage()),
@@ -190,32 +205,99 @@ class _QuotesPageState extends State<QuotesPage> {
           child: const Icon(Icons.camera_alt, color: Colors.white),
         ),
       ),
-      // Wait, bottom nav has "Quotes" tab which leads here. The prompt says "Navigation: Persistent Bottom Navigation Bar with 'اقتباساتي' (اكتشف/مسح) as the active blue icon."
-      // Actually image shows "مكتبتي" was the previously requested one.
-      // The prompt says "Navigation: Persistent Bottom Navigation Bar with 'اقتباساتي' (اكتشف/مسح) as the active blue icon."
-      // Does he mean the Scanner is the main action? Or Quotes page?
-      // "Quotes Vault (اقتباساتي) ... Navigation: Persistent Bottom Navigation Bar with 'اقتباساتي'..."
-      // So this page is one of the main tabs.
-      // And the "Scanner" is accessed via FAB or "Discover/Scan" button.
-      // Let's assume this page `QuotesPage` IS the main tab content.
-      // And I'll add a FAB here to launch scanner as well, or rely on the "Scan" tab if logic dictates.
-      // Re-reading: "Persistent Bottom Navigation Bar with 'اقتباساتي' (اكتشف/مسح) as the active blue icon."
-      // It seems he might want "Scan" to be the tab itself? Or "Quotes" is the tab?
-      // Usually "Quotes" is the vault. "Scan" is an action.
-      // In `MainNavigationScreen`, we have: Home, Discover, Library, Stats, Profile.
-      // Where does "Quotes" fit?
-      // Maybe "Discover" is "Quotes/Scan"?
-      // Or I should replace one?
-      // User Prompt 1: "Implement Home Dashboard"
-      // User Prompt 2: "Implement My Library"
-      // User Prompt 3: "Implement ... Quotes Vault"
-      // In `MainNavigationScreen` (Step 804 view):
-      // indices: 0: Home, 1: Discover, 2: Library, 3: Stats, 4: Profile.
-      // I will put QuotesPage in index 1 (Discover) or maybe just replace "Stats" or add it.
-      // Let's replace "Discover" with "Quotes" or "Scan"?
-      // The prompt says: "Persistent Bottom Navigation Bar with 'اقتباساتي' (اكتشف/مسح) as the active blue icon."
-      // Maybe the 2nd tab is "Quotes" or "Scan".
-      // I'll put `QuotesPage` in the MainNavigationScreen.
+    );
+  }
+}
+
+class _QuoteCard extends StatelessWidget {
+  final QuoteEntity quote;
+
+  const _QuoteCard({required this.quote});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: AppColors.inputBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            quote.text,
+            style: const TextStyle(
+              fontFamily: 'Tajawal',
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              height: 1.6,
+              color: Colors.black,
+            ),
+          ),
+          if (quote.notes != null && quote.notes!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.inputBorder.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                quote.notes!,
+                style: const TextStyle(
+                  fontFamily: 'Tajawal',
+                  fontSize: 14,
+                  color: AppColors.textSub,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.bookmark,
+                      size: 16,
+                      color: AppColors.textSub,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        quote.bookTitle ?? 'بدون كتاب',
+                        style: const TextStyle(
+                          fontFamily: 'Tajawal',
+                          fontSize: 12,
+                          color: AppColors.textSub,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.share,
+                size: 20,
+                color: AppColors.textPlaceholder,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

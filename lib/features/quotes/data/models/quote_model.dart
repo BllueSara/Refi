@@ -1,0 +1,36 @@
+import '../../domain/entities/quote_entity.dart';
+
+class QuoteModel extends QuoteEntity {
+  const QuoteModel({
+    required super.id,
+    required super.text,
+    super.bookId,
+    super.bookTitle,
+    super.bookAuthor,
+    required super.feeling,
+    super.notes,
+    required super.createdAt,
+  });
+
+  factory QuoteModel.fromJson(Map<String, dynamic> json) {
+    return QuoteModel(
+      id: json['id'] as String,
+      text: json['content'] as String, // DB uses 'content'
+      bookId: json['book_id'] as String?,
+      bookTitle: json['book_title'] as String?, // From join or manual
+      bookAuthor: json['book_author'] as String?, // From join or manual
+      feeling: json['emotion'] as String, // DB uses 'emotion'
+      notes: json['personal_note'] as String?, // DB uses 'personal_note'
+      createdAt: DateTime.parse(json['created_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'content': text, // Map to DB field
+      'book_id': bookId,
+      'emotion': feeling, // Map to DB field
+      'personal_note': notes, // Map to DB field
+    };
+  }
+}
