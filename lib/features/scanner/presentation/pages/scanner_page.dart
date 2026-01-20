@@ -1,0 +1,377 @@
+import 'package:flutter/material.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/constants/colors.dart';
+import '../../../quotes/presentation/widgets/quote_review_modal.dart';
+
+import 'package:camera/camera.dart';
+
+class ScannerPage extends StatefulWidget {
+  const ScannerPage({super.key});
+
+  @override
+  State<ScannerPage> createState() => _ScannerPageState();
+}
+
+class _ScannerPageState extends State<ScannerPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+  int _selectedModeIndex = 1; // 0: File, 1: Quote (Default), 2: Translate
+
+  CameraController? _cameraController;
+  bool _isCameraInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(_pulseController);
+
+    _initializeCamera();
+
+    // Simulate detecting text after 3 seconds for demo ? Or leave it manual trigger
+  }
+
+  Future<void> _initializeCamera() async {
+    try {
+      final cameras = await availableCameras();
+      if (cameras.isNotEmpty) {
+        _cameraController = CameraController(
+          cameras[0],
+          ResolutionPreset.high,
+          enableAudio: false,
+        );
+        await _cameraController!.initialize();
+        if (mounted) {
+          setState(() {
+            _isCameraInitialized = true;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Camera error: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _cameraController?.dispose();
+    super.dispose();
+  }
+
+  void _onShutterPressed() {
+    // Show Modal
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: const QuoteReviewModal(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // 1. Camera Viewfinder
+          SizedBox.expand(
+            child: _isCameraInitialized
+                ? CameraPreview(_cameraController!)
+                : Container(
+                    color: Colors.black,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+          ),
+
+          // 2. Dark Overlay
+          Container(color: Colors.black.withValues(alpha: 0.4)),
+
+          // 3. Top Bar
+          Positioned(
+            top: 60,
+            left: 20,
+            right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const Text(
+                  AppStrings.scanPointCamera,
+                  style: TextStyle(
+                    fontFamily: 'Tajawal',
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.flash_off,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+
+          // 4. Scanning Frame (Center)
+          Center(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Stack(
+                children: [
+                  // Corners
+                  _buildCorner(top: true, left: true),
+                  _buildCorner(top: true, left: false),
+                  _buildCorner(top: false, left: true),
+                  _buildCorner(top: false, left: false),
+
+                  // Text Highlights (Simulated Blue Overlays)
+                  Positioned(
+                    top: 100,
+                    left: 20,
+                    right: 40,
+                    child: Container(
+                      height: 20,
+                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  Positioned(
+                    top: 130,
+                    left: 30,
+                    right: 20,
+                    child: Container(
+                      height: 20,
+                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  Positioned(
+                    top: 180,
+                    left: 20,
+                    right: 20,
+                    child: Container(
+                      height: 20,
+                      color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 5. Status Toast
+          Positioned(
+            bottom: 200,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ScaleTransition(
+                      scale: _pulseAnimation,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryBlue,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      AppStrings.scanDetecting,
+                      style: TextStyle(
+                        fontFamily: 'Tajawal',
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // 6. Controls & Mode Switcher
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.only(bottom: 40, top: 20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.8),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: Column(
+                children: [
+                  // Shutter Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.photo_library,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        onPressed: () {},
+                      ),
+                      GestureDetector(
+                        onTap: _onShutterPressed,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                            gradient: AppColors.refiMeshGradient,
+                          ),
+                          child: const Icon(
+                            Icons.camera,
+                            color: Colors.transparent,
+                          ), // Just circle
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  // Mode Switcher
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildModeItem(AppStrings.modeFile, 0),
+                      const SizedBox(width: 24),
+                      _buildModeItem(AppStrings.modeQuote, 1),
+                      const SizedBox(width: 24),
+                      _buildModeItem(AppStrings.modeTranslate, 2),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeItem(String label, int index) {
+    final isSelected = _selectedModeIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedModeIndex = index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Tajawal',
+              color: isSelected ? AppColors.secondaryBlue : Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          if (isSelected)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              width: 4,
+              height: 4,
+              decoration: const BoxDecoration(
+                color: AppColors.secondaryBlue,
+                shape: BoxShape.circle,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCorner({required bool top, required bool left}) {
+    return Positioned(
+      top: top ? 0 : null,
+      bottom: top ? null : 0,
+      left: left ? 0 : null,
+      right: left ? null : 0,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          border: Border(
+            top: top
+                ? const BorderSide(color: AppColors.secondaryBlue, width: 4)
+                : BorderSide.none,
+            bottom: top
+                ? BorderSide.none
+                : const BorderSide(color: AppColors.secondaryBlue, width: 4),
+            left: left
+                ? const BorderSide(color: AppColors.secondaryBlue, width: 4)
+                : BorderSide.none,
+            right: left
+                ? BorderSide.none
+                : const BorderSide(color: AppColors.secondaryBlue, width: 4),
+          ),
+          borderRadius: BorderRadius.only(
+            topLeft: (top && left) ? const Radius.circular(16) : Radius.zero,
+            topRight: (top && !left) ? const Radius.circular(16) : Radius.zero,
+            bottomLeft: (!top && left)
+                ? const Radius.circular(16)
+                : Radius.zero,
+            bottomRight: (!top && !left)
+                ? const Radius.circular(16)
+                : Radius.zero,
+          ),
+        ),
+      ),
+    );
+  }
+}
