@@ -86,14 +86,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> signInWithApple() async {
+  @override
+  Future<Either<Failure, void>> resetPassword(String email) async {
     try {
-      final user = await remoteDataSource.signInWithApple();
-      return Right(user);
+      await remoteDataSource.resetPassword(email);
+      return const Right(null);
     } on Failure catch (e) {
-      if (e.message.contains("Redirecting")) {
-        return const Left(ServerFailure("Redirecting..."));
-      }
       return Left(e);
     } catch (e) {
       return Left(ServerFailure(e.toString()));

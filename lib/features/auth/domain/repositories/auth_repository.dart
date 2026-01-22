@@ -12,5 +12,6 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> signOut();
   Future<Either<Failure, UserEntity>> getCurrentUser();
   Future<Either<Failure, UserEntity>> signInWithGoogle();
-  Future<Either<Failure, UserEntity>> signInWithApple();
+
+  Future<Either<Failure, void>> resetPassword(String email);
 }

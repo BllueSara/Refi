@@ -10,7 +10,8 @@ import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/signout_usecase.dart';
 import '../../features/auth/domain/usecases/signup_usecase.dart';
 import '../../features/auth/domain/usecases/signin_with_google_usecase.dart';
-import '../../features/auth/domain/usecases/signin_with_apple_usecase.dart';
+
+import '../../features/auth/domain/usecases/reset_password_usecase.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 
 import '../../features/library/data/datasources/book_remote_data_source.dart';
@@ -59,7 +60,8 @@ Future<void> init() async {
       signOutUseCase: sl(),
       getCurrentUserUseCase: sl(),
       signInWithGoogleUseCase: sl(),
-      signInWithAppleUseCase: sl(),
+
+      resetPasswordUseCase: sl(),
     ),
   );
 
@@ -69,7 +71,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SignOutUseCase(sl()));
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl()));
   sl.registerLazySingleton(() => SignInWithGoogleUseCase(sl()));
-  sl.registerLazySingleton(() => SignInWithAppleUseCase(sl()));
+
+  sl.registerLazySingleton(() => ResetPasswordUseCase(sl()));
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(

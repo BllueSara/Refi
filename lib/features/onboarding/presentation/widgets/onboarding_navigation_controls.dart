@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_strings.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
 
@@ -38,51 +38,88 @@ class OnboardingNavigationControls extends StatelessWidget {
           const SizedBox(height: AppSizes.p32),
 
           // Dynamic Button
-          Container(
-            width: double.infinity,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: AppColors.refiMeshGradient,
-              borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
-            ),
-            child: ElevatedButton(
-              onPressed: onNextTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
+          AnimatedSlide(
+            duration: const Duration(milliseconds: 450),
+            curve: Curves.easeOutCubic,
+            offset: const Offset(0, 0.04),
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 450),
+              curve: Curves.easeOutCubic,
+              opacity: 1,
+              child: Container(
+                width: double.infinity,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: AppColors.refiMeshGradient,
                   borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (currentIndex < 2) ...[
-                    const Icon(
-                      Icons.arrow_back,
-                      color: AppColors.white,
-                    ), // RTL Arrow pointing left
-                    const SizedBox(width: 8),
-                    const Text(
-                      AppStrings.next,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.white,
-                        fontFamily: 'Tajawal',
+                child: ElevatedButton(
+                  onPressed: onNextTap,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppSizes.buttonRadius,
                       ),
                     ),
-                  ] else
-                    const Text(
-                      AppStrings.startJourney,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.white,
-                        fontFamily: 'Tajawal',
-                      ),
-                    ),
-                ],
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    transitionBuilder: (child, animation) {
+                      final offsetAnimation =
+                          Tween<Offset>(
+                            begin: const Offset(0.08, 0),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutCubic,
+                            ),
+                          );
+
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: currentIndex < 2
+                        ? Row(
+                            key: const ValueKey('next'),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text(
+                                AppStrings.next,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.white,
+                                  //fontFamily: 'Tajawal',
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(
+                                Icons
+                                    .arrow_forward, // Mirrors to point Left in RTL (Next)
+                                color: AppColors.white,
+                              ),
+                            ],
+                          )
+                        : const Text(
+                            key: ValueKey('start'),
+                            AppStrings.startJourney,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.white,
+                              //fontFamily: 'Tajawal',
+                            ),
+                          ),
+                  ),
+                ),
               ),
             ),
           ),

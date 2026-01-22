@@ -1,99 +1,148 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/widgets/refi_snack_bar.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
+import '../cubit/auth_cubit.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/refi_auth_field.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  String? _emailError;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _onSend() {
+    setState(() {
+      _emailError = null;
+    });
+
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _emailError = 'الرجاء إدخال البريد الإلكتروني';
+      });
+      return;
+    }
+    context.read<AuthCubit>().resetPassword(email);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leadingWidth: 200, // Allow space for the text
-        leading: Row(
-          children: [
-            const SizedBox(width: 16),
-            const Icon(Icons.arrow_back, color: AppColors.textMain),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: const Text(
-                AppStrings.backToLogin,
-                style: TextStyle(
-                  color: AppColors.textMain,
-                  fontFamily: 'Tajawal',
-                  fontSize: 14,
+    return BlocConsumer<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthPasswordResetSent) {
+          RefiSnackBars.show(
+            context,
+            message:
+                'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني',
+            type: SnackBarType.success,
+          );
+          Navigator.pop(context);
+        } else if (state is AuthError) {
+          setState(() {
+            _emailError = state.message;
+          });
+        }
+      },
+      builder: (context, state) {
+        final isLoading = state is AuthLoading;
+        return Scaffold(
+          backgroundColor: AppColors.white,
+          appBar: AppBar(
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            forceMaterialTransparency: true,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: Theme.of(context).iconTheme.color,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSizes.p24),
+            child: Column(
+              children: [
+                // Header
+                const AuthHeader(
+                  title: AppStrings.forgotPasswordTitle,
+                  subtitle: AppStrings.forgotPasswordSubtitle,
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSizes.p24),
-        child: Column(
-          children: [
-            const AuthHeader(
-              title: AppStrings.forgotPasswordTitle,
-              subtitle: AppStrings.forgotPasswordSubtitle,
-            ),
 
-            // Link inside subtitle is hard to do with standard widgets without RichText in AuthHeader.
-            // For now, adhering to strict clean separation, we keep it simple.
-            // Requirement said "subtitle with a blue link", handled as plain text in strings for now
-            // or we could enhance AuthHeader later.
+                // Email field + button
+                Column(
+                  children: [
+                    RefiAuthField(
+                      controller: _emailController,
+                      label: AppStrings.emailLabel,
+                      hintText: AppStrings.emailDomainHint,
+                      suffixIcon: const Icon(
+                        Icons.email_outlined,
+                        color: AppColors.textPlaceholder,
+                      ),
+                      errorText: _emailError,
+                    ),
 
-            // Email
-            const RefiAuthField(
-              label: AppStrings.emailLabel,
-              hintText: AppStrings.emailDomainHint,
-              suffixIcon: Icon(
-                Icons.email_outlined,
-                color: AppColors.textPlaceholder,
-              ),
-            ),
+                    const SizedBox(height: 32),
 
-            const SizedBox(height: 32),
-
-            // Send Button
-            Container(
-              width: double.infinity,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: AppColors.refiMeshGradient,
-                borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
-              ),
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Send Reset Link
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
-                  ),
+                    // Send Button
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.refiMeshGradient,
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.buttonRadius,
+                        ),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : _onSend,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppSizes.buttonRadius,
+                            ),
+                          ),
+                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              )
+                            : const Text(
+                                AppStrings.sendLink,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text(
-                  AppStrings.sendLink,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Tajawal',
-                  ),
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

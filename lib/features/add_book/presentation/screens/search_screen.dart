@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/refi_snack_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
@@ -56,13 +57,17 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
 
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(
+        RefiSnackBars.show(
           context,
-        ).showSnackBar(SnackBar(content: Text("Error: ${failure.message}")));
+          message: failure.message,
+          type: SnackBarType.error,
+        );
       },
       (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("تمت إضافة الكتاب للمكتبة بنجاح")),
+        RefiSnackBars.show(
+          context,
+          message: "تمت إضافة الكتاب للمكتبة بنجاح",
+          type: SnackBarType.success,
         );
         // Pop to return to library
         Navigator.pop(context);
@@ -74,6 +79,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(book.title, textAlign: TextAlign.center),
         content: const Text(
           "هل تريد إضافة هذا الكتاب إلى مكتبتك؟",
@@ -116,22 +122,22 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
           ),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(80),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             child: TextField(
               controller: _searchController,
               textAlign: TextAlign.right, // RTL
               onChanged: (val) => _onSearchChanged(val, context),
               decoration: InputDecoration(
-                hintText: AppStrings.searchHintFull,
+                hintText: AppStrings.searchHint, // Updated hint
                 hintStyle: const TextStyle(
                   fontFamily: 'Tajawal',
                   color: AppColors.textPlaceholder,
                 ),
                 prefixIcon: const Icon(
                   Icons.search,
-                  color: AppColors.textPlaceholder,
+                  color: AppColors.primaryBlue, // Brand color for icon
                 ),
                 suffixIcon: IconButton(
                   icon: const Icon(
@@ -147,10 +153,24 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                 filled: true,
                 fillColor: const Color(0xFFF1F5F9), // Slate 100
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(100), // Pill shape
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(100),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(100),
+                  borderSide: const BorderSide(
+                    color: AppColors.primaryBlue,
+                    width: 1.5,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
               ),
             ),
           ),
@@ -194,70 +214,110 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                         const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final book = state.books[index];
-                      return ListTile(
-                        leading: Container(
-                          width: 48,
-                          height: 72,
-                          color: Colors.grey[200],
-                          child: book.imageUrl != null
-                              ? Image.network(
-                                  book.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
-                                        Icons.book,
-                                        color: Colors.grey,
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => _showAddDialog(book),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 8.0,
+                            ),
+                            child: Row(
+                              children: [
+                                // Hero Image
+                                Hero(
+                                  tag: book.id ?? book.title,
+                                  child: Container(
+                                    width: 48,
+                                    height: 72,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(8),
+                                      image: book.imageUrl != null
+                                          ? DecorationImage(
+                                              image: NetworkImage(
+                                                book.imageUrl!,
+                                              ),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
+                                    ),
+                                    child: book.imageUrl == null
+                                        ? const Icon(
+                                            Icons.book,
+                                            color: Colors.grey,
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        book.title,
+                                        style: const TextStyle(
+                                          fontFamily: 'Tajawal',
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: AppColors.textMain,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                )
-                              : const Icon(Icons.book, color: Colors.grey),
-                        ),
-                        title: Text(
-                          book.title,
-                          style: const TextStyle(
-                            fontFamily: 'Tajawal',
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textMain,
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        book.authors.isNotEmpty
+                                            ? book.authors.first
+                                            : 'Unknown',
+                                        style: const TextStyle(
+                                          fontFamily: 'Tajawal',
+                                          color: AppColors.textSub,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      if (book.rating != null &&
+                                          book.rating! > 0)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 4,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                                size: 14,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                book.rating.toString(),
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppColors.textSub,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.add_circle_outline,
+                                    color: AppColors.primaryBlue,
+                                  ),
+                                  onPressed: () => _showAddDialog(book),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              book.authors.isNotEmpty
-                                  ? book.authors.first
-                                  : 'Unknown',
-                              style: const TextStyle(
-                                fontFamily: 'Tajawal',
-                                color: AppColors.textSub,
-                              ),
-                            ),
-                            if (book.rating != null && book.rating! > 0)
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    book.rating.toString(),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSub,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
-                        trailing: const Icon(
-                          Icons.add_circle_outline, // Hint to add
-                          color: AppColors.primaryBlue,
-                        ),
-                        onTap: () {
-                          _showAddDialog(book);
-                        },
                       );
                     },
                   ),

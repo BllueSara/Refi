@@ -27,17 +27,18 @@ class AuthHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                color: AppColors.primaryBlue.withOpacity(0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: const Icon(
-            Icons
-                .menu_book_rounded, // Placeholder for Logo SVG if not available yet
-            color: Colors.white,
-            size: 40,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.asset(
+              'assets/images/native_splash.jpg',
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         const SizedBox(height: 24),
@@ -47,7 +48,6 @@ class AuthHeader extends StatelessWidget {
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
-            fontFamily: 'Tajawal',
           ),
           textAlign: TextAlign.center,
         ),
@@ -57,7 +57,7 @@ class AuthHeader extends StatelessWidget {
           style: const TextStyle(
             fontSize: 14,
             color: AppColors.textSub,
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
           ),
           textAlign: TextAlign.center,
         ),

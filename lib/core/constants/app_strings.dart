@@ -21,7 +21,7 @@ class AppStrings {
 
   static const String onboardingTitle2 = "اقتبس بذكاء، لا تكتب!";
   static const String onboardingBody2 =
-      "صور أي صفحة، وسيحولها \"رفي\" فوراً إلى نص رقمي قابل للتعديل والحفظ.";
+      "صور أي صفحة، وسيحولها \"جليس\" فوراً إلى نص رقمي قابل للتعديل والحفظ.";
 
   static const String onboardingTitle3 = "أفكارك.. لن تضيع مجدداً";
   static const String onboardingBody3 =
@@ -143,7 +143,7 @@ class AppStrings {
   static const String orSocialLogin = "أو تابع استخدام";
 
   // Auth - Sign Up
-  static const String joinRefi = "انضم إلى رفي";
+  static const String joinRefi = "انضم إلى جليس";
   static const String startYourJourney = "ابدأ رحلتك في عالم الكتب";
   static const String fullNameHint = "الاسم الكامل";
   static const String emailHint = "example@mail.com";

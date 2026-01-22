@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/colors.dart';
 
 class AppTheme {
-  static const String fontFamily = 'Tajawal';
-
   // Light Theme
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: fontFamily,
       scaffoldBackgroundColor: AppColors.background, // White
       primaryColor: AppColors.primaryBlue,
       brightness: Brightness.light,
@@ -23,13 +21,12 @@ class AppTheme {
       ),
 
       // AppBar Theme
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.textMain),
-        titleTextStyle: TextStyle(
-          fontFamily: fontFamily,
+        iconTheme: const IconThemeData(color: AppColors.textMain),
+        titleTextStyle: GoogleFonts.tajawal(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: AppColors.textMain,
@@ -37,72 +34,63 @@ class AppTheme {
       ),
 
       // Typography
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
-          fontSize: 34,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textMain,
-          fontFamily: fontFamily,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textMain,
-          fontFamily: fontFamily,
-        ),
-        headlineSmall: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textMain,
-          fontFamily: fontFamily,
-        ),
-        titleLarge: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textMain,
-          fontFamily: fontFamily,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textMain,
-          fontFamily: fontFamily,
-        ),
-        titleSmall: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textMain,
-          fontFamily: fontFamily,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textMain,
-          fontFamily: fontFamily,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textSub,
-          fontFamily: fontFamily,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.normal,
-          color: AppColors.textPlaceholder,
-          fontFamily: fontFamily,
-        ),
-        labelLarge: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textMain,
-          fontFamily: fontFamily,
-        ),
-        labelSmall: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textSub,
-          fontFamily: fontFamily,
+      textTheme: GoogleFonts.tajawalTextTheme(
+        const TextTheme(
+          headlineLarge: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+          headlineMedium: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+          headlineSmall: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+          titleLarge: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+          titleMedium: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+          titleSmall: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textMain,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSub,
+          ),
+          bodySmall: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: AppColors.textPlaceholder,
+          ),
+          labelLarge: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+          labelSmall: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textSub,
+          ),
         ),
       ),
 
@@ -113,20 +101,31 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
 
+      // Bottom Sheet Theme
+      bottomSheetTheme: const BottomSheetThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+      ),
+
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           borderSide: const BorderSide(color: AppColors.inputBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           borderSide: const BorderSide(color: AppColors.inputBorder),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
         ),
         hintStyle: const TextStyle(
@@ -149,7 +148,6 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      fontFamily: fontFamily,
       scaffoldBackgroundColor: darkBackground,
       primaryColor: darkPrimary,
       brightness: Brightness.dark,
@@ -162,85 +160,75 @@ class AppTheme {
         onPrimary: Colors.white,
       ),
 
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: darkTextMain),
-        titleTextStyle: TextStyle(
-          fontFamily: fontFamily,
+        iconTheme: const IconThemeData(color: darkTextMain),
+        titleTextStyle: GoogleFonts.tajawal(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: darkTextMain,
         ),
       ),
 
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
-          fontSize: 34,
-          fontWeight: FontWeight.bold,
-          color: darkTextMain,
-          fontFamily: fontFamily,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: darkTextMain,
-          fontFamily: fontFamily,
-        ),
-        headlineSmall: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: darkTextMain,
-          fontFamily: fontFamily,
-        ),
-        titleLarge: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: darkTextMain,
-          fontFamily: fontFamily,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: darkTextMain,
-          fontFamily: fontFamily,
-        ),
-        titleSmall: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: darkTextMain,
-          fontFamily: fontFamily,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: darkTextMain,
-          fontFamily: fontFamily,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: darkTextSub,
-          fontFamily: fontFamily,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.normal,
-          color: darkTextSub,
-          fontFamily: fontFamily,
-        ),
-        labelLarge: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: darkTextMain,
-          fontFamily: fontFamily,
-        ),
-        labelSmall: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: darkTextSub,
-          fontFamily: fontFamily,
+      textTheme: GoogleFonts.tajawalTextTheme(
+        const TextTheme(
+          headlineLarge: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.bold,
+            color: darkTextMain,
+          ),
+          headlineMedium: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: darkTextMain,
+          ),
+          headlineSmall: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: darkTextMain,
+          ),
+          titleLarge: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: darkTextMain,
+          ),
+          titleMedium: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: darkTextMain,
+          ),
+          titleSmall: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: darkTextMain,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: darkTextMain,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: darkTextSub,
+          ),
+          bodySmall: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: darkTextSub,
+          ),
+          labelLarge: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: darkTextMain,
+          ),
+          labelSmall: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: darkTextSub,
+          ),
         ),
       ),
 
@@ -250,19 +238,30 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
 
+      // Bottom Sheet Theme
+      bottomSheetTheme: const BottomSheetThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+      ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkSurface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           borderSide: BorderSide(color: darkSurface),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           borderSide: BorderSide(color: darkSurface),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           borderSide: const BorderSide(color: darkPrimary, width: 2),
         ),
         hintStyle: const TextStyle(color: darkTextSub, fontSize: 14),

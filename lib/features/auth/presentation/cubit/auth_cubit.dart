@@ -6,7 +6,8 @@ import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/signout_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/signin_with_google_usecase.dart';
-import '../../domain/usecases/signin_with_apple_usecase.dart';
+
+import '../../domain/usecases/reset_password_usecase.dart';
 
 // States
 abstract class AuthState extends Equatable {
@@ -28,6 +29,8 @@ class AuthAuthenticated extends AuthState {
 
 class AuthUnauthenticated extends AuthState {}
 
+class AuthPasswordResetSent extends AuthState {}
+
 class AuthError extends AuthState {
   final String message;
   const AuthError(this.message);
@@ -42,7 +45,8 @@ class AuthCubit extends Cubit<AuthState> {
   final SignOutUseCase signOutUseCase;
   final GetCurrentUserUseCase getCurrentUserUseCase;
   final SignInWithGoogleUseCase signInWithGoogleUseCase;
-  final SignInWithAppleUseCase signInWithAppleUseCase;
+
+  final ResetPasswordUseCase resetPasswordUseCase;
 
   AuthCubit({
     required this.loginUseCase,
@@ -50,7 +54,7 @@ class AuthCubit extends Cubit<AuthState> {
     required this.signOutUseCase,
     required this.getCurrentUserUseCase,
     required this.signInWithGoogleUseCase,
-    required this.signInWithAppleUseCase,
+    required this.resetPasswordUseCase,
   }) : super(AuthInitial());
 
   Future<void> checkAuthStatus() async {
@@ -80,38 +84,28 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  Future<void> signOut() async {
+  Future<void> resetPassword(String email) async {
     emit(AuthLoading());
-    final result = await signOutUseCase();
+    final result = await resetPasswordUseCase(email);
     result.fold(
       (failure) => emit(AuthError(failure.message)),
-      (_) => emit(AuthUnauthenticated()),
+      (_) => emit(AuthPasswordResetSent()),
     );
+  }
+
+  Future<void> signOut() async {
+    emit(AuthLoading());
+    await signOutUseCase();
+    // Always navigate to login, even if server error occurs
+    emit(AuthUnauthenticated());
   }
 
   Future<void> signInWithGoogle() async {
     emit(AuthLoading());
     final result = await signInWithGoogleUseCase();
-    result.fold((failure) {
-      if (failure.message == "Redirecting...") {
-        // Do nothing/Stay in loading or emit initial
-        // Ideally we wait for onAuthStateChange
-        emit(AuthInitial());
-      } else {
-        emit(AuthError(failure.message));
-      }
-    }, (user) => emit(AuthAuthenticated(user)));
-  }
-
-  Future<void> signInWithApple() async {
-    emit(AuthLoading());
-    final result = await signInWithAppleUseCase();
-    result.fold((failure) {
-      if (failure.message == "Redirecting...") {
-        emit(AuthInitial());
-      } else {
-        emit(AuthError(failure.message));
-      }
-    }, (user) => emit(AuthAuthenticated(user)));
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (user) => emit(AuthAuthenticated(user)),
+    );
   }
 }

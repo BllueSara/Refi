@@ -217,86 +217,102 @@ class _QuoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: AppColors.primaryBlue.withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(color: AppColors.inputBorder),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            quote.text,
-            style: const TextStyle(
-              fontFamily: 'Tajawal',
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              height: 1.6,
-              color: Colors.black,
-            ),
-          ),
-          if (quote.notes != null && quote.notes!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.inputBorder.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                quote.notes!,
-                style: const TextStyle(
-                  fontFamily: 'Tajawal',
-                  fontSize: 14,
-                  color: AppColors.textSub,
-                  fontStyle: FontStyle.italic,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            // Future: Navigate to quote details or edit
+          },
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  quote.text,
+                  style: const TextStyle(
+                    fontFamily: 'Tajawal',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    height: 1.6,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.bookmark,
-                      size: 16,
-                      color: AppColors.textSub,
+                if (quote.notes != null && quote.notes!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.inputBorder.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        quote.bookTitle ?? 'بدون كتاب',
-                        style: const TextStyle(
-                          fontFamily: 'Tajawal',
-                          fontSize: 12,
-                          color: AppColors.textSub,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    child: Text(
+                      quote.notes!,
+                      style: const TextStyle(
+                        fontFamily: 'Tajawal',
+                        fontSize: 14,
+                        color: AppColors.textSub,
+                        fontStyle: FontStyle.italic,
                       ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.bookmark,
+                            size: 16,
+                            color: AppColors.textSub,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              quote.bookTitle ?? 'بدون كتاب',
+                              style: const TextStyle(
+                                fontFamily: 'Tajawal',
+                                fontSize: 12,
+                                color: AppColors.textSub,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.share,
+                      size: 20,
+                      color: AppColors.textPlaceholder,
                     ),
                   ],
                 ),
-              ),
-              const Icon(
-                Icons.share,
-                size: 20,
-                color: AppColors.textPlaceholder,
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

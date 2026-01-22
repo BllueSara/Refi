@@ -9,6 +9,8 @@ import '../../domain/usecases/update_book_usecase.dart';
 import '../cubit/book_details/book_details_cubit.dart';
 import '../cubit/book_details/book_details_state.dart';
 import '../widgets/progress_card.dart';
+import '../widgets/book_status_selector.dart';
+import '../../../../core/widgets/refi_buttons.dart';
 import '../../../quotes/domain/usecases/get_book_quotes_usecase.dart';
 
 class BookDetailsPage extends StatelessWidget {
@@ -113,7 +115,11 @@ class BookDetailsPage extends StatelessWidget {
 
                   // Status Chips Selection (Simple View)
                   const SizedBox(height: AppDimensions.paddingM),
-                  _buildStatusSelector(context, state),
+                  BookStatusSelector(
+                    currentStatus: state.status,
+                    onStatusChanged: (s) =>
+                        context.read<BookDetailsCubit>().changeStatus(s),
+                  ),
 
                   const SizedBox(height: AppDimensions.paddingL),
 
@@ -133,67 +139,6 @@ class BookDetailsPage extends StatelessWidget {
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusSelector(BuildContext context, BookDetailsState state) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _statusChip(
-          context,
-          BookStatus.reading,
-          AppStrings.statusReading,
-          state.status,
-          (s) => context.read<BookDetailsCubit>().changeStatus(s),
-        ),
-        const SizedBox(width: 8),
-        _statusChip(
-          context,
-          BookStatus.wishlist,
-          AppStrings.statusWantToRead,
-          state.status,
-          (s) => context.read<BookDetailsCubit>().changeStatus(s),
-        ),
-        const SizedBox(width: 8),
-        _statusChip(
-          context,
-          BookStatus.completed,
-          AppStrings.statusFinished,
-          state.status,
-          (s) => context.read<BookDetailsCubit>().changeStatus(s),
-        ),
-      ],
-    );
-  }
-
-  Widget _statusChip(
-    BuildContext context,
-    BookStatus status,
-    String label,
-    BookStatus currentStatus,
-    Function(BookStatus) onSelect,
-  ) {
-    final isSelected = status == currentStatus;
-    return GestureDetector(
-      onTap: () => onSelect(status),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryBlue
-              : AppColors.inputBorder.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppColors.textSub,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
         ),
       ),
     );
@@ -386,34 +331,15 @@ class BookDetailsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () {
-                  final val = int.tryParse(controller.text);
-                  if (val != null) {
-                    cubit.updateProgress(val);
-                  }
-                  Navigator.pop(ctx);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "حفظ التقدم",
-                  style: TextStyle(
-                    fontFamily: 'Tajawal',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+            RefiButton(
+              label: "حفظ التقدم",
+              onTap: () {
+                final val = int.tryParse(controller.text);
+                if (val != null) {
+                  cubit.updateProgress(val);
+                }
+                Navigator.pop(ctx);
+              },
             ),
           ],
         ),

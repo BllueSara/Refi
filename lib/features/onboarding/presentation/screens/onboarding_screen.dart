@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lottie/lottie.dart';
+
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
 import '../cubit/onboarding_cubit.dart';
-import '../widgets/onboarding_page.dart';
+
 import '../widgets/onboarding_skip_button.dart';
 import '../widgets/onboarding_navigation_controls.dart';
-import '../constants/onboarding_svgs.dart';
+import '../widgets/onboarding_lottie_page.dart';
+
 import '../../../../features/auth/presentation/screens/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -75,21 +78,114 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     onPageChanged: (index) {
                       context.read<OnboardingCubit>().pageChanged(index);
                     },
-                    children: const [
-                      OnboardingPage(
-                        svgString: OnboardingSvgs.digitalShelf,
-                        title: AppStrings.onboardingTitle1,
-                        bodyText: AppStrings.onboardingBody1,
+                    children: [
+                      _AnimatedOnboardingWrapper(
+                        isActive: currentIndex == 0,
+                        child: OnboardingLottiePage(
+                          lottieAssetPath: 'assets/images/books.json',
+                          title: AppStrings.onboardingTitle1,
+                          bodyText: AppStrings.onboardingBody1,
+                          // Fallback: Blue Fill, White Stroke
+                          delegates: LottieDelegates(
+                            values: [
+                              ValueDelegate.color([
+                                '**',
+                                'Stroke 1',
+                                '**',
+                              ], value: Colors.white),
+                              ValueDelegate.color([
+                                '**',
+                                'Fill 1',
+                                '**',
+                              ], value: AppColors.primaryBlue),
+                            ],
+                          ),
+                        ),
                       ),
-                      OnboardingPage(
-                        svgString: OnboardingSvgs.smartScan,
-                        title: AppStrings.onboardingTitle2,
-                        bodyText: AppStrings.onboardingBody2,
+                      _AnimatedOnboardingWrapper(
+                        isActive: currentIndex == 1,
+                        child: OnboardingLottiePage(
+                          lottieAssetPath: 'assets/images/Quotation.json',
+                          title: AppStrings.onboardingTitle2,
+                          bodyText: AppStrings.onboardingBody2,
+                          // Config: Bright Blue Card (Secondary), Deep Blue Details (Primary)
+                          gradientBackground: false,
+                          delegates: LottieDelegates(
+                            values: [
+                              // Lines (Strokes) -> Primary Blue (Dark)
+                              ValueDelegate.strokeColor([
+                                '**',
+                                'Stroke 1',
+                                '**',
+                              ], value: AppColors.secondaryBlue),
+                              // Fills -> Card (Secondary) vs Quotes (Primary)
+                              ValueDelegate.color(
+                                ['**', 'Fill 1', '**'],
+                                callback: (frameInfo) {
+                                  final Color? original = frameInfo.startValue;
+                                  if (original != null) {
+                                    // If light (Card Background) -> Secondary Blue (Bright)
+                                    if (original.computeLuminance() > 0.5) {
+                                      return AppColors.secondaryBlue;
+                                    }
+                                    // If dark (Quotes) -> Primary Blue (Dark)
+                                    return AppColors.primaryBlue;
+                                  }
+                                  return Colors.transparent;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      OnboardingPage(
-                        svgString: OnboardingSvgs.savedIdeas,
-                        title: AppStrings.onboardingTitle3,
-                        bodyText: AppStrings.onboardingBody3,
+                      _AnimatedOnboardingWrapper(
+                        isActive: currentIndex == 2,
+                        child: OnboardingLottiePage(
+                          lottieAssetPath: 'assets/images/Creativity.json',
+                          title: AppStrings.onboardingTitle3,
+                          bodyText: AppStrings.onboardingBody3,
+                          delegates: LottieDelegates(
+                            values: [
+                              // Creativity: Replace Yellow with Brand Blue
+                              // Stroke -> Primary Blue for consistency
+                              ValueDelegate.color([
+                                '**',
+                                'Kontur 1',
+                                '**',
+                              ], value: AppColors.primaryBlue),
+                              // Fill -> Replace Yellow only (Targeting both possible encodings)
+                              ValueDelegate.color(
+                                ['**', 'Fläche 1', '**'],
+                                callback: (frameInfo) {
+                                  final Color? original = frameInfo.startValue;
+                                  if (original != null) {
+                                    if (original.red > 200 &&
+                                        original.green > 150 &&
+                                        original.blue < 100) {
+                                      return AppColors.primaryBlue;
+                                    }
+                                  }
+                                  return original ?? Colors.transparent;
+                                },
+                              ),
+                              ValueDelegate.color(
+                                ['**', 'FlÃ¤che 1', '**'],
+                                callback: (frameInfo) {
+                                  final Color? original = frameInfo.startValue;
+                                  if (original != null) {
+                                    // Check for Yellow
+                                    if (original.red > 200 &&
+                                        original.green > 150 &&
+                                        original.blue < 100) {
+                                      return AppColors.primaryBlue;
+                                    }
+                                  }
+                                  return original ?? Colors.transparent;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -106,6 +202,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class _AnimatedOnboardingWrapper extends StatelessWidget {
+  final bool isActive;
+  final Widget child;
+
+  const _AnimatedOnboardingWrapper({
+    required this.isActive,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 750),
+      curve: Curves.easeOutCubic,
+      opacity: isActive ? 1 : 0,
+      child: AnimatedSlide(
+        duration: const Duration(milliseconds: 750),
+        curve: Curves.easeOutCubic,
+        offset: isActive ? Offset.zero : const Offset(-0.2, 0),
+        child: child,
       ),
     );
   }

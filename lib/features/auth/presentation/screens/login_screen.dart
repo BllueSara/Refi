@@ -24,19 +24,44 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  String? _emailError;
+  String? _passwordError;
+
   void _onLogin() {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('الرجاء إدخال البريد الإلكتروني وكلمة المرور'),
-        ),
-      );
-      return;
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+    });
+
+    bool hasError = false;
+
+    if (_emailController.text.trim().isEmpty) {
+      setState(() {
+        _emailError = 'الرجاء إدخال البريد الإلكتروني';
+      });
+      hasError = true;
     }
+
+    if (_passwordController.text.trim().isEmpty) {
+      setState(() {
+        _passwordError = 'الرجاء إدخال كلمة المرور';
+      });
+      hasError = true;
+    }
+
+    if (hasError) return;
+
     context.read<AuthCubit>().login(
       _emailController.text.trim(),
       _passwordController.text.trim(),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,189 +77,195 @@ class _LoginScreenState extends State<LoginScreen> {
             (route) => false,
           );
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          setState(() {
+            // Assign generic errors to password field, or check content
+            if (state.message.toLowerCase().contains('email')) {
+              _emailError = state.message;
+            } else {
+              _passwordError = state.message;
+            }
+          });
         }
       },
       builder: (context, state) {
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            automaticallyImplyLeading: false,
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSizes.p24),
-            child: Column(
-              children: [
-                const AuthHeader(
-                  title: AppStrings.loginTitle,
-                  subtitle: AppStrings.welcomeBack,
-                ),
-
-                // Email
-                RefiAuthField(
-                  controller: _emailController,
-                  label: AppStrings.emailLabel,
-                  hintText: AppStrings.enterEmailHint,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16),
-
-                // Password
-                RefiAuthField(
-                  controller: _passwordController,
-                  label: AppStrings.passwordLabel,
-                  hintText: AppStrings.enterPasswordHint,
-                  isPassword: true,
-                ),
-
-                // Forgot Password
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ForgotPasswordScreen(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      AppStrings.forgotPasswordLink,
-                      style: TextStyle(
-                        color: AppColors.secondaryBlue,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Tajawal',
-                      ),
-                    ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSizes.p24),
+              child: Column(
+                children: [
+                  // Header
+                  const AuthHeader(
+                    title: AppStrings.loginTitle,
+                    subtitle: AppStrings.welcomeBack,
                   ),
-                ),
-                const SizedBox(height: 24),
 
-                // Login Button
-                Container(
-                  width: double.infinity,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.refiMeshGradient,
-                    borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                  // Form (email, password, login)
+                  Column(
+                    children: [
+                      // Email
+                      RefiAuthField(
+                        controller: _emailController,
+                        label: AppStrings.emailLabel,
+                        hintText: AppStrings.enterEmailHint,
+                        keyboardType: TextInputType.emailAddress,
+                        errorText: _emailError,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Password
+                      RefiAuthField(
+                        controller: _passwordController,
+                        label: AppStrings.passwordLabel,
+                        hintText: AppStrings.enterPasswordHint,
+                        isPassword: true,
+                        errorText: _passwordError,
+                      ),
+
+                      // Forgot Password
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            AppStrings.forgotPasswordLink,
+                            style: TextStyle(
+                              color: AppColors.secondaryBlue,
+                              fontWeight: FontWeight.bold,
+                              //fontFamily: 'Tajawal',
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Login Button
+                      Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.refiMeshGradient,
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.buttonRadius,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryBlue.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: state is AuthLoading ? null : _onLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppSizes.buttonRadius,
+                              ),
+                            ),
+                          ),
+                          child: state is AuthLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  AppStrings.loginButton,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    //fontFamily: 'Tajawal',
+                                  ),
+                                ),
+                        ),
                       ),
                     ],
                   ),
-                  child: ElevatedButton(
-                    onPressed: state is AuthLoading ? null : _onLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSizes.buttonRadius,
-                        ),
-                      ),
-                    ),
-                    child: state is AuthLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            AppStrings.loginButton,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'Tajawal',
+
+                  const SizedBox(height: 32),
+
+                  // Social + Sign up
+                  Column(
+                    children: [
+                      // Social
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.grey[200])),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              AppStrings.orSocialLogin,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Social
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: Colors.grey[200])),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        AppStrings.orSocialLogin,
-                        style: Theme.of(context).textTheme.bodySmall,
+                          Expanded(child: Divider(color: Colors.grey[200])),
+                        ],
                       ),
-                    ),
-                    Expanded(child: Divider(color: Colors.grey[200])),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: RefiSocialButton(
-                        label: AppStrings.google,
-                        icon: SvgPicture.string(
-                          AppSvgs.googleLogo,
-                          width: 24,
-                          height: 24,
-                        ),
-                        onTap: () {
-                          context.read<AuthCubit>().signInWithGoogle();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: RefiSocialButton(
-                        label: AppStrings.apple,
-                        icon: Icon(
-                          Icons.apple,
-                          size: 28,
-                          color: Theme.of(context).iconTheme.color,
-                        ),
-                        onTap: () {
-                          context.read<AuthCubit>().signInWithApple();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // Sign Up Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      AppStrings.dontHaveAccount,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignUpScreen(),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: RefiSocialButton(
+                              label: AppStrings.google,
+                              icon: SvgPicture.string(
+                                AppSvgs.googleLogo,
+                                width: 24,
+                                height: 24,
+                              ),
+                              onTap: () {
+                                context.read<AuthCubit>().signInWithGoogle();
+                              },
+                            ),
                           ),
-                        );
-                      },
-                      child: const Text(
-                        AppStrings.registerNow,
-                        style: TextStyle(
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Tajawal',
-                        ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
+
+                      const SizedBox(height: 32),
+
+                      // Sign Up Link
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppStrings.dontHaveAccount,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SignUpScreen(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              AppStrings.registerNow,
+                              style: TextStyle(
+                                color: AppColors.primaryBlue,
+                                fontWeight: FontWeight.bold,
+                                //fontFamily: 'Tajawal',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         );

@@ -9,5 +9,5 @@ class AppSizes {
 
   static const double cardRadius = 24.0;
   static const double buttonRadius = 24.0;
-  static const double inputRadius = 12.0;
+  static const double inputRadius = 24.0;
 }

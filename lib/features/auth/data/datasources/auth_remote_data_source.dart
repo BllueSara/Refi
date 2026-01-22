@@ -1,3 +1,4 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/error/failures.dart';
 import '../models/user_model.dart';
@@ -8,13 +9,25 @@ abstract class AuthRemoteDataSource {
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
   Future<UserModel> signInWithGoogle();
-  Future<UserModel> signInWithApple();
+
+  Future<void> resetPassword(String email);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final SupabaseClient supabaseClient;
 
   AuthRemoteDataSourceImpl({required this.supabaseClient});
+
+  @override
+  Future<void> resetPassword(String email) async {
+    try {
+      await supabaseClient.auth.resetPasswordForEmail(email);
+    } on AuthException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
 
   @override
   Future<UserModel> login(String email, String password) async {
@@ -91,6 +104,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        try {
+          await googleSignIn.signOut();
+        } catch (_) {}
+      }
       await supabaseClient.auth.signOut();
     } catch (e) {
       throw ServerFailure(e.toString());
@@ -135,75 +154,49 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
-      // ⚠️ IMPORTANT: This opens the browser for OAuth flow.
-      // For native experience, additional setup with google_sign_in package is needed.
-      // We use the standard web-based OAuth for now.
-      // On Mobile, this requires a Deep Link setup in Supabase & App.
-      // Assuming 'io.supabase.flutterquickstart://login-callback/' or similar is setup.
-      // Since we can't configure user's dashboard, we use a generic method that returns true
-      // when the auth state changes (which happens via DeepLink).
-      // Actually, signInWithOAuth returns bool (true if launched).
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-      final bool result = await supabaseClient.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo:
-            'refi://login-callback', // This Scheme must be defined in Info.plist / AndroidManifest
-      );
-
-      if (!result) {
-        throw const ServerFailure("Could not launch Google Sign In");
+      if (googleUser == null) {
+        throw const ServerFailure('Google Sign In was canceled');
       }
 
-      // The actual User object is not returned immediately here because it relies on the callback.
-      // The AuthCubit listener on AuthStateChange should handle the success.
-      // However, to satisfy the interface, we wait effectively or throw expecting the stream to handle it.
-      // A cleaner way for Clean Arch with OAuth redirect is to return a "Success" indicator or void, NOT the user immediately if it's redirect based.
-      // But let's assume valid flow. We will throw a specific exception "OAuthStarted" or return a specific state?
-      // No, let's keep it simple: simpler flow is to just return a dummy user or handle the state change elsewhere.
-      // BUT, our repository expects a user.
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final accessToken = googleAuth.accessToken;
+      final idToken = googleAuth.idToken;
 
-      // Strategy: return a placeholder or wait? waiting is dangerous.
-      // Let's rely on the Stream listener which we should set up in Cubit.
-      // For this method, we might just return the CURRENT user if it happens fast (unlikely)
-      // or throw a special Failure that says "Redirecting...".
+      if (idToken == null) {
+        throw const ServerFailure('No ID Token found from Google');
+      }
 
-      // Better approach for OAuth in Clean Arch:
-      // The method `signInWithGoogle` initiates the flow. The actual "Success" comes via `onAuthStateChange`.
-      // So this method effectively returns void. But our interface returns User.
-      // We will hack this slightly: we will return the current user if already signed in, or throw "Redirecting" to let UI know.
+      final response = await supabaseClient.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
 
-      throw const ServerFailure("Redirecting to Google...");
+      if (response.user == null) {
+        throw const ServerFailure(
+          'Supabase Google Sign In failed: User is null',
+        );
+      }
 
-      // Wait, that's bad UX for error handling.
-      // Correct way: Change return type to Future<void> or wrap logic.
-      // Since I can't easily change the architecture mid-flight without breaking `login` consistency...
-      // I will assume for now we just launch it.
+      final String? name =
+          response.user!.userMetadata?['full_name'] ?? googleUser.displayName;
+
+      try {
+        await supabaseClient.from('profiles').upsert({
+          'id': response.user!.id,
+          'full_name': name,
+          'avatar_url': googleUser.photoUrl,
+        });
+      } catch (_) {}
+
+      return UserModel.fromSupabase(response.user!, name: name);
     } on AuthException catch (e) {
       throw ServerFailure(e.message);
     } catch (e) {
-      // if it's the specific "Redirecting" one
-      if (e.toString().contains("Redirecting")) rethrow;
-      throw ServerFailure(e.toString());
-    }
-  }
-
-  @override
-  Future<UserModel> signInWithApple() async {
-    try {
-      final bool result = await supabaseClient.auth.signInWithOAuth(
-        OAuthProvider.apple,
-        redirectTo: 'refi://login-callback',
-      );
-
-      if (!result) {
-        throw const ServerFailure("Could not launch Apple Sign In");
-      }
-
-      throw const ServerFailure("Redirecting to Apple...");
-    } on AuthException catch (e) {
-      throw ServerFailure(e.message);
-    } catch (e) {
-      if (e.toString().contains("Redirecting")) rethrow;
       throw ServerFailure(e.toString());
     }
   }

@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../domain/entities/book_entity.dart';
+import '../widgets/library_skeleton.dart';
 import '../cubit/library_cubit.dart';
 import '../widgets/library_empty_view.dart';
 import '../widgets/library_book_card.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../add_book/presentation/screens/search_screen.dart';
 import 'book_details_page.dart';
 
@@ -82,9 +84,7 @@ class _LibraryPageState extends State<LibraryPage> {
       body: BlocBuilder<LibraryCubit, LibraryState>(
         builder: (context, state) {
           if (state is LibraryLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryBlue),
-            );
+            return const LibrarySkeleton();
           } else if (state is LibraryEmpty) {
             return const LibraryEmptyView();
           } else if (state is LibraryError) {
@@ -150,12 +150,23 @@ class _LibraryPageState extends State<LibraryPage> {
                     },
                     child: filteredBooks.isEmpty
                         ? Center(
-                            child: Text(
-                              "لا توجد كتب",
-                              style: const TextStyle(
-                                fontFamily: 'Tajawal',
-                                color: AppColors.textSub,
-                              ),
+                            child: EmptyStateWidget(
+                              title: "مكتبتك فارغة",
+                              subtitle: "ابدأ رحلتك بإضافة كتابك الأول",
+                              icon: Icons.menu_book_rounded,
+                              actionLabel: "إضافة كتاب",
+                              onAction: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SearchScreen(),
+                                  ),
+                                ).then((_) {
+                                  if (context.mounted) {
+                                    context.read<LibraryCubit>().loadLibrary();
+                                  }
+                                });
+                              },
                             ),
                           )
                         : GridView.builder(

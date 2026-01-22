@@ -10,6 +10,7 @@ class RefiAuthField extends StatefulWidget {
   final bool isPassword;
   final TextEditingController? controller;
   final TextInputType? keyboardType;
+  final String? errorText;
 
   const RefiAuthField({
     super.key,
@@ -20,6 +21,7 @@ class RefiAuthField extends StatefulWidget {
     this.isPassword = false,
     this.controller,
     this.keyboardType,
+    this.errorText,
   });
 
   @override
@@ -58,8 +60,12 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).inputDecorationTheme.fillColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.inputBorder),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: widget.errorText != null
+                  ? AppColors.errorRed
+                  : AppColors.inputBorder,
+            ),
           ),
           child: TextField(
             controller: widget.controller,
@@ -71,8 +77,8 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
               hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.p16,
-                vertical: 14,
+                horizontal: AppSizes.p24, // Updated to 24 padding
+                vertical: 16,
               ),
               prefixIcon: widget.prefixIcon != null
                   ? IconTheme(
@@ -104,6 +110,20 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
             ),
           ),
         ),
+        if (widget.errorText != null) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Text(
+              widget.errorText!,
+              style: const TextStyle(
+                color: AppColors.errorRed,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

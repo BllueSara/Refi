@@ -130,7 +130,33 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                   // Logout
                   TextButton(
                     onPressed: () {
-                      context.read<AuthCubit>().signOut();
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('تسجيل الخروج'),
+                          content: const Text(
+                            'هل أنت متأكد أنك تريد تسجيل الخروج؟',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('إلغاء'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                context.read<AuthCubit>().signOut();
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.error,
+                              ),
+                              child: const Text('خروج'),
+                            ),
+                          ],
+                        ),
+                      );
                     },
                     child: Text(
                       AppStrings.logout,

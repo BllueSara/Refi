@@ -40,7 +40,7 @@ class RefiSocialButton extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textMain,
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
               ),
             ),
           ],

@@ -5,8 +5,9 @@ import '../../domain/entities/home_entity.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
 import '../widgets/home_header.dart';
-import '../widgets/home_empty_body.dart';
+import '../widgets/home_empty_body.dart'; // Restored
 import '../widgets/home_populated_body.dart';
+import '../widgets/home_skeleton.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../profile/domain/usecases/get_profile_usecase.dart';
@@ -51,11 +52,7 @@ class HomePage extends StatelessWidget {
             body: Builder(
               builder: (context) {
                 if (state is HomeLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryBlue,
-                    ),
-                  );
+                  return const HomeSkeleton();
                 } else if (state is HomeEmpty) {
                   return const HomeEmptyBody();
                 } else if (state is HomeLoaded) {

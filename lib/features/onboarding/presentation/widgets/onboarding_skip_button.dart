@@ -17,7 +17,7 @@ class OnboardingSkipButton extends StatelessWidget {
           color: AppColors.textSub,
           fontWeight: FontWeight.bold,
           fontSize: 16,
-          fontFamily: 'Tajawal',
+          // fontFamily: 'Tajawal',
         ),
       ),
     );
