@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
@@ -29,6 +30,8 @@ class AuthAuthenticated extends AuthState {
 
 class AuthUnauthenticated extends AuthState {}
 
+class AuthFirstTime extends AuthState {}
+
 class AuthPasswordResetSent extends AuthState {}
 
 class AuthError extends AuthState {
@@ -47,6 +50,7 @@ class AuthCubit extends Cubit<AuthState> {
   final SignInWithGoogleUseCase signInWithGoogleUseCase;
 
   final ResetPasswordUseCase resetPasswordUseCase;
+  final SharedPreferences sharedPreferences;
 
   AuthCubit({
     required this.loginUseCase,
@@ -55,15 +59,28 @@ class AuthCubit extends Cubit<AuthState> {
     required this.getCurrentUserUseCase,
     required this.signInWithGoogleUseCase,
     required this.resetPasswordUseCase,
+    required this.sharedPreferences,
   }) : super(AuthInitial());
 
   Future<void> checkAuthStatus() async {
     emit(AuthLoading());
     final result = await getCurrentUserUseCase();
     result.fold(
-      (failure) => emit(AuthUnauthenticated()),
+      (failure) {
+        final seen = sharedPreferences.getBool('onboarding_seen') ?? false;
+        if (seen) {
+          emit(AuthUnauthenticated());
+        } else {
+          emit(AuthFirstTime());
+        }
+      },
       (user) => emit(AuthAuthenticated(user)),
     );
+  }
+
+  Future<void> setOnboardingSeen() async {
+    await sharedPreferences.setBool('onboarding_seen', true);
+    emit(AuthUnauthenticated());
   }
 
   Future<void> login(String email, String password) async {

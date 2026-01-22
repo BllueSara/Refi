@@ -14,12 +14,12 @@ class BookDetailsCubit extends Cubit<BookDetailsState> {
     required this.updateBookUseCase,
     required this.getBookQuotesUseCase,
   }) : super(
-         BookDetailsState(
-           currentPage: book.currentPage,
-           totalPages: book.pageCount ?? 0,
-           status: book.status,
-         ),
-       ) {
+          BookDetailsState(
+            currentPage: book.currentPage,
+            totalPages: book.pageCount ?? 0,
+            status: book.status,
+          ),
+        ) {
     _loadQuotes();
   }
 
@@ -67,6 +67,7 @@ class BookDetailsCubit extends Cubit<BookDetailsState> {
       // Updated fields
       status: state.status,
       currentPage: state.currentPage,
+      categories: book.categories,
     );
 
     final result = await updateBookUseCase(updatedBook);

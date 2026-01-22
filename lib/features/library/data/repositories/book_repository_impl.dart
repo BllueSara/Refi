@@ -37,6 +37,7 @@ class BookRepositoryImpl implements BookRepository {
         pageCount: book.pageCount,
         status: book.status,
         currentPage: book.currentPage,
+        categories: book.categories,
       );
       await remoteDataSource.addBookToLibrary(bookModel);
       return const Right(null);

@@ -73,7 +73,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       bottomNavigationBar: BottomNavBarWidget(
         currentIndex: _currentIndex,
         barColor: AppColors.white,
-        barGradient: AppColors.refiMeshGradient,
+        // barGradient removed for white background
         dotColor: AppColors.primaryBlue,
         dotGradient: AppColors.refiMeshGradient,
         selectedDotColor: AppColors.primaryBlue,
@@ -85,13 +85,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         dotLabelStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
-          color: Colors.white,
+          color: AppColors.textSub, // Visible on white
         ),
-        itemColor: Colors.white,
+        itemColor: AppColors.textSub, // Unselected items
         labelStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
-          color: Colors.white,
+          color: AppColors.textSub,
         ),
         items: [
           // Index 0: Home

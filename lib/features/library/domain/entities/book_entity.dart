@@ -15,6 +15,7 @@ class BookEntity extends Equatable {
   // User specific fields
   final BookStatus status;
   final int currentPage;
+  final List<String> categories;
 
   const BookEntity({
     required this.id,
@@ -27,21 +28,23 @@ class BookEntity extends Equatable {
     this.pageCount,
     this.status = BookStatus.none,
     this.currentPage = 0,
+    this.categories = const [],
   });
 
   @override
   List<Object?> get props => [
-    id,
-    title,
-    authors,
-    imageUrl,
-    rating,
-    description,
-    publishedDate,
-    pageCount,
-    status,
-    currentPage,
-  ];
+        id,
+        title,
+        authors,
+        imageUrl,
+        rating,
+        description,
+        publishedDate,
+        pageCount,
+        status,
+        currentPage,
+        categories,
+      ];
 
   // Helper for display
   String get author => authors.isNotEmpty ? authors.first : 'Unknown Author';
@@ -50,4 +53,32 @@ class BookEntity extends Equatable {
   double get progress =>
       (pageCount != null && pageCount! > 0) ? (currentPage / pageCount!) : 0.0;
   int get progressPercentage => (progress * 100).toInt();
+
+  BookEntity copyWith({
+    String? id,
+    String? title,
+    List<String>? authors,
+    String? imageUrl,
+    double? rating,
+    String? description,
+    String? publishedDate,
+    int? pageCount,
+    BookStatus? status,
+    int? currentPage,
+    List<String>? categories,
+  }) {
+    return BookEntity(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      authors: authors ?? this.authors,
+      imageUrl: imageUrl ?? this.imageUrl,
+      rating: rating ?? this.rating,
+      description: description ?? this.description,
+      publishedDate: publishedDate ?? this.publishedDate,
+      pageCount: pageCount ?? this.pageCount,
+      status: status ?? this.status,
+      currentPage: currentPage ?? this.currentPage,
+      categories: categories ?? this.categories,
+    );
+  }
 }

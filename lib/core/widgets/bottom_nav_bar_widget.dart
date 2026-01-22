@@ -76,37 +76,41 @@ class BottomNavBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final Color effectiveBarColor =
-        isDarkMode ? AppColors.textMain : barColor;
+    final Color effectiveBarColor = isDarkMode ? AppColors.textMain : barColor;
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
-    
+
     // تحديد إذا كان الجهاز كبير (tablet) أو صغير (phone)
     final size = MediaQuery.of(context).size;
     final bool isTablet = size.shortestSide >= 600;
-    final double scaleFactor = isTablet ? 2.0 : 1.0; // تكبير 100% على الأجهزة الكبيرة
-    
+    final double scaleFactor =
+        isTablet ? 2.0 : 1.0; // تكبير 100% على الأجهزة الكبيرة
+
     // تطبيق التكبير على الأبعاد
     final double scaledBarHeight = barHeight * scaleFactor;
     final double scaledDotOuterSize = dotOuterSize * scaleFactor;
     final double scaledDotInnerSize = dotInnerSize * scaleFactor;
     final double scaledHorizontalPadding = horizontalPadding * scaleFactor;
-    final double scaledItemsHorizontalPadding = itemsHorizontalPadding * scaleFactor;
+    final double scaledItemsHorizontalPadding =
+        itemsHorizontalPadding * scaleFactor;
     final double scaledDotVerticalOffset = dotVerticalOffset * scaleFactor;
-    
+
     final double totalHeight = scaledBarHeight +
         scaledDotOuterSize / 2 +
         scaledDotVerticalOffset +
         14 * scaleFactor +
         bottomPadding; // shadows + safe area
     final double cutoutRadius =
-        (scaledDotOuterSize / 2 + gapBetweenDotAndCutout * scaleFactor).clamp(0, double.infinity);
+        (scaledDotOuterSize / 2 + gapBetweenDotAndCutout * scaleFactor)
+            .clamp(0, double.infinity);
     // cutoutCenterDy from top of CustomPaint (bar is at bottom: 0)
     // When dotVerticalOffset is negative, it means move down from the top of the bar
     // So cutoutCenterDy from top of CustomPaint = barHeight + dotVerticalOffset
-    final double cutoutCenterDyInPainter = scaledBarHeight + scaledDotVerticalOffset;
+    final double cutoutCenterDyInPainter =
+        scaledBarHeight + scaledDotVerticalOffset;
     // Dot center from top of Stack = (totalHeight - barHeight) + cutoutCenterDyInPainter
     final double cutoutCenterDyFromTop =
-        (totalHeight - scaledBarHeight - bottomPadding) + cutoutCenterDyInPainter;
+        (totalHeight - scaledBarHeight - bottomPadding) +
+            cutoutCenterDyInPainter;
     // Dot position from top of Stack
     final double dotTop = cutoutCenterDyFromTop - scaledDotOuterSize / 2;
 
@@ -222,16 +226,16 @@ class BottomNavBarWidget extends StatelessWidget {
                         width: scaledDotInnerSize,
                         height: scaledDotInnerSize,
                         decoration: BoxDecoration(
-                          gradient: dotGradient ?? 
+                          gradient: dotGradient ??
                               ((currentIndex != null &&
-                                  currentIndex == dotActiveIndex)
-                              ? AppColors.refiMeshGradient
-                              : null),
+                                      currentIndex == dotActiveIndex)
+                                  ? AppColors.refiMeshGradient
+                                  : null),
                           color: dotGradient == null
                               ? ((currentIndex != null &&
-                                  currentIndex == dotActiveIndex)
-                              ? (selectedDotColor ?? dotColor)
-                              : dotColor)
+                                      currentIndex == dotActiveIndex)
+                                  ? (selectedDotColor ?? dotColor)
+                                  : dotColor)
                               : null,
                           shape: BoxShape.circle,
                           border: (currentIndex != null &&
@@ -308,14 +312,25 @@ class BottomNavBarWidget extends StatelessWidget {
                     ),
                   );
                 },
-                child: Icon(
-                  isSelected && item.activeIcon != null
-                      ? item.activeIcon!
-                      : item.icon,
-                  key: ValueKey('${item.icon}_$isSelected'),
-                  color: itemColor,
-                  size: 22 * scaleFactor,
-                ),
+                child: isSelected
+                    ? ShaderMask(
+                        shaderCallback: (bounds) =>
+                            AppColors.refiMeshGradient.createShader(bounds),
+                        blendMode: BlendMode.srcIn,
+                        child: Icon(
+                          item.activeIcon ?? item.icon,
+                          key: ValueKey('${item.icon}_$isSelected'),
+                          color: Colors.white,
+                          size:
+                              24 * scaleFactor, // Slightly larger when selected
+                        ),
+                      )
+                    : Icon(
+                        item.icon,
+                        key: ValueKey('${item.icon}_$isSelected'),
+                        color: itemColor,
+                        size: 22 * scaleFactor,
+                      ),
               ),
               SizedBox(height: 4 * scaleFactor),
               Flexible(
@@ -345,6 +360,8 @@ class BottomNavBarWidget extends StatelessWidget {
                       fontSize: (labelStyle.fontSize ?? 12) * scaleFactor,
                       fontWeight:
                           isSelected ? FontWeight.bold : labelStyle.fontWeight,
+                      color:
+                          isSelected ? AppColors.primaryBlue : labelStyle.color,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
@@ -518,4 +535,3 @@ class _BarWithCutoutPainter extends CustomPainter {
         isDarkMode != oldDelegate.isDarkMode;
   }
 }
-

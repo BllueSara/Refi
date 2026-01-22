@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -47,7 +48,7 @@ import '../../features/quotes/presentation/cubit/quote_cubit.dart';
 
 final sl = GetIt.instance;
 
-Future<void> init() async {
+Future<void> init(SharedPreferences sharedPreferences) async {
   // Reset GetIt to prevent duplicate registration on hot restart
   await sl.reset();
 
@@ -60,8 +61,8 @@ Future<void> init() async {
       signOutUseCase: sl(),
       getCurrentUserUseCase: sl(),
       signInWithGoogleUseCase: sl(),
-
       resetPasswordUseCase: sl(),
+      sharedPreferences: sl(),
     ),
   );
 
@@ -163,4 +164,5 @@ Future<void> init() async {
   // ! External
   sl.registerLazySingleton(() => Supabase.instance.client);
   sl.registerLazySingleton(() => http.Client());
+  sl.registerLazySingleton(() => sharedPreferences);
 }

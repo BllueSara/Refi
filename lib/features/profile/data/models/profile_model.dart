@@ -14,7 +14,7 @@ class ProfileModel extends ProfileEntity {
       id: json['id'],
       fullName: json['full_name'],
       avatarUrl: json['avatar_url'],
-      annualGoal: json['annual_goal'] ?? 24,
+      annualGoal: json['annual_goal'],
       currentStreak: json['current_streak'] ?? 0,
     );
   }

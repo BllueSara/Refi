@@ -12,6 +12,7 @@ import '../widgets/onboarding_navigation_controls.dart';
 import '../widgets/onboarding_lottie_page.dart';
 
 import '../../../../features/auth/presentation/screens/login_screen.dart';
+import '../../../../features/auth/presentation/cubit/auth_cubit.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -36,7 +37,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Completed - Navigate to Home
+      // Completed - Navigate to Login
+      context.read<AuthCubit>().setOnboardingSeen();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -45,6 +47,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _onSkipTap(BuildContext context) {
+    context.read<AuthCubit>().setOnboardingSeen();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),

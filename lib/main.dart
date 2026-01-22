@@ -3,7 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
 import 'core/widgets/main_navigation_screen.dart';
+import 'core/widgets/splash_page.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'core/secrets/app_secrets.dart';
@@ -13,6 +15,7 @@ import 'features/library/presentation/cubit/library_cubit.dart';
 import 'features/scanner/presentation/cubit/scanner_cubit.dart';
 import 'features/quotes/presentation/cubit/quote_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,8 +31,11 @@ Future<void> main() async {
     debugPrint('❌ Supabase Init Failed: $e');
   }
 
+  // Initialize Shared Preferences
+  final sharedPreferences = await SharedPreferences.getInstance();
+
   // Initialize DI
-  await di.init();
+  await di.init(sharedPreferences);
 
   runApp(const RefiApp());
 }
@@ -67,16 +73,20 @@ class RefiApp extends StatelessWidget {
         home: BlocBuilder<AuthCubit, AuthState>(
           buildWhen: (previous, current) {
             return current is AuthAuthenticated ||
-                current is AuthUnauthenticated;
+                current is AuthUnauthenticated ||
+                current is AuthFirstTime;
           },
           builder: (context, state) {
             if (state is AuthAuthenticated) {
               return const MainNavigationScreen();
-            } else if (state is AuthUnauthenticated) {
+            } else if (state is AuthFirstTime) {
               return const OnboardingScreen();
+            } else if (state is AuthUnauthenticated) {
+              return const LoginScreen();
             }
-            // Default initial state
-            return const OnboardingScreen();
+
+            // Initial/Loading states
+            return const SplashPage();
           },
         ),
       ),

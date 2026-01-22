@@ -6,7 +6,6 @@ import '../../../library/domain/usecases/fetch_user_library_usecase.dart';
 import '../../../library/domain/entities/book_entity.dart';
 import '../../../quotes/domain/usecases/get_user_quotes_usecase.dart';
 import 'home_state.dart';
-import 'dart:math';
 
 class HomeCubit extends Cubit<HomeState> {
   final GetProfileUseCase getProfileUseCase;
@@ -46,19 +45,22 @@ class HomeCubit extends Cubit<HomeState> {
       final profileResult = await getProfileUseCase(userId);
       String username = "يا صديقي";
       int streak = 0;
+      int? annualGoal;
 
       profileResult.fold((l) {}, (profile) {
         username = profile.fullName ?? "قارئ";
         streak = profile.currentStreak ?? 0;
-      }); // 2. Fetch Books
+        annualGoal = profile.annualGoal; // Extracted from profile
+      });
+
+      // 2. Fetch Books
       final libraryResult = await fetchUserLibraryUseCase();
       int completedBooks = 0;
       List<HomeBook> currentlyReading = [];
 
       libraryResult.fold((l) {}, (books) {
-        completedBooks = books
-            .where((b) => b.status == BookStatus.completed)
-            .length;
+        completedBooks =
+            books.where((b) => b.status == BookStatus.completed).length;
         currentlyReading = books
             .where((b) => b.status == BookStatus.reading)
             .map(
@@ -66,8 +68,7 @@ class HomeCubit extends Cubit<HomeState> {
                 title: b.title,
                 author: b.author,
                 coverUrl: b.imageUrl ?? '',
-                progress:
-                    (b.currentPage ?? 0) /
+                progress: b.currentPage /
                     (b.pageCount == 0 || b.pageCount == null
                         ? 1
                         : b.pageCount!),
@@ -76,21 +77,12 @@ class HomeCubit extends Cubit<HomeState> {
             .toList();
       });
 
-      // 3. Fetch Quotes
+      // 3. Fetch Quotes (Only for statistics count now)
       final quotesResult = await getUserQuotesUseCase();
       int totalQuotes = 0;
-      String? dailyQuote;
-      String? dailyQuoteAuthor;
 
       quotesResult.fold((l) {}, (quotes) {
         totalQuotes = quotes.length;
-        if (quotes.isNotEmpty) {
-          // Pick random quote
-          final random = Random();
-          final quote = quotes[random.nextInt(quotes.length)];
-          dailyQuote = quote.text;
-          dailyQuoteAuthor = quote.bookAuthor ?? "مجهول";
-        }
       });
 
       final homeData = HomeData(
@@ -99,8 +91,7 @@ class HomeCubit extends Cubit<HomeState> {
         completedBooks: completedBooks,
         totalQuotes: totalQuotes,
         topTag: "قراءة", // Placeholder
-        dailyQuote: dailyQuote,
-        dailyQuoteAuthor: dailyQuoteAuthor,
+        annualGoal: annualGoal,
         currentlyReading: currentlyReading,
       );
 
@@ -122,6 +113,35 @@ class HomeCubit extends Cubit<HomeState> {
           ),
         ),
       );
+    }
+  }
+
+  Future<void> updateAnnualGoal(int newGoal) async {
+    final currentState = state;
+    HomeData? currentData;
+
+    if (currentState is HomeLoaded) {
+      currentData = currentState.data;
+    } else if (currentState is HomeEmpty) {
+      currentData = currentState.data;
+    }
+
+    if (currentData != null) {
+      // Optimistic Update
+      final updatedData = currentData.copyWith(annualGoal: newGoal);
+      emit(HomeLoaded(updatedData)); // Always emit Loaded to show data
+
+      final userId = supabaseClient.auth.currentUser?.id;
+      if (userId != null) {
+        try {
+          await supabaseClient
+              .from('profiles')
+              .update({'annual_goal': newGoal}).eq('id', userId);
+        } catch (e) {
+          // Revert on failure (silent or show error)
+          emit(currentState);
+        }
+      }
     }
   }
 }

@@ -30,9 +30,10 @@ class HomeStatsRow extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: StatCard(
-            icon: Icons.local_offer,
-            value: "#${data.topTag}",
-            label: AppStrings.topCategory,
+            icon: Icons.hourglass_empty_rounded,
+            value:
+                "${((data.annualGoal ?? 0) - data.completedBooks).clamp(0, 999)}",
+            label: "كتب بانتظارك",
             isHighlight: true,
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import 'package:lottie/lottie.dart';
 
 class SearchStartWidget extends StatelessWidget {
   const SearchStartWidget({super.key});
@@ -11,22 +12,12 @@ class SearchStartWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 150,
-            height: 150,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEFF6FF), // Light blue tint
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.book_rounded,
-                size: 64,
-                color: AppColors.primaryBlue,
-              ), // Revisit icon later to match image 100%
-            ),
+          Lottie.asset(
+            'assets/images/search imm.json',
+            width: 250,
+            height: 250,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
           const Text(
             AppStrings.searchStartTitle,
             style: TextStyle(

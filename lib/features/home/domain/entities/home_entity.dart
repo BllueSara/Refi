@@ -4,7 +4,7 @@ class HomeBook extends Equatable {
   final String title;
   final String author;
   final String
-  coverUrl; // For now use a reliable placeholder or local asset logic
+      coverUrl; // For now use a reliable placeholder or local asset logic
   final double progress; // 0.0 to 1.0
 
   const HomeBook({
@@ -26,6 +26,7 @@ class HomeData extends Equatable {
   final String topTag; // e.g. "أدب"
   final String? dailyQuote;
   final String? dailyQuoteAuthor;
+  final int? annualGoal;
   final List<HomeBook> currentlyReading;
 
   const HomeData({
@@ -36,21 +37,47 @@ class HomeData extends Equatable {
     required this.topTag,
     this.dailyQuote,
     this.dailyQuoteAuthor,
+    this.annualGoal,
     this.currentlyReading = const [],
   });
+
+  HomeData copyWith({
+    String? username,
+    int? streakDays,
+    int? completedBooks,
+    int? totalQuotes,
+    String? topTag,
+    String? dailyQuote,
+    String? dailyQuoteAuthor,
+    int? annualGoal,
+    List<HomeBook>? currentlyReading,
+  }) {
+    return HomeData(
+      username: username ?? this.username,
+      streakDays: streakDays ?? this.streakDays,
+      completedBooks: completedBooks ?? this.completedBooks,
+      totalQuotes: totalQuotes ?? this.totalQuotes,
+      topTag: topTag ?? this.topTag,
+      dailyQuote: dailyQuote ?? this.dailyQuote,
+      dailyQuoteAuthor: dailyQuoteAuthor ?? this.dailyQuoteAuthor,
+      annualGoal: annualGoal ?? this.annualGoal,
+      currentlyReading: currentlyReading ?? this.currentlyReading,
+    );
+  }
 
   bool get isEmpty =>
       currentlyReading.isEmpty && completedBooks == 0 && totalQuotes == 0;
 
   @override
   List<Object?> get props => [
-    username,
-    streakDays,
-    completedBooks,
-    totalQuotes,
-    topTag,
-    dailyQuote,
-    dailyQuoteAuthor,
-    currentlyReading,
-  ];
+        username,
+        streakDays,
+        completedBooks,
+        totalQuotes,
+        topTag,
+        dailyQuote,
+        dailyQuoteAuthor,
+        annualGoal,
+        currentlyReading,
+      ];
 }

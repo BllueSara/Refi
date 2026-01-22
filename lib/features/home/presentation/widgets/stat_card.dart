@@ -38,18 +38,17 @@ class StatCard extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color:
-                isHighlight ? AppColors.secondaryBlue : AppColors.primaryBlue,
+            color: AppColors.primaryBlue, // #1E3A8A
             size: 28,
           ),
           const SizedBox(height: 12),
           Text(
             value,
-            style: TextStyle(
-              //fontFamily: 'Tajawal',
+            style: const TextStyle(
+              fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 20,
-              color: isHighlight ? AppColors.secondaryBlue : AppColors.textMain,
+              color: AppColors.primaryBlue,
             ),
           ),
           const SizedBox(height: 4),
@@ -57,7 +56,7 @@ class StatCard extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              //fontFamily: 'Tajawal',
+              fontFamily: 'Tajawal',
               fontSize: 12,
               color: AppColors.textSub,
             ),

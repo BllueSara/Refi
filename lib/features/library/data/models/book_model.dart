@@ -12,6 +12,7 @@ class BookModel extends BookEntity {
     super.pageCount,
     super.status,
     super.currentPage,
+    super.categories,
   });
 
   factory BookModel.fromGoogleBooks(Map<String, dynamic> json) {
@@ -21,6 +22,10 @@ class BookModel extends BookEntity {
     List<String> authors = [];
     if (volumeInfo['authors'] != null) {
       authors = List<String>.from(volumeInfo['authors']);
+    }
+    List<String> categories = [];
+    if (volumeInfo['categories'] != null) {
+      categories = List<String>.from(volumeInfo['categories']);
     }
 
     double? rating;
@@ -33,9 +38,9 @@ class BookModel extends BookEntity {
       title: volumeInfo['title'] ?? 'No Title',
       authors: authors,
       imageUrl: imageLinks['thumbnail']?.toString().replaceFirst(
-        'http:',
-        'https:',
-      ),
+            'http:',
+            'https:',
+          ),
       rating: rating,
       description: volumeInfo['description'],
       publishedDate: volumeInfo['publishedDate'],
@@ -43,6 +48,7 @@ class BookModel extends BookEntity {
       // Default for search result
       status: BookStatus.none,
       currentPage: 0,
+      categories: categories,
     );
   }
 
@@ -62,6 +68,13 @@ class BookModel extends BookEntity {
       // Fallback if user changed schema back or mixed
       authorsList = List<String>.from(json['authors']);
     }
+    /* 
+    List<String> categories = [];
+    if (json['categories'] != null) {
+       // Handle simple array
+       categories = List<String>.from(json['categories']);
+    }
+    */
 
     return BookModel(
       id: json['id']?.toString() ?? '', // Supabase UUID
@@ -69,15 +82,15 @@ class BookModel extends BookEntity {
       authors: authorsList,
       imageUrl:
           json['cover_url'] ?? json['image_url'], // Support schema 'cover_url'
-      rating: json['rating'] != null
-          ? (json['rating'] as num).toDouble()
-          : null,
+      rating:
+          json['rating'] != null ? (json['rating'] as num).toDouble() : null,
       description: null, // Not in schema
       publishedDate: null, // Not in schema
       pageCount:
           json['total_pages'] ?? json['page_count'], // Schema 'total_pages'
       status: status,
       currentPage: json['current_page'] ?? 0,
+      categories: const [], // categories,
     );
   }
 
@@ -97,6 +110,7 @@ class BookModel extends BookEntity {
       'total_pages': pageCount, // Schema 'total_pages'
       'current_page': currentPage,
       'rating': rating,
+      // 'categories': categories,
       // 'created_at': default now()
     };
   }
