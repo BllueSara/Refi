@@ -12,7 +12,9 @@ import '../../../add_book/presentation/screens/search_screen.dart';
 import 'book_details_page.dart';
 
 class LibraryPage extends StatefulWidget {
-  const LibraryPage({super.key});
+  final String? initialTab;
+  
+  const LibraryPage({super.key, this.initialTab});
 
   @override
   State<LibraryPage> createState() => _LibraryPageState();
@@ -27,22 +29,58 @@ class _LibraryPageState extends State<LibraryPage> {
     AppStrings.tabWishlist,
   ];
 
-  String _activeTab = AppStrings.tabAll;
+  late String _activeTab;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Use initialTab if provided, otherwise default to "All"
+    _activeTab = widget.initialTab ?? AppStrings.tabAll;
+  }
+
+  @override
+  void didUpdateWidget(LibraryPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update active tab if initialTab changed
+    if (widget.initialTab != null && widget.initialTab != oldWidget.initialTab) {
+      setState(() {
+        _activeTab = widget.initialTab!;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   List<BookEntity> _filterBooks(List<BookEntity> books) {
-    if (_activeTab == AppStrings.tabAll) {
-      return books;
-    }
+    List<BookEntity> filtered = books;
+
+    // Filter by tab
     if (_activeTab == AppStrings.tabReading) {
-      return books.where((b) => b.status == BookStatus.reading).toList();
+      filtered = filtered.where((b) => b.status == BookStatus.reading).toList();
+    } else if (_activeTab == AppStrings.tabCompleted) {
+      filtered = filtered.where((b) => b.status == BookStatus.completed).toList();
+    } else if (_activeTab == AppStrings.tabWishlist) {
+      filtered = filtered.where((b) => b.status == BookStatus.wishlist).toList();
     }
-    if (_activeTab == AppStrings.tabCompleted) {
-      return books.where((b) => b.status == BookStatus.completed).toList();
+
+    // Filter by search query
+    if (_searchController.text.isNotEmpty) {
+      final query = _searchController.text.toLowerCase();
+      filtered = filtered.where((book) {
+        final titleMatch = book.title.toLowerCase().contains(query);
+        final authorMatch = book.authors.any(
+          (author) => author.toLowerCase().contains(query),
+        );
+        return titleMatch || authorMatch;
+      }).toList();
     }
-    if (_activeTab == AppStrings.tabWishlist) {
-      return books.where((b) => b.status == BookStatus.wishlist).toList();
-    }
-    return books;
+
+    return filtered;
   }
 
   @override
@@ -94,10 +132,60 @@ class _LibraryPageState extends State<LibraryPage> {
 
             return Column(
               children: [
+                // Search Bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: TextField(
+                    controller: _searchController,
+                    style: const TextStyle(
+                      color: AppColors.textMain,
+                      fontSize: 16,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: AppStrings.searchHint,
+                      hintStyle: TextStyle(
+                        color: AppColors.textSub.withValues(alpha: 0.6),
+                        fontSize: 14,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: AppColors.textSub,
+                        size: 20,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: AppColors.textSub,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _searchController.clear();
+                                });
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: AppColors.inputBorder,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    onChanged: (_) {
+                      setState(() {});
+                    },
+                  ),
+                ),
                 // Tabs
                 Container(
                   height: 50,
-                  margin: const EdgeInsets.symmetric(vertical: 16),
+                  margin: const EdgeInsets.only(bottom: 16),
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     scrollDirection: Axis.horizontal,
@@ -149,22 +237,35 @@ class _LibraryPageState extends State<LibraryPage> {
                     child: filteredBooks.isEmpty
                         ? Center(
                             child: EmptyStateWidget(
-                              title: "مكتبتك فارغة",
-                              subtitle: "ابدأ رحلتك بإضافة كتابك الأول",
-                              icon: Icons.menu_book_rounded,
-                              actionLabel: "إضافة كتاب",
-                              onAction: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const SearchScreen(),
-                                  ),
-                                ).then((_) {
-                                  if (context.mounted) {
-                                    context.read<LibraryCubit>().loadLibrary();
-                                  }
-                                });
-                              },
+                              title: _searchController.text.isNotEmpty
+                                  ? "لا توجد نتائج"
+                                  : "مكتبتك فارغة",
+                              subtitle: _searchController.text.isNotEmpty
+                                  ? "جرب البحث بكلمات مختلفة"
+                                  : "ابدأ رحلتك بإضافة كتابك الأول",
+                              icon: _searchController.text.isNotEmpty
+                                  ? Icons.search_off
+                                  : Icons.menu_book_rounded,
+                              actionLabel: _searchController.text.isNotEmpty
+                                  ? null
+                                  : "إضافة كتاب",
+                              onAction: _searchController.text.isNotEmpty
+                                  ? null
+                                  : () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const SearchScreen(),
+                                        ),
+                                      ).then((_) {
+                                        if (context.mounted) {
+                                          context
+                                              .read<LibraryCubit>()
+                                              .loadLibrary();
+                                        }
+                                      });
+                                    },
                             ),
                           )
                         : GridView.builder(

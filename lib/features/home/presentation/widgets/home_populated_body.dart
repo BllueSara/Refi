@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/widgets/main_navigation_screen.dart';
 import '../../domain/entities/home_entity.dart';
 import 'book_card.dart';
 import 'home_hero_quote.dart';
@@ -57,7 +58,14 @@ class HomePopulatedBody extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Navigate to library tab with "Reading" filter
+                  final mainNavState = context.findAncestorStateOfType<State<MainNavigationScreen>>();
+                  if (mainNavState != null && mainNavState.mounted) {
+                    // Call the public changeTab method with library tab filter
+                    (mainNavState as dynamic).changeTab(1, libraryTab: AppStrings.tabReading);
+                  }
+                },
                 child: const Text(
                   AppStrings.viewAll,
                   style: TextStyle(

@@ -36,37 +36,6 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
-              // Streak Chip
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.inputBorder,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.local_fire_department,
-                      color: AppColors.secondaryBlue,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${data.streakDays} ${AppStrings.streakSuffix}",
-                      style: const TextStyle(
-                        //fontFamily: 'Tajawal',
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.secondaryBlue,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ],

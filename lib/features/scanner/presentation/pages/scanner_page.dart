@@ -24,6 +24,7 @@ class _ScannerPageState extends State<ScannerPage>
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
+  FlashMode _currentFlashMode = FlashMode.off;
 
   @override
   void initState() {
@@ -46,12 +47,23 @@ class _ScannerPageState extends State<ScannerPage>
     try {
       final cameras = await availableCameras();
       if (cameras.isNotEmpty) {
+        final camera = cameras[0];
         _cameraController = CameraController(
-          cameras[0],
+          camera,
           ResolutionPreset.high,
           enableAudio: false,
         );
         await _cameraController!.initialize();
+        
+        // Set initial flash mode
+        // The camera plugin will handle errors gracefully if flash is not available
+        try {
+          await _cameraController!.setFlashMode(_currentFlashMode);
+          debugPrint("Flash mode set to ${_currentFlashMode} on camera initialization");
+        } catch (e) {
+          debugPrint("Could not set flash mode (flash may not be available): $e");
+        }
+        
         if (mounted) {
           setState(() {
             _isCameraInitialized = true;
@@ -83,18 +95,42 @@ class _ScannerPageState extends State<ScannerPage>
   }
 
   void _onShutterPressed() async {
-    if (_cameraController == null || !_isCameraInitialized || _isProcessing)
+    if (_cameraController == null || !_isCameraInitialized || _isProcessing) {
       return;
+    }
 
     setState(() => _isProcessing = true);
 
     try {
+      // Use the current flash mode setting (user can toggle it)
+      // The camera plugin will handle errors gracefully if flash is not available
+      try {
+        await _cameraController!.setFlashMode(_currentFlashMode);
+        debugPrint("Flash set to ${_currentFlashMode} before capture");
+        // Wait to ensure the flash mode is applied
+        await Future.delayed(const Duration(milliseconds: 300));
+      } catch (e) {
+        debugPrint("Could not set flash mode (flash may not be available): $e");
+      }
+      
+      // Take picture
       final XFile image = await _cameraController!.takePicture();
+      debugPrint("Picture taken: ${image.path}");
+      
+      // Restore flash mode after capture (workaround for some Android devices)
+      try {
+        await _cameraController!.setFlashMode(_currentFlashMode);
+        debugPrint("Flash restored to ${_currentFlashMode} after capture");
+      } catch (e) {
+        debugPrint("Could not set flash mode after capture: $e");
+      }
+      
       if (!mounted) return;
 
       // Use ScannerCubit to scan
       context.read<ScannerCubit>().scanImageFromPath(image.path);
     } catch (e) {
+      debugPrint("Error taking picture: $e");
       setState(() => _isProcessing = false);
       ScaffoldMessenger.of(
         context,
@@ -123,6 +159,43 @@ class _ScannerPageState extends State<ScannerPage>
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _toggleFlash() async {
+    if (_cameraController == null || !_isCameraInitialized) {
+      return;
+    }
+
+    try {
+      // Cycle through flash modes: off -> auto -> on -> off
+      FlashMode newFlashMode;
+      switch (_currentFlashMode) {
+        case FlashMode.off:
+          newFlashMode = FlashMode.auto;
+          break;
+        case FlashMode.auto:
+          newFlashMode = FlashMode.always;
+          break;
+        case FlashMode.always:
+        case FlashMode.torch:
+          newFlashMode = FlashMode.off;
+          break;
+      }
+
+      await _cameraController!.setFlashMode(newFlashMode);
+      setState(() {
+        _currentFlashMode = newFlashMode;
+      });
+      debugPrint("Flash mode changed to: $newFlashMode");
+    } catch (e) {
+      debugPrint("Could not toggle flash mode: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('لا يمكن تغيير وضع الفلاش'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -182,12 +255,16 @@ class _ScannerPageState extends State<ScannerPage>
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(
-                      Icons.flash_off,
+                    icon: Icon(
+                      _currentFlashMode == FlashMode.off
+                          ? Icons.flash_off
+                          : _currentFlashMode == FlashMode.auto
+                              ? Icons.flash_auto
+                              : Icons.flash_on,
                       color: Colors.white,
                       size: 28,
                     ),
-                    onPressed: () {},
+                    onPressed: _toggleFlash,
                   ),
                 ],
               ),

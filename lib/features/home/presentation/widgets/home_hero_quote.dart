@@ -44,35 +44,17 @@ class HomeHeroQuote extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Share Button with Micro-interaction
-              InkWell(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  // TODO: Implement share logic
-                },
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.share, color: Colors.white, size: 20),
-                ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              author,
+              style: const TextStyle(
+                //fontFamily: 'Tajawal',
+                fontSize: 14,
+                color: Colors.white70,
+                fontWeight: FontWeight.w500,
               ),
-              Text(
-                author,
-                style: const TextStyle(
-                  //fontFamily: 'Tajawal',
-                  fontSize: 14,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

@@ -17,12 +17,15 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
   final TextEditingController _searchController = TextEditingController();
+  String? _libraryInitialTab;
 
-  // Screens
   // Screens
   List<Widget> get _screens => [
         const HomePage(),
-        const LibraryPage(), // Index 1: Library
+        LibraryPage(
+          key: ValueKey('library_$_libraryInitialTab'),
+          initialTab: _libraryInitialTab,
+        ), // Index 1: Library
         const SizedBox(), // Index 2: Scanner (Action)
         const QuotesPage(), // Index 3: Quotes
         const ProfilePage(), // Index 4: Profile
@@ -46,6 +49,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     setState(() {
       _currentIndex = index;
     });
+  }
+
+  // Public method to change tab from child widgets
+  void changeTab(int index, {String? libraryTab}) {
+    if (libraryTab != null && index == 1) {
+      // If changing to library tab with a specific filter
+      setState(() {
+        _libraryInitialTab = libraryTab;
+        _currentIndex = index;
+      });
+    } else {
+      _onTabTapped(index);
+    }
   }
 
   @override
