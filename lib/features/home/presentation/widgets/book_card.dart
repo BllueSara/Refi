@@ -4,12 +4,15 @@ import '../../domain/entities/home_entity.dart';
 
 class BookCard extends StatelessWidget {
   final HomeBook book;
+  final VoidCallback? onTap;
 
-  const BookCard({super.key, required this.book});
+  const BookCard({super.key, required this.book, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       width: 280, // Fixed width for horizontal list items
       margin: const EdgeInsets.only(
         left: 16,
@@ -107,6 +110,7 @@ class BookCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

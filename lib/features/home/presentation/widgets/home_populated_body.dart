@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/widgets/main_navigation_screen.dart';
 import '../../domain/entities/home_entity.dart';
+import '../../../library/domain/entities/book_entity.dart';
+import '../../../library/presentation/cubit/library_cubit.dart';
+import '../../../library/presentation/pages/book_details_page.dart';
 import 'book_card.dart';
 import 'home_hero_quote.dart';
 import 'home_stats_row.dart';
@@ -85,7 +89,43 @@ class HomePopulatedBody extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemCount: data.currentlyReading.length,
               itemBuilder: (context, index) {
-                return BookCard(book: data.currentlyReading[index]);
+                final homeBook = data.currentlyReading[index];
+                return BookCard(
+                  book: homeBook,
+                  onTap: () {
+                    // Find the book in library by title and author
+                    final libraryState = context.read<LibraryCubit>().state;
+                    BookEntity? bookEntity;
+                    
+                    if (libraryState is LibraryLoaded) {
+                      try {
+                        bookEntity = libraryState.books.firstWhere(
+                          (book) =>
+                              book.title == homeBook.title &&
+                              book.author == homeBook.author,
+                        );
+                      } catch (e) {
+                        // Book not found in library, skip navigation
+                        return;
+                      }
+                    } else {
+                      // Library not loaded, skip navigation
+                      return;
+                    }
+                    
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BookDetailsPage(book: bookEntity!),
+                      ),
+                    ).then((_) {
+                      // Refresh home data when coming back
+                      if (context.mounted) {
+                        // The BlocListener in home_page will handle the refresh
+                      }
+                    });
+                  },
+                );
               },
             ),
           ),

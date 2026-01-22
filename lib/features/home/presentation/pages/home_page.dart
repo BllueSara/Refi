@@ -13,6 +13,7 @@ import '../../../../core/di/injection_container.dart' as di;
 import '../../../profile/domain/usecases/get_profile_usecase.dart';
 import '../../../library/domain/usecases/fetch_user_library_usecase.dart';
 import '../../../quotes/domain/usecases/get_user_quotes_usecase.dart';
+import '../../../library/presentation/cubit/library_cubit.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -26,8 +27,15 @@ class HomePage extends StatelessWidget {
         getUserQuotesUseCase: di.sl<GetUserQuotesUseCase>(),
         supabaseClient: di.sl<SupabaseClient>(),
       )..loadHomeData(),
-      child: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
+      child: BlocListener<LibraryCubit, LibraryState>(
+        listener: (context, libraryState) {
+          // When library is updated (book added), refresh home data
+          if (libraryState is LibraryLoaded || libraryState is LibraryEmpty) {
+            context.read<HomeCubit>().loadHomeData();
+          }
+        },
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
           // Default data for Initial/Loading to avoid null errors in Header
           // In a real app, Header might be loading state too
           HomeData? currentData;
@@ -62,7 +70,8 @@ class HomePage extends StatelessWidget {
               },
             ),
           );
-        },
+          },
+        ),
       ),
     );
   }

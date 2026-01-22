@@ -5,7 +5,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../library/domain/entities/book_entity.dart';
-import '../../../library/domain/usecases/add_book_to_library_usecase.dart';
+import '../../../library/presentation/cubit/library_cubit.dart';
 import '../../../library/presentation/cubit/search_cubit.dart';
 import '../widgets/search_states_widgets.dart';
 import 'manual_entry_screen.dart';
@@ -51,28 +51,20 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
   }
 
   Future<void> _addBook(BookEntity book) async {
-    // Show a loading indicator (optional) or just add
-    final result = await di.sl<AddBookToLibraryUseCase>().call(book);
     if (!mounted) return;
-
-    result.fold(
-      (failure) {
-        RefiSnackBars.show(
-          context,
-          message: failure.message,
-          type: SnackBarType.error,
-        );
-      },
-      (_) {
-        RefiSnackBars.show(
-          context,
-          message: "تمت إضافة الكتاب للمكتبة بنجاح",
-          type: SnackBarType.success,
-        );
-        // Pop to return to library
-        Navigator.pop(context);
-      },
+    
+    // Use LibraryCubit to add book, which will trigger update
+    context.read<LibraryCubit>().addBook(book);
+    
+    // Show success message
+    RefiSnackBars.show(
+      context,
+      message: "تمت إضافة الكتاب للمكتبة بنجاح",
+      type: SnackBarType.success,
     );
+    
+    // Pop to return to library
+    Navigator.pop(context);
   }
 
   void _showAddDialog(BookEntity book) {
@@ -228,7 +220,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                               children: [
                                 // Hero Image
                                 Hero(
-                                  tag: book.id ?? book.title,
+                                  tag: book.id.isEmpty ? book.title : book.id,
                                   child: Container(
                                     width: 48,
                                     height: 72,

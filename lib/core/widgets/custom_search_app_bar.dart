@@ -19,6 +19,8 @@ class CustomSearchAppBar extends StatelessWidget
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
+      forceMaterialTransparency: true,
       titleSpacing: AppSizes.p16,
       title: Container(
         height: 48,

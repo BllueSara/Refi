@@ -23,6 +23,8 @@ class AppTheme {
       // AppBar Theme
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: AppColors.textMain),
