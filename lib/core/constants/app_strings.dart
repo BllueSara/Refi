@@ -7,6 +7,7 @@ class AppStrings {
   static const String navHome = "الرئيسية";
   static const String navLibrary = "مكتبتي";
   static const String navScan = "المسح الضوئي"; // Or "مسح" based on brevity
+  static const String navScan1 = "المعاينة "; // Or "مسح" based on brevity
   static const String navQuotes = "اقتباساتي";
   static const String navProfile = "حسابي";
 

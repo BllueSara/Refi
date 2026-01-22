@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../domain/entities/home_entity.dart';
@@ -15,6 +16,13 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       automaticallyImplyLeading: false,
+      scrolledUnderElevation: 0,
+      forceMaterialTransparency: true,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
       title: Row(
         children: [
           // Greeting & Streak
@@ -56,5 +64,9 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(80);
+  Size get preferredSize {
+    // Include status bar height to prevent covering the clock
+    // Default AppBar height is 56, we add extra padding for status bar
+    return const Size.fromHeight(kToolbarHeight + 24);
+  }
 }
