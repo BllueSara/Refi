@@ -9,7 +9,7 @@ class ScanPage extends StatelessWidget {
     return const Center(
       child: Text(
         AppStrings.scanTitle,
-        style: TextStyle(fontFamily: 'Tajawal', fontSize: 18),
+        style: TextStyle( fontSize: 18),
       ),
     );
   }

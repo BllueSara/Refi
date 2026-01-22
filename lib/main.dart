@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'core/widgets/main_navigation_screen.dart';
-import 'core/widgets/fast_launch_screen.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'core/secrets/app_secrets.dart';
@@ -17,8 +15,7 @@ import 'features/quotes/presentation/cubit/quote_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 Future<void> main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Supabase
   try {
@@ -35,10 +32,6 @@ Future<void> main() async {
   await di.init();
 
   runApp(const RefiApp());
-
-  // Keep splash screen for 0.5 seconds
-  await Future.delayed(const Duration(milliseconds: 500));
-  FlutterNativeSplash.remove();
 }
 
 class RefiApp extends StatelessWidget {
@@ -83,7 +76,7 @@ class RefiApp extends StatelessWidget {
               return const OnboardingScreen();
             }
             // Default initial state
-            return const FastLaunchScreen();
+            return const OnboardingScreen();
           },
         ),
       ),

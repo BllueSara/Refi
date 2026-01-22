@@ -73,7 +73,7 @@ class _LibraryPageState extends State<LibraryPage> {
         title: const Text(
           AppStrings.libraryTitle,
           style: TextStyle(
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
             fontWeight: FontWeight.bold,
             fontSize: 20,
             color: AppColors.textMain,
@@ -118,9 +118,8 @@ class _LibraryPageState extends State<LibraryPage> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            gradient: isActive
-                                ? AppColors.refiMeshGradient
-                                : null,
+                            gradient:
+                                isActive ? AppColors.refiMeshGradient : null,
                             color: isActive ? null : AppColors.inputBorder,
                             borderRadius: BorderRadius.circular(24),
                           ),
@@ -128,11 +127,10 @@ class _LibraryPageState extends State<LibraryPage> {
                           child: Text(
                             tab,
                             style: TextStyle(
-                              fontFamily: 'Tajawal',
+                              //fontFamily: 'Tajawal',
                               fontWeight: FontWeight.bold,
-                              color: isActive
-                                  ? Colors.white
-                                  : AppColors.textSub,
+                              color:
+                                  isActive ? Colors.white : AppColors.textSub,
                               fontSize: 14,
                             ),
                           ),
@@ -173,11 +171,11 @@ class _LibraryPageState extends State<LibraryPage> {
                             padding: const EdgeInsets.all(16),
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 0.65,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 24,
-                                ),
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.65,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 24,
+                            ),
                             itemCount: filteredBooks.length,
                             itemBuilder: (context, index) {
                               final book = filteredBooks[index];

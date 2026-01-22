@@ -30,7 +30,7 @@ class HomePopulatedBody extends StatelessWidget {
           const Text(
             "إحصائياتك",
             style: TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 18,
               color: AppColors.textMain,
@@ -50,7 +50,7 @@ class HomePopulatedBody extends StatelessWidget {
               const Text(
                 AppStrings.currentlyReading,
                 style: TextStyle(
-                  fontFamily: 'Tajawal',
+                  //fontFamily: 'Tajawal',
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                   color: AppColors.textMain,
@@ -61,7 +61,7 @@ class HomePopulatedBody extends StatelessWidget {
                 child: const Text(
                   AppStrings.viewAll,
                   style: TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     color: AppColors.secondaryBlue,
                   ),
                 ),

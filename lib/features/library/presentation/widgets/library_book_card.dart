@@ -36,12 +36,12 @@ class LibraryBookCard extends StatelessWidget {
                       width: double.infinity,
                       errorBuilder: (context, error, stackTrace) =>
                           const Center(
-                            child: Icon(
-                              Icons.book,
-                              size: 48,
-                              color: Colors.grey,
-                            ),
-                          ),
+                        child: Icon(
+                          Icons.book,
+                          size: 48,
+                          color: Colors.grey,
+                        ),
+                      ),
                     )
                   : const Center(
                       child: Icon(Icons.book, size: 48, color: Colors.grey),
@@ -54,7 +54,7 @@ class LibraryBookCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 16,
               color: AppColors.textMain,
@@ -66,7 +66,7 @@ class LibraryBookCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               fontSize: 12,
               color: AppColors.textSub,
             ),
@@ -87,7 +87,7 @@ class LibraryBookCard extends StatelessWidget {
             Text(
               "${book.progressPercentage}%",
               style: const TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontSize: 10,
                 color: AppColors.secondaryBlue,
                 fontWeight: FontWeight.bold,

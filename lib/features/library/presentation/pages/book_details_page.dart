@@ -166,7 +166,6 @@ class BookDetailsPage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppDimensions.paddingM),
-
         if (state.quotes.isEmpty)
           Container(
             padding: const EdgeInsets.all(32),
@@ -222,7 +221,7 @@ class BookDetailsPage extends StatelessWidget {
                     Text(
                       quote.text,
                       style: const TextStyle(
-                        fontFamily: 'Tajawal',
+                        //fontFamily: 'Tajawal',
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         height: 1.6,
@@ -233,7 +232,7 @@ class BookDetailsPage extends StatelessWidget {
                       Text(
                         quote.notes!,
                         style: TextStyle(
-                          fontFamily: 'Tajawal',
+                          //fontFamily: 'Tajawal',
                           fontSize: 12,
                           color: AppColors.textSub,
                         ),
@@ -255,7 +254,7 @@ class BookDetailsPage extends StatelessWidget {
                           child: Text(
                             quote.feeling,
                             style: TextStyle(
-                              fontFamily: 'Tajawal',
+                              //fontFamily: 'Tajawal',
                               fontSize: 10,
                               color: AppColors.primaryBlue,
                               fontWeight: FontWeight.bold,
@@ -320,7 +319,7 @@ class BookDetailsPage extends StatelessWidget {
               keyboardType: TextInputType.number,
               autofocus: true,
               style: const TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),

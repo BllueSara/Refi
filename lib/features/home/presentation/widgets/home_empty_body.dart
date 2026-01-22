@@ -35,7 +35,7 @@ class HomeEmptyBody extends StatelessWidget {
                 const Text(
                   AppStrings.startKnowledgeJourney,
                   style: TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontWeight: FontWeight.bold,
                     fontSize: 24,
                     color: Colors.white,
@@ -46,7 +46,7 @@ class HomeEmptyBody extends StatelessWidget {
                 const Text(
                   AppStrings.startJourneyDesc,
                   style: TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontSize: 14,
                     color: Colors.white70,
                     height: 1.5,
@@ -62,7 +62,7 @@ class HomeEmptyBody extends StatelessWidget {
           const Text(
             AppStrings.currentlyReading,
             style: TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 18,
               color: AppColors.textMain,
@@ -90,7 +90,7 @@ class HomeEmptyBody extends StatelessWidget {
                 const Text(
                   AppStrings.noBooksReading,
                   style: TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontSize: 16,
                     color: AppColors.textSub,
                     fontWeight: FontWeight.w500,
@@ -121,7 +121,7 @@ class HomeEmptyBody extends StatelessWidget {
                   child: const Text(
                     AppStrings.addBookFirst,
                     style: TextStyle(
-                      fontFamily: 'Tajawal',
+                      //fontFamily: 'Tajawal',
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -158,7 +158,7 @@ class HomeEmptyBody extends StatelessWidget {
             child: Text(
               AppStrings.waitingForAchievement,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontSize: 14,
                 color: AppColors.textPlaceholder,
               ),

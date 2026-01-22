@@ -28,7 +28,7 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                   Text(
                     "${AppStrings.hello} ${data.username}",
                     style: const TextStyle(
-                      fontFamily: 'Tajawal',
+                      //fontFamily: 'Tajawal',
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                       color: AppColors.textMain,
@@ -58,7 +58,7 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                     Text(
                       "${data.streakDays} ${AppStrings.streakSuffix}",
                       style: const TextStyle(
-                        fontFamily: 'Tajawal',
+                        //fontFamily: 'Tajawal',
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: AppColors.secondaryBlue,

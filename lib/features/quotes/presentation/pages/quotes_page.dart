@@ -44,7 +44,7 @@ class _QuotesPageState extends State<QuotesPage> {
         title: const Text(
           AppStrings.quotesVaultTitle,
           style: TextStyle(
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
             fontWeight: FontWeight.bold,
             fontSize: 20,
             color: AppColors.textMain,
@@ -78,7 +78,7 @@ class _QuotesPageState extends State<QuotesPage> {
                       child: Text(
                         tab,
                         style: TextStyle(
-                          fontFamily: 'Tajawal',
+                          //fontFamily: 'Tajawal',
                           fontWeight: FontWeight.bold,
                           color: isActive ? Colors.white : AppColors.textSub,
                         ),
@@ -112,7 +112,7 @@ class _QuotesPageState extends State<QuotesPage> {
                         Text(
                           state.message,
                           style: const TextStyle(
-                            fontFamily: 'Tajawal',
+                            //fontFamily: 'Tajawal',
                             color: AppColors.textSub,
                           ),
                         ),
@@ -147,7 +147,7 @@ class _QuotesPageState extends State<QuotesPage> {
                           const Text(
                             'لا توجد اقتباسات بعد',
                             style: TextStyle(
-                              fontFamily: 'Tajawal',
+                              //fontFamily: 'Tajawal',
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: AppColors.textSub,
@@ -157,7 +157,7 @@ class _QuotesPageState extends State<QuotesPage> {
                           const Text(
                             'ابدأ بإضافة اقتباساتك المفضلة',
                             style: TextStyle(
-                              fontFamily: 'Tajawal',
+                              //fontFamily: 'Tajawal',
                               color: AppColors.textPlaceholder,
                             ),
                           ),
@@ -249,7 +249,7 @@ class _QuoteCard extends StatelessWidget {
                 Text(
                   quote.text,
                   style: const TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     height: 1.6,
@@ -267,7 +267,7 @@ class _QuoteCard extends StatelessWidget {
                     child: Text(
                       quote.notes!,
                       style: const TextStyle(
-                        fontFamily: 'Tajawal',
+                        //fontFamily: 'Tajawal',
                         fontSize: 14,
                         color: AppColors.textSub,
                         fontStyle: FontStyle.italic,
@@ -292,7 +292,7 @@ class _QuoteCard extends StatelessWidget {
                             child: Text(
                               quote.bookTitle ?? 'بدون كتاب',
                               style: const TextStyle(
-                                fontFamily: 'Tajawal',
+                                //fontFamily: 'Tajawal',
                                 fontSize: 12,
                                 color: AppColors.textSub,
                               ),

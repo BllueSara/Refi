@@ -175,7 +175,7 @@ class _ScannerPageState extends State<ScannerPage>
                   const Text(
                     AppStrings.scanPointCamera,
                     style: TextStyle(
-                      fontFamily: 'Tajawal',
+                      //fontFamily: 'Tajawal',
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -272,7 +272,7 @@ class _ScannerPageState extends State<ScannerPage>
                       const Text(
                         AppStrings.scanDetecting,
                         style: TextStyle(
-                          fontFamily: 'Tajawal',
+                          //fontFamily: 'Tajawal',
                           color: Colors.white,
                           fontSize: 14,
                         ),
@@ -314,8 +314,8 @@ class _ScannerPageState extends State<ScannerPage>
                           ),
                           onPressed: () {
                             context.read<ScannerCubit>().scanImage(
-                              ImageSource.gallery,
-                            );
+                                  ImageSource.gallery,
+                                );
                           },
                         ),
                         GestureDetector(
@@ -376,7 +376,7 @@ class _ScannerPageState extends State<ScannerPage>
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               color: isSelected ? AppColors.secondaryBlue : Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -424,12 +424,10 @@ class _ScannerPageState extends State<ScannerPage>
           borderRadius: BorderRadius.only(
             topLeft: (top && left) ? const Radius.circular(16) : Radius.zero,
             topRight: (top && !left) ? const Radius.circular(16) : Radius.zero,
-            bottomLeft: (!top && left)
-                ? const Radius.circular(16)
-                : Radius.zero,
-            bottomRight: (!top && !left)
-                ? const Radius.circular(16)
-                : Radius.zero,
+            bottomLeft:
+                (!top && left) ? const Radius.circular(16) : Radius.zero,
+            bottomRight:
+                (!top && !left) ? const Radius.circular(16) : Radius.zero,
           ),
         ),
       ),

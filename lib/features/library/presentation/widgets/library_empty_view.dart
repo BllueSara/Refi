@@ -39,7 +39,7 @@ class LibraryEmptyView extends StatelessWidget {
           const Text(
             AppStrings.libraryEmptyTitle,
             style: TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 20,
               color: AppColors.textMain,
@@ -52,7 +52,7 @@ class LibraryEmptyView extends StatelessWidget {
               AppStrings.libraryEmptyBody,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontSize: 14,
                 color: AppColors.textSub,
                 height: 1.5,
@@ -76,7 +76,7 @@ class LibraryEmptyView extends StatelessWidget {
               label: const Text(
                 AppStrings.libraryAddBookNow,
                 style: TextStyle(
-                  fontFamily: 'Tajawal',
+                  //fontFamily: 'Tajawal',
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: Colors.white,

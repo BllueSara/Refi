@@ -21,12 +21,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   // Screens
   // Screens
   List<Widget> get _screens => [
-    const HomePage(),
-    const LibraryPage(), // Index 1: Library
-    const SizedBox(), // Index 2: Scanner (Action)
-    const QuotesPage(), // Index 3: Quotes
-    const ProfilePage(), // Index 4: Profile
-  ];
+        const HomePage(),
+        const LibraryPage(), // Index 1: Library
+        const SizedBox(), // Index 2: Scanner (Action)
+        const QuotesPage(), // Index 3: Quotes
+        const ProfilePage(), // Index 4: Profile
+      ];
 
   @override
   void dispose() {
@@ -72,12 +72,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           selectedItemColor: AppColors.primaryBlue,
           unselectedItemColor: AppColors.textPlaceholder,
           selectedLabelStyle: const TextStyle(
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
             fontWeight: FontWeight.bold,
             fontSize: 12,
           ),
           unselectedLabelStyle: const TextStyle(
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
             fontSize: 12,
           ),
           items: [

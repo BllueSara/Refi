@@ -52,9 +52,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (hasError) return;
 
     context.read<AuthCubit>().login(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+        );
   }
 
   @override
@@ -141,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               color: AppColors.secondaryBlue,
                               fontWeight: FontWeight.bold,
-                              //fontFamily: 'Tajawal',
+                              ////fontFamily: 'Tajawal',
                             ),
                           ),
                         ),
@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
-                                    //fontFamily: 'Tajawal',
+                                    ////fontFamily: 'Tajawal',
                                   ),
                                 ),
                         ),
@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 color: AppColors.primaryBlue,
                                 fontWeight: FontWeight.bold,
-                                //fontFamily: 'Tajawal',
+                                ////fontFamily: 'Tajawal',
                               ),
                             ),
                           ),

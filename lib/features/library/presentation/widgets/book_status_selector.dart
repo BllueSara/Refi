@@ -45,7 +45,7 @@ class BookStatusSelector extends StatelessWidget {
           style: TextStyle(
             color: isSelected ? Colors.white : AppColors.textSub,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
           ),
         ),
       ),

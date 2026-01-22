@@ -36,7 +36,7 @@ class HomeHeroQuote extends StatelessWidget {
           Text(
             quote,
             style: const TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 18,
               color: Colors.white,
@@ -66,7 +66,7 @@ class HomeHeroQuote extends StatelessWidget {
               Text(
                 author,
                 style: const TextStyle(
-                  fontFamily: 'Tajawal',
+                  //fontFamily: 'Tajawal',
                   fontSize: 14,
                   color: Colors.white70,
                   fontWeight: FontWeight.w500,

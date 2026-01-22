@@ -36,7 +36,7 @@ class RefiAppBar extends StatelessWidget implements PreferredSizeWidget {
             hintStyle: TextStyle(
               color: AppColors.textPlaceholder,
               fontSize: 14,
-              //fontFamily: 'Tajawal',
+              ////fontFamily: 'Tajawal',
             ),
             prefixIcon: Icon(Icons.search, color: AppColors.textPlaceholder),
             border: InputBorder.none,
@@ -48,7 +48,7 @@ class RefiAppBar extends StatelessWidget implements PreferredSizeWidget {
           style: const TextStyle(
             color: AppColors.textMain,
             fontSize: 14,
-            //fontFamily: 'Tajawal',
+            ////fontFamily: 'Tajawal',
           ),
         ),
       ),

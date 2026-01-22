@@ -34,9 +34,8 @@ class RefiButton extends StatelessWidget {
           backgroundColor: isSecondary ? Colors.white : AppColors.primaryBlue,
           foregroundColor: isSecondary ? AppColors.textMain : Colors.white,
           elevation: isSecondary ? 0 : 4,
-          shadowColor: isSecondary
-              ? null
-              : AppColors.primaryBlue.withOpacity(0.4),
+          shadowColor:
+              isSecondary ? null : AppColors.primaryBlue.withOpacity(0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
             side: isSecondary
@@ -64,7 +63,7 @@ class RefiButton extends StatelessWidget {
                   Text(
                     label,
                     style: const TextStyle(
-                      fontFamily: 'Tajawal',
+                      //fontFamily: 'Tajawal',
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),

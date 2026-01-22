@@ -38,7 +38,7 @@ class EmptyStateWidget extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textMain,
@@ -50,7 +50,7 @@ class EmptyStateWidget extends StatelessWidget {
                 subtitle!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontFamily: 'Tajawal',
+                  //fontFamily: 'Tajawal',
                   fontSize: 14,
                   color: AppColors.textSub,
                 ),
@@ -75,7 +75,7 @@ class EmptyStateWidget extends StatelessWidget {
                 child: Text(
                   actionLabel!,
                   style: const TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontWeight: FontWeight.bold,
                   ),
                 ),

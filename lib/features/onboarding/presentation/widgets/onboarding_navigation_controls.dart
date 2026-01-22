@@ -67,16 +67,15 @@ class OnboardingNavigationControls extends StatelessWidget {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 250),
                     transitionBuilder: (child, animation) {
-                      final offsetAnimation =
-                          Tween<Offset>(
-                            begin: const Offset(0.08, 0),
-                            end: Offset.zero,
-                          ).animate(
-                            CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOutCubic,
-                            ),
-                          );
+                      final offsetAnimation = Tween<Offset>(
+                        begin: const Offset(0.08, 0),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      );
 
                       return FadeTransition(
                         opacity: animation,
@@ -97,7 +96,7 @@ class OnboardingNavigationControls extends StatelessWidget {
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.white,
-                                  //fontFamily: 'Tajawal',
+                                  ////fontFamily: 'Tajawal',
                                 ),
                               ),
                               SizedBox(width: 8),
@@ -115,7 +114,7 @@ class OnboardingNavigationControls extends StatelessWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: AppColors.white,
-                              //fontFamily: 'Tajawal',
+                              ////fontFamily: 'Tajawal',
                             ),
                           ),
                   ),

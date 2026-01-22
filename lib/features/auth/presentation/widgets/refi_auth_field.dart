@@ -100,13 +100,13 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
                       onPressed: _toggleVisibility,
                     )
                   : (widget.suffixIcon != null
-                        ? IconTheme(
-                            data: Theme.of(context).iconTheme.copyWith(
-                              color: AppColors.textPlaceholder,
-                            ),
-                            child: widget.suffixIcon!,
-                          )
-                        : null),
+                      ? IconTheme(
+                          data: Theme.of(context).iconTheme.copyWith(
+                                color: AppColors.textPlaceholder,
+                              ),
+                          child: widget.suffixIcon!,
+                        )
+                      : null),
             ),
           ),
         ),
@@ -116,7 +116,7 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
             padding: const EdgeInsets.only(right: 12),
             child: Text(
               widget.errorText!,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.errorRed,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,

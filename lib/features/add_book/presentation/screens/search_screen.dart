@@ -116,7 +116,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
         title: const Text(
           AppStrings.searchTitle,
           style: TextStyle(
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
             color: AppColors.textMain,
             fontWeight: FontWeight.bold,
           ),
@@ -132,7 +132,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
               decoration: InputDecoration(
                 hintText: AppStrings.searchHint, // Updated hint
                 hintStyle: const TextStyle(
-                  fontFamily: 'Tajawal',
+                  //fontFamily: 'Tajawal',
                   color: AppColors.textPlaceholder,
                 ),
                 prefixIcon: const Icon(
@@ -198,7 +198,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                       Text(
                         "${AppStrings.searchResultsCount} (${state.books.length})",
                         style: const TextStyle(
-                          fontFamily: 'Tajawal',
+                          //fontFamily: 'Tajawal',
                           color: AppColors.textSub,
                           fontSize: 14,
                         ),
@@ -261,7 +261,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                                       Text(
                                         book.title,
                                         style: const TextStyle(
-                                          fontFamily: 'Tajawal',
+                                          //fontFamily: 'Tajawal',
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                           color: AppColors.textMain,
@@ -275,7 +275,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                                             ? book.authors.first
                                             : 'Unknown',
                                         style: const TextStyle(
-                                          fontFamily: 'Tajawal',
+                                          //fontFamily: 'Tajawal',
                                           color: AppColors.textSub,
                                           fontSize: 14,
                                         ),
@@ -330,7 +330,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                     child: const Text(
                       AppStrings.didntFindBook,
                       style: TextStyle(
-                        fontFamily: 'Tajawal',
+                        //fontFamily: 'Tajawal',
                         color: AppColors.secondaryBlue,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,

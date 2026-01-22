@@ -30,7 +30,7 @@ class SearchStartWidget extends StatelessWidget {
           const Text(
             AppStrings.searchStartTitle,
             style: TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 18,
               color: AppColors.textMain,
@@ -44,7 +44,7 @@ class SearchStartWidget extends StatelessWidget {
               AppStrings.searchStartBody,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontSize: 14,
                 color: AppColors.textSub,
                 height: 1.5,
@@ -88,7 +88,7 @@ class SearchEmptyWidget extends StatelessWidget {
           const Text(
             AppStrings.searchNoResultsTitle,
             style: TextStyle(
-              fontFamily: 'Tajawal',
+              //fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 18,
               color: AppColors.textMain,
@@ -101,7 +101,7 @@ class SearchEmptyWidget extends StatelessWidget {
               AppStrings.searchNoResultsBody,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontSize: 14,
                 color: AppColors.textSub,
                 height: 1.5,
@@ -120,7 +120,7 @@ class SearchEmptyWidget extends StatelessWidget {
               label: const Text(
                 AppStrings.addBookManually,
                 style: TextStyle(
-                  fontFamily: 'Tajawal',
+                  //fontFamily: 'Tajawal',
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: Colors.white,

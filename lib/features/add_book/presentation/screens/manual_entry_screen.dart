@@ -190,8 +190,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       status: _readingStatus == AppStrings.statusReading
           ? BookStatus.reading
           : _readingStatus == AppStrings.statusFinished
-          ? BookStatus.completed
-          : BookStatus.wishlist,
+              ? BookStatus.completed
+              : BookStatus.wishlist,
       currentPage: 0,
       // Store category in description or we need a tag field in Entity?
       // For now, simpler to ignore or append to description if Entity doesn't support tags directly yet
@@ -214,7 +214,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         title: const Text(
           AppStrings.addBookTitle,
           style: TextStyle(
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
@@ -277,7 +277,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                             const Text(
                               AppStrings.addBookCover,
                               style: TextStyle(
-                                fontFamily: 'Tajawal',
+                                //fontFamily: 'Tajawal',
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                                 color: AppColors.textMain,
@@ -287,7 +287,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                             const Text(
                               AppStrings.clickToUpload,
                               style: TextStyle(
-                                fontFamily: 'Tajawal',
+                                //fontFamily: 'Tajawal',
                                 fontSize: 14,
                                 color: AppColors.textPlaceholder,
                               ),
@@ -323,7 +323,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             const Text(
               AppStrings.categoryLabel,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
                 color: AppColors.textMain,
@@ -338,11 +338,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 return ChoiceChip(
                   label: Text(tag),
                   labelStyle: TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     color: isSelected ? Colors.white : AppColors.textSub,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   selected: isSelected,
                   selectedColor: AppColors.primaryBlue,
@@ -366,7 +365,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             const Text(
               AppStrings.readingStatusLabel,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
                 color: AppColors.textMain,
@@ -424,7 +423,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                     : const Text(
                         AppStrings.saveBook,
                         style: TextStyle(
-                          fontFamily: 'Tajawal',
+                          //fontFamily: 'Tajawal',
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           color: Colors.white,
@@ -456,7 +455,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         child: Text(
           status,
           style: TextStyle(
-            fontFamily: 'Tajawal',
+            //fontFamily: 'Tajawal',
             fontSize: 12,
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.white : AppColors.textSub,
@@ -586,38 +585,39 @@ class _WebCoverSearchDialogState extends State<_WebCoverSearchDialog> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _results.isEmpty
-                  ? Center(
-                      child: Text(
-                        _searchController.text.isEmpty
-                            ? "أدخل كلمة للبحث"
-                            : "لم يتم العثور على نتائج",
-                      ),
-                    )
-                  : GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                      ? Center(
+                          child: Text(
+                            _searchController.text.isEmpty
+                                ? "أدخل كلمة للبحث"
+                                : "لم يتم العثور على نتائج",
+                          ),
+                        )
+                      : GridView.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 3,
                             childAspectRatio: 0.65,
                             crossAxisSpacing: 8,
                             mainAxisSpacing: 8,
                           ),
-                      itemCount: _results.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () =>
-                              widget.onImageSelected(_results[index].imageUrl!),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              _results[index].imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Center(child: Icon(Icons.broken_image)),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                          itemCount: _results.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () => widget
+                                  .onImageSelected(_results[index].imageUrl!),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  _results[index].imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Center(
+                                          child: Icon(Icons.broken_image)),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
             ),
             const SizedBox(height: 16),
             TextButton(

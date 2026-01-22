@@ -63,7 +63,7 @@ class BookCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     color: AppColors.textMain,
@@ -75,7 +75,7 @@ class BookCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontSize: 14,
                     color: AppColors.textSub,
                   ),
@@ -97,7 +97,7 @@ class BookCard extends StatelessWidget {
                 Text(
                   "%${(book.progress * 100).toInt()}",
                   style: const TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontSize: 12,
                     color: AppColors.primaryBlue,
                     fontWeight: FontWeight.bold,

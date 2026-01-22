@@ -80,7 +80,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                   child: const Text(
                     AppStrings.cancel,
                     style: TextStyle(
-                      fontFamily: 'Tajawal',
+                      //fontFamily: 'Tajawal',
                       color: AppColors.primaryBlue,
                     ),
                   ),
@@ -88,7 +88,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                 const Text(
                   AppStrings.reviewTitle,
                   style: TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                     color: AppColors.textMain,
@@ -106,7 +106,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                   .quoteTextLabel, // "نص الاقتباس" but prompt image says "نص الاقتباس" above field? No, it just shows text.
               // Prompt says: Fields: نص الاقتباس: A large editable text field
               style: const TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -121,7 +121,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                 controller: _textController,
                 maxLines: 5,
                 style: const TextStyle(
-                  fontFamily: 'Tajawal',
+                  //fontFamily: 'Tajawal',
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   height: 1.5,
@@ -136,7 +136,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
             const Text(
               AppStrings.feelingLabel,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -149,7 +149,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                   child: ChoiceChip(
                     label: Text(feeling),
                     labelStyle: TextStyle(
-                      fontFamily: 'Tajawal',
+                      //fontFamily: 'Tajawal',
                       color: isSelected ? Colors.white : AppColors.textSub,
                     ),
                     selected: isSelected,
@@ -181,7 +181,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
             const Text(
               AppStrings.notesLabel,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -196,11 +196,11 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
               child: TextField(
                 controller: _notesController,
                 maxLines: 3,
-                style: const TextStyle(fontFamily: 'Tajawal', fontSize: 14),
+                style: const TextStyle( fontSize: 14),
                 decoration: const InputDecoration(
                   hintText: AppStrings.notesHint,
                   hintStyle: TextStyle(
-                    fontFamily: 'Tajawal',
+                    //fontFamily: 'Tajawal',
                     color: AppColors.textPlaceholder,
                   ),
                   border: InputBorder.none,
@@ -214,7 +214,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
             const Text(
               AppStrings.sourceBookLabel,
               style: TextStyle(
-                fontFamily: 'Tajawal',
+                //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -247,7 +247,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                           child: Text(
                             'لا توجد كتب محفوظة',
                             style: TextStyle(
-                              fontFamily: 'Tajawal',
+                              //fontFamily: 'Tajawal',
                               color: AppColors.textPlaceholder,
                             ),
                             textAlign: TextAlign.center,
@@ -259,7 +259,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                             hint: const Text(
                               "اختر الكتاب المصدر",
                               style: TextStyle(
-                                fontFamily: 'Tajawal',
+                                //fontFamily: 'Tajawal',
                                 fontSize: 14,
                               ),
                             ),
@@ -271,7 +271,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                                     child: Text(
                                       '${book.title} - ${book.author}',
                                       style: const TextStyle(
-                                        fontFamily: 'Tajawal',
+                                        //fontFamily: 'Tajawal',
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -360,7 +360,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                     label: Text(
                       isSaving ? 'جاري الحفظ...' : AppStrings.save,
                       style: const TextStyle(
-                        fontFamily: 'Tajawal',
+                        //fontFamily: 'Tajawal',
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.white,
