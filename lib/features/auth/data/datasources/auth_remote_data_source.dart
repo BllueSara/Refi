@@ -59,6 +59,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             'id': response.user!.id,
             'email': email, // Using email from login arg
             'full_name': name,
+            'annual_goal': 0,
           });
         } catch (_) {}
       }
@@ -88,6 +89,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         await supabaseClient.from('profiles').upsert({
           'id': response.user!.id,
           'full_name': name,
+          'annual_goal': 0,
         });
       } catch (e) {
         // Log error
@@ -138,6 +140,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             await supabaseClient.from('profiles').upsert({
               'id': user.id,
               'full_name': name,
+              'annual_goal': 0,
             });
           } catch (_) {}
         }
@@ -190,6 +193,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'id': response.user!.id,
           'full_name': name,
           'avatar_url': googleUser.photoUrl,
+          'annual_goal': 0,
         });
       } catch (_) {}
 

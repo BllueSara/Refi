@@ -6,16 +6,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
-import '../../../../core/widgets/main_navigation_screen.dart';
 import '../../../library/domain/entities/book_entity.dart';
 import '../../../library/presentation/cubit/library_cubit.dart';
+import '../../../../core/widgets/refi_success_widget.dart';
 
 class ManualEntryScreen extends StatefulWidget {
-  const ManualEntryScreen({super.key});
+  final BookEntity? book;
+  const ManualEntryScreen({super.key, this.book});
 
   @override
   State<ManualEntryScreen> createState() => _ManualEntryScreenState();
@@ -23,22 +23,16 @@ class ManualEntryScreen extends StatefulWidget {
 
 class _ManualEntryScreenState extends State<ManualEntryScreen> {
   // Config
-  final List<String> _availableTags = [
-    AppStrings.catPhilosophy,
-    AppStrings.catNovel,
-    AppStrings.catHistory,
-    AppStrings.catSelfHelp,
-  ];
-  final List<String> _selectedTags = [];
-  String _readingStatus =
-      AppStrings.statusWantToRead; // Want to Read -> Reading -> Finished
+
+  BookStatus _readingStatus = BookStatus.wishlist;
+
+  // Validation
+  final _formKey = GlobalKey<FormState>();
 
   // Controllers
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _authorController = TextEditingController();
-  final TextEditingController _pagesController = TextEditingController();
-  final TextEditingController _customCategoryController =
-      TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _authorController;
+  late final TextEditingController _pagesController;
 
   // State
   File? _imageFile;
@@ -47,11 +41,25 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final ImagePicker _picker = ImagePicker();
 
   @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.book?.title);
+    _authorController =
+        TextEditingController(text: widget.book?.authors.firstOrNull);
+    _pagesController =
+        TextEditingController(text: widget.book?.pageCount?.toString());
+    if (widget.book != null) {
+      _readingStatus = widget.book!.status;
+      _webImageUrl = widget.book!.imageUrl;
+    }
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _authorController.dispose();
     _pagesController.dispose();
-    _customCategoryController.dispose();
+
     super.dispose();
   }
 
@@ -148,9 +156,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   }
 
   Future<void> _saveBook() async {
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("عنوان الكتاب مطلوب")));
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -162,23 +168,25 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     }
 
     final book = BookEntity(
-      id: '',
+      id: widget.book?.id ?? '',
       title: _titleController.text,
       authors: [
         _authorController.text.isEmpty ? "Unknown" : _authorController.text
       ],
       imageUrl: finalImageUrl,
-      status: _readingStatus == AppStrings.statusReading
-          ? BookStatus.reading
-          : _readingStatus == AppStrings.statusFinished
-              ? BookStatus.completed
-              : BookStatus.wishlist,
-      currentPage: 0,
+      status: _readingStatus,
+      currentPage: widget.book?.currentPage ?? 0,
       pageCount: int.tryParse(_pagesController.text),
-      categories: _selectedTags,
+      categories: widget.book?.categories ?? [],
+      googleBookId: widget.book?.googleBookId,
+      source: widget.book?.source ?? 'manual',
     );
 
-    await context.read<LibraryCubit>().addBook(book);
+    if (widget.book != null) {
+      await context.read<LibraryCubit>().updateBook(book);
+    } else {
+      await context.read<LibraryCubit>().addBook(book);
+    }
 
     if (mounted) {
       setState(() => _isSaving = false);
@@ -187,49 +195,38 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   }
 
   void _showSuccessScreen() {
-    HapticFeedback.lightImpact();
+    HapticFeedback.heavyImpact();
+    final isEdit = widget.book != null;
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (ctx) => Scaffold(
-          body: Stack(
-            children: [
-              Positioned(
-                  top: 56,
-                  right: 24,
-                  child: IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(ctx))),
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Lottie.asset('assets/images/Success.json',
-                        width: 250, height: 250),
-                    const SizedBox(height: 32),
-                    Text("تمت إضافة الكتاب بنجاح!",
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineMedium),
-                    const SizedBox(height: 16),
-                    Text("أصبح الكتاب الآن جزءاً من رحلتك المعرفية",
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium),
-                    const SizedBox(height: 48),
-                    _buildSaveButtonUI(
-                        label: "ابدأ القراءة الآن",
-                        onTap: () {
-                          Navigator.pop(ctx);
-                          final mainNavState = context.findAncestorStateOfType<
-                              State<MainNavigationScreen>>();
-                          if (mainNavState != null)
-                            (mainNavState as dynamic).changeTab(1);
-                        }),
-                  ],
+        builder: (ctx) => RefiSuccessWidget(
+          title: isEdit ? "تم تحديث الكتاب بنجاح!" : "تمت إضافة الكتاب بنجاح!",
+          subtitle: isEdit
+              ? "تم حفظ التعديلات الجديدة في مكتبتك الخاصة"
+              : "أصبح الكتاب الآن جزءاً من رحلتك المعرفية المثرية",
+          primaryButtonLabel: isEdit ? "العودة للمكتبة" : "إضافة كتاب آخر",
+          onPrimaryAction: () {
+            if (isEdit) {
+              Navigator.of(ctx).pop(); // Back to details/library
+            } else {
+              Navigator.of(ctx).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const ManualEntryScreen(),
                 ),
-              ),
-            ],
-          ),
+              );
+            }
+          },
+          secondaryButtonLabel: "العودة للرئيسية",
+          onSecondaryAction: () {
+            // Pop until we reach main screen
+            final nav = Navigator.of(ctx);
+            nav.pop(); // Pop SuccessWidget
+            if (nav.canPop()) {
+              nav.pop(); // Pop previous screen (Search or BookDetails)
+            }
+          },
         ),
       ),
     );
@@ -254,25 +251,56 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             _buildCoverPicker(),
             const SizedBox(height: 32),
             // 2. Fields
-            _buildTextField(
-                label: AppStrings.bookTitleLabel,
-                hint: AppStrings.enterBookTitle,
-                controller: _titleController),
-            const SizedBox(height: 24),
-            _buildTextField(
-                label: AppStrings.authorNameLabel,
-                hint: AppStrings.enterAuthorName,
-                controller: _authorController),
-            const SizedBox(height: 24),
-            _buildTextField(
-                label: "عدد صفحات الكتاب",
-                hint: "مثال: 200",
-                controller: _pagesController,
-                isNumber: true),
+            Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                children: [
+                  _buildTextField(
+                      label: AppStrings.bookTitleLabel,
+                      hint: AppStrings.enterBookTitle,
+                      controller: _titleController,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return "عذراً، هذا الحقل مطلوب";
+                        }
+                        return null;
+                      }),
+                  const SizedBox(height: 24),
+                  _buildTextField(
+                      label: AppStrings.authorNameLabel,
+                      hint: AppStrings.enterAuthorName,
+                      controller: _authorController,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return "عذراً، هذا الحقل مطلوب";
+                        }
+                        return null;
+                      }),
+                  const SizedBox(height: 24),
+                  _buildTextField(
+                      label: "عدد صفحات الكتاب",
+                      hint: "مثال: 200",
+                      controller: _pagesController,
+                      isNumber: true,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return "يرجى إدخال عدد الصفحات";
+                        }
+                        final count = int.tryParse(val);
+                        if (count == null) {
+                          return "يرجى إدخال أرقام فقط";
+                        }
+                        if (count <= 0) {
+                          return "عدد الصفحات يجب أن يكون أكبر من صفر";
+                        }
+                        return null;
+                      }),
+                ],
+              ),
+            ),
             const SizedBox(height: 32),
-            // 3. Categories
-            _buildTagsSection(),
-            const SizedBox(height: 32),
+
             // 4. Status
             _buildStatusSection(),
             const SizedBox(height: 48),
@@ -327,89 +355,66 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       {required String label,
       required String hint,
       required TextEditingController controller,
-      bool isNumber = false}) {
+      bool isNumber = false,
+      String? Function(String?)? validator}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: controller,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          validator: validator,
           inputFormatters:
               isNumber ? [FilteringTextInputFormatter.digitsOnly] : [],
-          decoration: InputDecoration(hintText: hint),
+          decoration: InputDecoration(
+            hintText: hint,
+            // Proper Error Styling
+            errorStyle: GoogleFonts.tajawal(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFFD32F2F),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFD32F2F), width: 1),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide:
+                  const BorderSide(color: Color(0xFFD32F2F), width: 1.5),
+            ),
+            // Default Styling
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  color: AppColors.inputBorder.withOpacity(0.5), width: 1),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                  color: AppColors.inputBorder.withOpacity(0.5), width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide:
+                  const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+            ),
+          ),
         ),
       ],
     );
-  }
-
-  Widget _buildTagsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(AppStrings.categoryLabel,
-            style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            ..._availableTags.map((tag) => ChoiceChip(
-                  label: Text(tag),
-                  selected: _selectedTags.contains(tag),
-                  onSelected: (val) {
-                    setState(() {
-                      if (val)
-                        _selectedTags.add(tag);
-                      else
-                        _selectedTags.remove(tag);
-                    });
-                  },
-                )),
-            IconButton(
-                icon:
-                    const Icon(Icons.add_circle, color: AppColors.primaryBlue),
-                onPressed: _showAddTagDialog),
-          ],
-        ),
-      ],
-    );
-  }
-
-  void _showAddTagDialog() {
-    showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-              title: const Text("إضافة تصنيف"),
-              content: TextField(
-                  controller: _customCategoryController,
-                  decoration: const InputDecoration(hintText: "اسم التصنيف")),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text("إلغاء")),
-                ElevatedButton(
-                    onPressed: () {
-                      if (_customCategoryController.text.isNotEmpty) {
-                        setState(() {
-                          _availableTags.add(_customCategoryController.text);
-                          _selectedTags.add(_customCategoryController.text);
-                        });
-                        _customCategoryController.clear();
-                        Navigator.pop(ctx);
-                      }
-                    },
-                    child: const Text("إضافة")),
-              ],
-            ));
   }
 
   Widget _buildStatusSection() {
+    // Order: Wishlist -> Reading -> Finished
     final list = [
-      AppStrings.statusWantToRead,
-      AppStrings.statusReading,
-      AppStrings.statusFinished
+      BookStatus.wishlist,
+      BookStatus.reading,
+      BookStatus.completed,
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,7 +439,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                         gradient: sel ? AppColors.refiMeshGradient : null,
                         borderRadius: BorderRadius.circular(20)),
                     alignment: Alignment.center,
-                    child: Text(s,
+                    child: Text(s.label,
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,

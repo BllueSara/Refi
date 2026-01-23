@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/widgets/refi_success_widget.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/colors.dart';
@@ -11,7 +13,7 @@ import '../../../library/presentation/cubit/search_cubit.dart';
 import '../widgets/search_states_widgets.dart';
 import 'manual_entry_screen.dart';
 
-import '../../../../core/widgets/main_navigation_screen.dart';
+import '../../../../core/widgets/glassmorphic_notification_modal.dart';
 import '../../../library/presentation/pages/book_details_page.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -35,15 +37,23 @@ class SearchScreenContent extends StatefulWidget {
 
 class _SearchScreenContentState extends State<SearchScreenContent> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   void _onSearchChanged(String query) {
-    context.read<SearchCubit>().search(query);
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (query.trim().isEmpty) {
+        return;
+      }
+      context.read<SearchCubit>().search(query.trim());
+    });
   }
 
   void _navigateToAddManually() {
@@ -55,126 +65,22 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
 
   /// Step 2: The Success Screen
   void _showSuccessScreen(BuildContext context, BookEntity book) {
-    HapticFeedback.lightImpact();
+    HapticFeedback.heavyImpact();
     Navigator.of(context).push(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (ctx) => Scaffold(
-          backgroundColor: Colors.white,
-          body: Stack(
-            children: [
-              // Close Icon
-              Positioned(
-                top: 56, // Safe area
-                right: 24,
-                child: IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSub),
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pop(
-                        context); // Close search screen too if desired? Or just go back to search?
-                    // User request: "Button 'Back to Search' returns to search screen"
-                    // So close icon likely just closes this dialog.
-                  },
-                ),
-              ),
-
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Hero Illustration (Festive blue book)
-                    // Using Success.json or a placeholder if image not available
-                    Lottie.asset(
-                      'assets/images/Success.json',
-                      width: 250,
-                      height: 250,
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      "تمت إضافة الكتاب بنجاح!",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.tajawal(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textMain,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      "أصبح الكتاب الآن جزءاً من رحلتك المعرفية",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.tajawal(
-                        fontSize: 16,
-                        color: AppColors.textSub,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-
-                    // Primary Action: Start Reading
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: AppColors.refiMeshGradient,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(ctx); // Close Success
-                            // Adding navigation to Library or BookDetails
-                            // Since we don't have direct BookDetails navigation easily without context shuffle,
-                            // We'll navigate back to MainNav then Library
-                            Navigator.pop(context); // Close Search
-                            final mainNavState =
-                                context.findAncestorStateOfType<
-                                    State<MainNavigationScreen>>();
-                            if (mainNavState != null) {
-                              (mainNavState as dynamic).changeTab(1); // Library
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Text(
-                            "ابدأ القراءة الآن",
-                            style: GoogleFonts.tajawal(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Secondary Action: Back to Search
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                      },
-                      child: Text(
-                        "العودة للبحث",
-                        style: GoogleFonts.tajawal(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.secondaryBlue,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        builder: (ctx) => RefiSuccessWidget(
+          title: "تمت إضافة الكتاب بنجاح!",
+          subtitle: "أصبح الكتاب الآن جزءاً من رحلتك المعرفية المثرية",
+          primaryButtonLabel: "العودة للبحث",
+          onPrimaryAction: () {
+            Navigator.pop(ctx);
+          },
+          secondaryButtonLabel: "العودة للمكتبة",
+          onSecondaryAction: () {
+            Navigator.pop(ctx);
+            Navigator.pop(context);
+          },
         ),
       ),
     );
@@ -320,13 +226,13 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
         }
 
         // Standard Add Sheet
-        return StatefulBuilder(
-          builder: (context, setState) {
-            BookStatus selectedStatus = BookStatus.reading;
+        BookStatus selectedStatus = BookStatus.reading;
 
+        return StatefulBuilder(
+          builder: (sheetContext, setState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
               ),
               child: SingleChildScrollView(
                 child: Padding(
@@ -420,9 +326,20 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                             },
                             items: [
                               DropdownMenuItem(
+                                value: BookStatus.wishlist,
+                                child: Text(
+                                  BookStatus.wishlist.label,
+                                  style: GoogleFonts.tajawal(
+                                    fontSize: 16,
+                                    color: AppColors.textMain,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                              DropdownMenuItem(
                                 value: BookStatus.reading,
                                 child: Text(
-                                  "أقرأه الآن",
+                                  BookStatus.reading.label,
                                   style: GoogleFonts.tajawal(
                                     fontSize: 16,
                                     color: AppColors.textMain,
@@ -433,18 +350,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                               DropdownMenuItem(
                                 value: BookStatus.completed,
                                 child: Text(
-                                  "مكتمل",
-                                  style: GoogleFonts.tajawal(
-                                    fontSize: 16,
-                                    color: AppColors.textMain,
-                                  ),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
-                              DropdownMenuItem(
-                                value: BookStatus.wishlist,
-                                child: Text(
-                                  "سأقرأه لاحقاً",
+                                  BookStatus.completed.label,
                                   style: GoogleFonts.tajawal(
                                     fontSize: 16,
                                     color: AppColors.textMain,
@@ -468,17 +374,32 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: ElevatedButton(
-                            onPressed: () async {
+                            onPressed: () {
+                              // 1. Instant Feedback
+                              HapticFeedback.lightImpact();
                               Navigator.pop(ctx); // Close Sheet first
 
-                              // Perform Add Logic
-                              await context.read<LibraryCubit>().addBook(
-                                  book.copyWith(status: selectedStatus));
-
-                              // Trigger Success Screen
+                              // 2. Show Success Screen Immediately (Optimistic)
+                              // Use 'context' (parent context) instead of 'sheetContext'
                               if (context.mounted) {
                                 _showSuccessScreen(context, book);
                               }
+
+                              // 3. Perform Logic in Background
+                              // Fire-and-forget style to keep UI responsive
+                              context
+                                  .read<LibraryCubit>()
+                                  .addBook(
+                                      book.copyWith(status: selectedStatus))
+                                  .catchError((e) {
+                                // 4. Error Safety Net
+                                // If it fails, we should ideally show a snackbar or revert.
+                                // Since the success screen is already up, we might show a toast there.
+                                debugPrint("Failed to add book: $e");
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('حدث خطأ: $e')),
+                                );
+                              });
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
@@ -609,7 +530,13 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                     if (state is SearchInitial) {
                       return const SearchStartWidget();
                     } else if (state is SearchLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                      return Center(
+                        child: Lottie.asset(
+                          'assets/images/search imm.json',
+                          width: 200,
+                          height: 200,
+                        ),
+                      );
                     } else if (state is SearchError) {
                       return Center(
                           child: Text(state.message,
@@ -700,10 +627,41 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
   }
 
   Widget _buildHeroCard(BookEntity book) {
+    final libraryState = context.read<LibraryCubit>().state;
+    bool isInLibrary = false;
+    if (libraryState is LibraryLoaded) {
+      isInLibrary = libraryState.books.any((b) =>
+          b.title.trim().toLowerCase() == book.title.trim().toLowerCase());
+    }
+
     return GestureDetector(
-      onTap: () => _showAddSheet(book),
+      onTap: isInLibrary
+          ? () {
+              showGlassmorphicNotification(
+                context,
+                onAction: () async {
+                  BookEntity? libraryBook;
+                  if (libraryState is LibraryLoaded) {
+                    try {
+                      libraryBook = libraryState.books.firstWhere((b) =>
+                          b.title.trim().toLowerCase() ==
+                          book.title.trim().toLowerCase());
+                    } catch (_) {}
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          BookDetailsPage(book: libraryBook ?? book),
+                    ),
+                  );
+                },
+              );
+            }
+          : () => _showAddSheet(book),
       child: Container(
-        height: 180,
+        constraints: const BoxConstraints(minHeight: 180),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -715,121 +673,178 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
             ),
           ],
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end, // RTL
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end, // RTL
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Badge
+                      Builder(builder: (context) {
+                        final libraryState = context.read<LibraryCubit>().state;
+                        bool isInLibrary = false;
+                        if (libraryState is LibraryLoaded) {
+                          isInLibrary = libraryState.books.any((b) =>
+                              b.title.trim().toLowerCase() ==
+                              book.title.trim().toLowerCase());
+                        }
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isInLibrary
+                                ? Colors.green.withOpacity(0.1)
+                                : AppColors.primaryBlue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            isInLibrary ? "موجود في مكتبتك" : "أفضل تطابق",
+                            style: GoogleFonts.tajawal(
+                              fontSize: 12,
+                              color: isInLibrary
+                                  ? Colors.green
+                                  : AppColors.primaryBlue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 8),
+                      Flexible(
+                        child: Text(
+                          book.title,
+                          textAlign: TextAlign.right,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.tajawal(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
-                      child: Text(
-                        "أفضل تطابق",
+                      const SizedBox(height: 4),
+                      Text(
+                        book.authors.isNotEmpty
+                            ? book.authors.first
+                            : "Unknown",
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.tajawal(
-                          fontSize: 12,
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.grey,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      book.title,
-                      textAlign: TextAlign.right,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.tajawal(
-                        fontSize: 18, // Large
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                      const SizedBox(height: 12),
+                      // Metadata
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            "التاريخ", // Placeholder category
+                            style: GoogleFonts.tajawal(
+                                fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text("•", style: TextStyle(color: Colors.grey)),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${book.rating ?? 4.9}",
+                            style: GoogleFonts.tajawal(
+                                fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.star, size: 14, color: Colors.amber),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      book.authors.isNotEmpty ? book.authors.first : "Unknown",
-                      textAlign: TextAlign.right,
-                      style: GoogleFonts.tajawal(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Metadata
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          "التاريخ", // Placeholder category
-                          style: GoogleFonts.tajawal(
-                              fontSize: 12, color: Colors.grey),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text("•", style: TextStyle(color: Colors.grey)),
-                        const SizedBox(width: 4),
-                        Text(
-                          "${book.rating ?? 4.9}",
-                          style: GoogleFonts.tajawal(
-                              fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.star, size: 14, color: Colors.amber),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Cover Image
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.horizontal(right: Radius.circular(24)),
-              child: Container(
-                width: 120,
-                height: 180,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                    topLeft: Radius.circular(24),
-                    bottomLeft: Radius.circular(24),
-                  ), // Rounded all corners for image
-                  image: DecorationImage(
-                    image: NetworkImage(book.imageUrl ?? ''),
-                    fit: BoxFit.cover,
-                    onError: (_, __) {},
+                    ],
                   ),
-                  color: Colors.grey[200],
                 ),
-                child: book.imageUrl == null
-                    ? const Icon(Icons.book, size: 40, color: Colors.grey)
-                    : null,
               ),
-            ),
-            const SizedBox(width: 16),
-          ],
-        ),
-      ),
-    );
+              // Cover Image
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.horizontal(right: Radius.circular(24)),
+                child: Container(
+                  width: 120,
+                  // height: 180, // Removed to allow stretching via IntrinsicHeight
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(24),
+                      bottomRight: Radius.circular(24),
+                      topLeft: Radius.circular(24),
+                      bottomLeft: Radius.circular(24),
+                    ), // Rounded all corners for image
+                    image: DecorationImage(
+                      image: NetworkImage(book.imageUrl ?? ''),
+                      fit: BoxFit.cover,
+                      onError: (_, __) {},
+                    ),
+                    color: Colors.grey[200],
+                  ),
+                  child: book.imageUrl == null
+                      ? const Icon(Icons.book, size: 40, color: Colors.grey)
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 16),
+            ],
+          ),
+        ), // Close IntrinsicHeight
+      ), // Close Container
+    ); // Close GestureDetector
   }
 
   Widget _buildListItem(BookEntity book) {
+    final libraryState = context.read<LibraryCubit>().state;
+    bool isInLibrary = false;
+    if (libraryState is LibraryLoaded) {
+      isInLibrary = libraryState.books.any((b) =>
+          b.title.trim().toLowerCase() == book.title.trim().toLowerCase());
+    }
+
     return InkWell(
-      onTap: () => _showAddSheet(book),
+      onTap: isInLibrary
+          ? () {
+              showGlassmorphicNotification(
+                context,
+                onAction: () async {
+                  BookEntity? libraryBook;
+                  if (libraryState is LibraryLoaded) {
+                    try {
+                      libraryBook = libraryState.books.firstWhere((b) =>
+                          b.title.trim().toLowerCase() ==
+                          book.title.trim().toLowerCase());
+                    } catch (_) {}
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          BookDetailsPage(book: libraryBook ?? book),
+                    ),
+                  );
+                },
+              );
+            }
+          : () => _showAddSheet(book),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         child: Row(
           children: [
             // Chevron Left (indicator) - Visually Left
-            const Icon(Icons.chevron_left, color: Colors.grey),
+            Icon(
+              isInLibrary ? Icons.check_circle : Icons.chevron_left,
+              color: isInLibrary ? Colors.green : Colors.grey,
+            ),
             const Spacer(),
             // Text Center (Right aligned logically in RTL context)
             Expanded(
@@ -852,6 +867,8 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                   Text(
                     book.authors.isNotEmpty ? book.authors.first : "Unknown",
                     textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.tajawal(
                       fontSize: 14,
                       color: Colors.grey,

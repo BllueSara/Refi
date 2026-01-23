@@ -20,8 +20,23 @@ class HomeCubit extends Cubit<HomeState> {
     required this.supabaseClient,
   }) : super(HomeInitial());
 
-  Future<void> loadHomeData() async {
-    emit(HomeLoading());
+  Future<void> loadHomeData({bool forceRefresh = false}) async {
+    // 1. Smart Cache Check
+    if (!forceRefresh) {
+      if (state is HomeLoaded) {
+        // Data exists, don't show loading. Just refresh in background.
+      } else if (state is HomeInitial) {
+        emit(HomeLoading());
+      }
+    } else {
+      // Manual refresh, can show loading or small indicator (UI handles pulled refresh)
+      // If pulled-to-refresh, UI usually shows the spinner, so we don't necessarily need to emit HomeLoading which triggers full screen skeleton.
+      // However, if we want to blocking load, we emit loading.
+      // Given "avoid redundant loading screens", we generally avoid emitting HomeLoading if we have data.
+      if (state is! HomeLoaded && state is! HomeEmpty) {
+        emit(HomeLoading());
+      }
+    }
 
     final userId = supabaseClient.auth.currentUser?.id;
     if (userId == null) {
@@ -101,7 +116,13 @@ class HomeCubit extends Cubit<HomeState> {
         emit(HomeLoaded(homeData));
       }
     } catch (e) {
-      // Fallback
+      // On Error, if we have data, keep it.
+      if (state is HomeLoaded) {
+        // Optionally emit an error side-effect if we had a way, but for now just keep previous state is better than wiping key data.
+        return;
+      }
+
+      // Fallback only if no data
       emit(
         HomeEmpty(
           const HomeData(

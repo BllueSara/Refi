@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/widgets/scale_button.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../domain/entities/home_entity.dart';
@@ -39,7 +40,7 @@ class HomeEmptyBody extends StatelessWidget {
               completedBooks: data.completedBooks,
               annualGoal: data.annualGoal,
               onSetGoal: () {
-                _showGoalSettingSheet(context, data.annualGoal ?? 24);
+                _showGoalSettingSheet(context, data.annualGoal ?? 0);
               },
             ),
 
@@ -79,7 +80,7 @@ class HomeEmptyBody extends StatelessWidget {
                   const FloatingBookIllustration(),
                   const SizedBox(height: 16),
                   Text(
-                    AppStrings.noBooksReading,
+                    "مكتبتك هادئة.. ما رأيك أن تبدأ رحلة جديدة؟",
                     style: GoogleFonts.tajawal(
                       fontSize: 16,
                       color: AppColors.textSub,
@@ -87,40 +88,36 @@ class HomeEmptyBody extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Container(
-                    width: double.infinity,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.refiMeshGradient,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryBlue.withOpacity(0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
+                  ScaleButton(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SearchScreen(),
                         ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SearchScreen(),
-                            ),
-                          );
-                        },
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.refiMeshGradient,
                         borderRadius: BorderRadius.circular(16),
-                        child: Center(
-                          child: Text(
-                            AppStrings.addBookFirst,
-                            style: GoogleFonts.tajawal(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryBlue.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          AppStrings.addBookFirst,
+                          style: GoogleFonts.tajawal(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -138,7 +135,7 @@ class HomeEmptyBody extends StatelessWidget {
   }
 
   void _showGoalSettingSheet(BuildContext context, int currentGoal) {
-    int selectedGoal = currentGoal;
+    int selectedGoal = (currentGoal > 0) ? currentGoal : 24;
     final homeCubit = context.read<HomeCubit>();
     bool isSuccess = false;
 
@@ -185,7 +182,7 @@ class HomeEmptyBody extends StatelessWidget {
                           const SizedBox(height: 24),
 
                           Text(
-                            "هدفك للقراءة في 2026",
+                            "هدفك للقراءة في ${DateTime.now().year}",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.tajawal(
                               fontSize: 20,
@@ -369,7 +366,7 @@ class HomeEmptyBody extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "$goal كتاباً في 2026",
+                    "$goal كتاباً في ${DateTime.now().year}",
                     style: GoogleFonts.tajawal(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -377,12 +374,6 @@ class HomeEmptyBody extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-              CircularProgressIndicator(
-                value: 0.0,
-                backgroundColor: Colors.grey[300],
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
               ),
             ],
           ),

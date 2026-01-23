@@ -22,6 +22,7 @@ import '../../features/library/domain/usecases/add_book_to_library_usecase.dart'
 import '../../features/library/domain/usecases/fetch_user_library_usecase.dart';
 import '../../features/library/domain/usecases/search_books_usecase.dart';
 import '../../features/library/domain/usecases/update_book_usecase.dart';
+import '../../features/library/domain/usecases/delete_book_usecase.dart';
 import '../../features/library/presentation/cubit/library_cubit.dart';
 import '../../features/library/presentation/cubit/search_cubit.dart';
 
@@ -91,6 +92,8 @@ Future<void> init(SharedPreferences sharedPreferences) async {
     () => LibraryCubit(
       fetchUserLibraryUseCase: sl(),
       addBookToLibraryUseCase: sl(),
+      deleteBookUseCase: sl(),
+      updateBookUseCase: sl(),
     ),
   );
   sl.registerFactory(() => SearchCubit(searchBooksUseCase: sl()));
@@ -105,6 +108,7 @@ Future<void> init(SharedPreferences sharedPreferences) async {
   sl.registerLazySingleton(() => AddBookToLibraryUseCase(sl()));
   sl.registerLazySingleton(() => FetchUserLibraryUseCase(sl()));
   sl.registerLazySingleton(() => UpdateBookUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteBookUseCase(sl()));
 
   // Repository
   sl.registerLazySingleton<BookRepository>(

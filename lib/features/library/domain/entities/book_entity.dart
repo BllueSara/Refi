@@ -1,6 +1,22 @@
 import 'package:equatable/equatable.dart';
+import '../../../../../core/constants/app_strings.dart';
 
 enum BookStatus { reading, completed, wishlist, none }
+
+extension BookStatusExtension on BookStatus {
+  String get label {
+    switch (this) {
+      case BookStatus.wishlist:
+        return AppStrings.statusWantToRead;
+      case BookStatus.reading:
+        return AppStrings.statusReading;
+      case BookStatus.completed:
+        return AppStrings.statusFinished;
+      case BookStatus.none:
+        return '';
+    }
+  }
+}
 
 class BookEntity extends Equatable {
   final String id;
@@ -17,6 +33,10 @@ class BookEntity extends Equatable {
   final int currentPage;
   final List<String> categories;
 
+  // Source info
+  final String? googleBookId;
+  final String? source;
+
   const BookEntity({
     required this.id,
     required this.title,
@@ -29,6 +49,8 @@ class BookEntity extends Equatable {
     this.status = BookStatus.none,
     this.currentPage = 0,
     this.categories = const [],
+    this.googleBookId,
+    this.source,
   });
 
   @override
@@ -44,6 +66,8 @@ class BookEntity extends Equatable {
         status,
         currentPage,
         categories,
+        googleBookId,
+        source,
       ];
 
   // Helper for display
@@ -66,6 +90,8 @@ class BookEntity extends Equatable {
     BookStatus? status,
     int? currentPage,
     List<String>? categories,
+    String? googleBookId,
+    String? source,
   }) {
     return BookEntity(
       id: id ?? this.id,
@@ -79,6 +105,8 @@ class BookEntity extends Equatable {
       status: status ?? this.status,
       currentPage: currentPage ?? this.currentPage,
       categories: categories ?? this.categories,
+      googleBookId: googleBookId ?? this.googleBookId,
+      source: source ?? this.source,
     );
   }
 }

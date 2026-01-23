@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/widgets/scale_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AnnualGoalCard extends StatelessWidget {
@@ -62,25 +63,21 @@ class AnnualGoalCard extends StatelessWidget {
             Positioned(
               bottom: 12,
               left: 12,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    onSetGoal?.call();
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.edit_outlined,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+              child: ScaleButton(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  onSetGoal?.call();
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.edit_outlined,
+                    color: Colors.white,
+                    size: 18,
                   ),
                 ),
               ),
@@ -96,7 +93,7 @@ class AnnualGoalCard extends StatelessWidget {
       children: [
         const SizedBox(height: 8),
         Text(
-          "أهلاً بك في جليس! كم كتاباً تنوي ختمه في 2026؟",
+          "أهلاً بك في جليس! كم كتاباً تنوي ختمه في ${DateTime.now().year}؟",
           textAlign: TextAlign.center,
           style: GoogleFonts.tajawal(
             fontWeight: FontWeight.bold,
@@ -106,25 +103,24 @@ class AnnualGoalCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        ElevatedButton(
-          onPressed: () {
+        ScaleButton(
+          onTap: () {
             HapticFeedback.mediumImpact();
             onSetGoal?.call();
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: AppColors.primaryBlue,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-          ),
-          child: Text(
-            "حدد هدفك الآن",
-            style: GoogleFonts.tajawal(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+            child: Text(
+              "حدد هدفك الآن",
+              style: GoogleFonts.tajawal(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: AppColors.primaryBlue,
+              ),
             ),
           ),
         ),

@@ -2,17 +2,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/book_entity.dart';
 import '../../../domain/usecases/update_book_usecase.dart';
 import '../../../../quotes/domain/usecases/get_book_quotes_usecase.dart';
+import '../library_cubit.dart';
 import 'book_details_state.dart';
 
 class BookDetailsCubit extends Cubit<BookDetailsState> {
   final BookEntity book;
   final UpdateBookUseCase updateBookUseCase;
   final GetBookQuotesUseCase getBookQuotesUseCase;
+  final LibraryCubit? libraryCubit; // Optional to avoid circular dependency
 
   BookDetailsCubit({
     required this.book,
     required this.updateBookUseCase,
     required this.getBookQuotesUseCase,
+    this.libraryCubit,
   }) : super(
           BookDetailsState(
             currentPage: book.currentPage,
@@ -68,17 +71,14 @@ class BookDetailsCubit extends Cubit<BookDetailsState> {
       status: state.status,
       currentPage: state.currentPage,
       categories: book.categories,
+      googleBookId: book.googleBookId,
+      source: book.source,
     );
 
-    final result = await updateBookUseCase(updatedBook);
-    result.fold(
-      (failure) {
-        // Optionally emit error state or revert
-        // print("Update failed: ${failure.message}");
-      },
-      (success) {
-        // Success
-      },
-    );
+    // Optimistic Update: Update library immediately
+    libraryCubit?.updateBook(updatedBook);
+    
+    // Then sync with backend (updateBook already handles backend sync)
+    // No need to call loadLibrary again as updateBook handles it
   }
 }

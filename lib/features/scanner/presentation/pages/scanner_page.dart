@@ -54,16 +54,18 @@ class _ScannerPageState extends State<ScannerPage>
           enableAudio: false,
         );
         await _cameraController!.initialize();
-        
+
         // Set initial flash mode
         // The camera plugin will handle errors gracefully if flash is not available
         try {
           await _cameraController!.setFlashMode(_currentFlashMode);
-          debugPrint("Flash mode set to ${_currentFlashMode} on camera initialization");
+          debugPrint(
+              "Flash mode set to ${_currentFlashMode} on camera initialization");
         } catch (e) {
-          debugPrint("Could not set flash mode (flash may not be available): $e");
+          debugPrint(
+              "Could not set flash mode (flash may not be available): $e");
         }
-        
+
         if (mounted) {
           setState(() {
             _isCameraInitialized = true;
@@ -112,11 +114,11 @@ class _ScannerPageState extends State<ScannerPage>
       } catch (e) {
         debugPrint("Could not set flash mode (flash may not be available): $e");
       }
-      
+
       // Take picture
       final XFile image = await _cameraController!.takePicture();
       debugPrint("Picture taken: ${image.path}");
-      
+
       // Restore flash mode after capture (workaround for some Android devices)
       try {
         await _cameraController!.setFlashMode(_currentFlashMode);
@@ -124,7 +126,7 @@ class _ScannerPageState extends State<ScannerPage>
       } catch (e) {
         debugPrint("Could not set flash mode after capture: $e");
       }
-      
+
       if (!mounted) return;
 
       // Use ScannerCubit to scan

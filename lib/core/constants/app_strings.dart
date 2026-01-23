@@ -81,7 +81,7 @@ class AppStrings {
   static const String enterAuthorName = "أدخل اسم المؤلف";
   static const String categoryLabel = "التصنيف";
   static const String readingStatusLabel = "حالة القراءة";
-  static const String statusReading = "أقرأه الآن";
+  static const String statusReading = "أقرأه حالياً";
   static const String statusWantToRead = "أرغب بقراءته";
   static const String statusFinished = "تم الانتهاء";
   static const String saveBook = "حفظ الكتاب";
@@ -99,9 +99,9 @@ class AppStrings {
       "ابدأ رحلتك القرائية الآن وقم بإضافة الكتب التي قرأتها أو ترغب في قراءتها.";
   static const String libraryAddBookNow = "أضف كتاباً الآن";
   static const String tabAll = "الكل";
-  static const String tabReading = "أقرأ حالياً";
-  static const String tabCompleted = "مكتملة";
-  static const String tabWishlist = "قائمة الرغبات";
+  static const String tabReading = "أقرأه حالياً";
+  static const String tabCompleted = "تم الانتهاء";
+  static const String tabWishlist = "أرغب بقراءته";
 
   // Book Details
   static const String detailsTitle = "تفاصيل الكتاب";

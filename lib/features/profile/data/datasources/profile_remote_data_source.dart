@@ -29,6 +29,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
             await supabaseClient.from('profiles').upsert({
               'id': user.id,
               'full_name': user.userMetadata?['full_name'],
+              'annual_goal': 0,
             });
           } catch (_) {}
 

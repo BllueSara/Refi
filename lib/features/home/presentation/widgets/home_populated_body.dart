@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/widgets/scale_button.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/widgets/main_navigation_screen.dart';
 import '../../domain/entities/home_entity.dart';
 import '../../../library/domain/entities/book_entity.dart';
 import '../../../library/presentation/cubit/library_cubit.dart';
 import '../../../library/presentation/pages/book_details_page.dart';
+import '../../../add_book/presentation/screens/search_screen.dart';
 import 'book_card.dart';
 import 'annual_goal_card.dart';
 import 'home_stats_row.dart';
@@ -25,7 +28,7 @@ class HomePopulatedBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
       builder: (context, opacity, child) {
         return Opacity(
@@ -33,7 +36,7 @@ class HomePopulatedBody extends StatelessWidget {
           child: child,
         );
       },
-      child: SingleChildScrollView(
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,7 +46,7 @@ class HomePopulatedBody extends StatelessWidget {
               completedBooks: data.completedBooks,
               annualGoal: data.annualGoal,
               onSetGoal: () {
-                _showGoalSettingSheet(context, data.annualGoal ?? 24);
+                _showGoalSettingSheet(context, data.annualGoal ?? 0);
               },
             ),
 
@@ -82,41 +85,42 @@ class HomePopulatedBody extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Container(
-                      width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.refiMeshGradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primaryBlue.withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
+                    ScaleButton(
+                      onTap: () {
+                        // Navigate to Search Screen directly
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SearchScreen(),
                           ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            // Navigate to Search/Add Book
-                            final mainNavState =
-                                context.findAncestorStateOfType<
-                                    State<MainNavigationScreen>>();
-                            if (mainNavState != null && mainNavState.mounted) {
-                              (mainNavState as dynamic).changeTab(1); // Library
-                            }
-                          },
+                        ).then((_) {
+                          // Refresh Home Data when back
+                          if (context.mounted) {
+                            context.read<HomeCubit>().loadHomeData();
+                          }
+                        });
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.refiMeshGradient,
                           borderRadius: BorderRadius.circular(16),
-                          child: Center(
-                            child: Text(
-                              "أضف كتابك الأول",
-                              style: GoogleFonts.tajawal(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryBlue.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            "أضف كتابك الأول",
+                            style: GoogleFonts.tajawal(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -211,7 +215,7 @@ class HomePopulatedBody extends StatelessWidget {
   }
 
   void _showGoalSettingSheet(BuildContext context, int currentGoal) {
-    int selectedGoal = currentGoal;
+    int selectedGoal = (currentGoal > 0) ? currentGoal : 24;
     final homeCubit = context.read<HomeCubit>();
     bool isSuccess = false; // Local state for view swapping
 
@@ -258,7 +262,7 @@ class HomePopulatedBody extends StatelessWidget {
                           const SizedBox(height: 24),
 
                           Text(
-                            "هدفك للقراءة في 2026",
+                            "هدفك للقراءة في ${DateTime.now().year}",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.tajawal(
                               fontSize: 20,
@@ -335,40 +339,41 @@ class HomePopulatedBody extends StatelessWidget {
                           const SizedBox(height: 32),
 
                           // Save Button
-                          Container(
-                            width: double.infinity,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              gradient: AppColors.refiMeshGradient,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primaryBlue.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  // 1. Optimistic Update
-                                  homeCubit.updateAnnualGoal(selectedGoal);
-                                  // 2. Switch UI
-                                  setState(() {
-                                    isSuccess = true;
-                                  });
-                                },
+                          ScaleButton(
+                            onTap: () {
+                              // 1. Instant Feedback
+                              HapticFeedback.lightImpact();
+
+                              // 2. Optimistic Update (Fire & Forget)
+                              homeCubit.updateAnnualGoal(selectedGoal);
+
+                              // 3. Switch UI Immediately
+                              setState(() {
+                                isSuccess = true;
+                              });
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                gradient: AppColors.refiMeshGradient,
                                 borderRadius: BorderRadius.circular(16),
-                                child: Center(
-                                  child: Text(
-                                    "حفظ الهدف",
-                                    style: GoogleFonts.tajawal(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                    ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        AppColors.primaryBlue.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "حفظ الهدف",
+                                  style: GoogleFonts.tajawal(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -439,7 +444,7 @@ class HomePopulatedBody extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "$goal كتاباً في 2026",
+                    "$goal كتاباً في ${DateTime.now().year}",
                     style: GoogleFonts.tajawal(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -453,35 +458,32 @@ class HomePopulatedBody extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         // Continue Button
-        Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: AppColors.refiMeshGradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryBlue.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                Navigator.pop(context);
-              },
+        ScaleButton(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context);
+          },
+          child: Container(
+            width: double.infinity,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: AppColors.refiMeshGradient,
               borderRadius: BorderRadius.circular(16),
-              child: Center(
-                child: Text(
-                  "فلنبدأ القراءة ←",
-                  style: GoogleFonts.tajawal(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                "فلنبدأ القراءة ←",
+                style: GoogleFonts.tajawal(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
                 ),
               ),
             ),

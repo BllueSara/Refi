@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../domain/entities/book_entity.dart';
 
@@ -18,16 +17,16 @@ class BookStatusSelector extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _statusChip(context, BookStatus.reading, AppStrings.statusReading),
+        _statusChip(context, BookStatus.wishlist),
         const SizedBox(width: 8),
-        _statusChip(context, BookStatus.wishlist, AppStrings.statusWantToRead),
+        _statusChip(context, BookStatus.reading),
         const SizedBox(width: 8),
-        _statusChip(context, BookStatus.completed, AppStrings.statusFinished),
+        _statusChip(context, BookStatus.completed),
       ],
     );
   }
 
-  Widget _statusChip(BuildContext context, BookStatus status, String label) {
+  Widget _statusChip(BuildContext context, BookStatus status) {
     final isSelected = status == currentStatus;
     return GestureDetector(
       onTap: () => onStatusChanged(status),
@@ -41,7 +40,7 @@ class BookStatusSelector extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
-          label,
+          status.label,
           style: TextStyle(
             color: isSelected ? Colors.white : AppColors.textSub,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

@@ -13,6 +13,8 @@ class BookModel extends BookEntity {
     super.status,
     super.currentPage,
     super.categories,
+    super.googleBookId,
+    super.source,
   });
 
   factory BookModel.fromGoogleBooks(Map<String, dynamic> json) {
@@ -49,6 +51,8 @@ class BookModel extends BookEntity {
       status: BookStatus.none,
       currentPage: 0,
       categories: categories,
+      googleBookId: json['id'],
+      source: 'google',
     );
   }
 
@@ -60,58 +64,52 @@ class BookModel extends BookEntity {
       } catch (_) {}
     }
 
-    // Map single author string to List
+    // Map single author string to List as per schema: 'author' text
     List<String> authorsList = [];
     if (json['author'] != null && json['author'] is String) {
       authorsList = [json['author']];
     } else if (json['authors'] != null) {
-      // Fallback if user changed schema back or mixed
       authorsList = List<String>.from(json['authors']);
     }
-    /* 
-    List<String> categories = [];
-    if (json['categories'] != null) {
-       // Handle simple array
-       categories = List<String>.from(json['categories']);
-    }
-    */
 
     return BookModel(
-      id: json['id']?.toString() ?? '', // Supabase UUID
+      id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       authors: authorsList,
-      imageUrl:
-          json['cover_url'] ?? json['image_url'], // Support schema 'cover_url'
+      imageUrl: json['cover_url'] ?? json['image_url'],
       rating:
           json['rating'] != null ? (json['rating'] as num).toDouble() : null,
-      description: null, // Not in schema
-      publishedDate: null, // Not in schema
-      pageCount:
-          json['total_pages'] ?? json['page_count'], // Schema 'total_pages'
+      description: json['description'],
+      publishedDate: json['published_date'],
+      pageCount: json['total_pages'] ?? json['page_count'],
       status: status,
       currentPage: json['current_page'] ?? 0,
-      categories: const [], // categories,
+      categories:
+          (json['categories'] as List?)?.map((e) => e.toString()).toList() ??
+              const [],
+      googleBookId: json['google_book_id'],
+      source: json['source'] ?? 'manual',
     );
   }
 
   Map<String, dynamic> toSupabase(String userId) {
-    // Schema based properties
-    return {
+    final Map<String, dynamic> data = {
       'user_id': userId,
-      // 'id': auto-generated uuid by db
       'title': title,
-      'author': authors.isNotEmpty
-          ? authors.first
-          : null, // Schema has singular 'author' text
-      'cover_url': imageUrl, // Schema 'cover_url'
-      'status': status == BookStatus.none
-          ? 'wishlist' // Default as per schema default
-          : status.name,
-      'total_pages': pageCount, // Schema 'total_pages'
+      'author': authors.isNotEmpty ? authors.first : null,
+      'cover_url': imageUrl,
+      'status': status == BookStatus.none ? 'wishlist' : status.name,
+      'total_pages': pageCount ?? 0,
       'current_page': currentPage,
       'rating': rating,
-      // 'categories': categories,
-      // 'created_at': default now()
+      'categories': categories,
     };
+
+    // Only add these if they likely exist in schema to avoid PostgresException
+    // The user should run: ALTER TABLE books ADD COLUMN google_book_id TEXT;
+    // if (googleBookId != null) data['google_book_id'] = googleBookId;
+    // if (source != null) data['source'] = source;
+
+    return data;
   }
 }

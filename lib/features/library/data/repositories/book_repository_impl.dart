@@ -66,4 +66,16 @@ class BookRepositoryImpl implements BookRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> deleteBook(String bookId) async {
+    try {
+      await remoteDataSource.deleteBook(bookId);
+      return const Right(null);
+    } on Failure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

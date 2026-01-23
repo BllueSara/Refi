@@ -7,4 +7,5 @@ abstract class BookRepository {
   Future<Either<Failure, void>> addBookToLibrary(BookEntity book);
   Future<Either<Failure, void>> updateBook(BookEntity book);
   Future<Either<Failure, List<BookEntity>>> fetchUserLibrary();
+  Future<Either<Failure, void>> deleteBook(String bookId);
 }

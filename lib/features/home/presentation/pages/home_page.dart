@@ -93,17 +93,35 @@ class _HomePageState extends State<HomePage> {
               return Scaffold(
                 backgroundColor: AppColors.background,
                 appBar: HomeHeader(data: currentData),
-                body: Builder(
-                  builder: (context) {
-                    if (state is HomeLoading) {
-                      return const HomeSkeleton();
-                    } else if (state is HomeEmpty) {
-                      return HomeEmptyBody(data: state.data);
-                    } else if (state is HomeLoaded) {
-                      return HomePopulatedBody(data: state.data);
-                    }
-                    return const SizedBox.shrink();
+                body: RefreshIndicator(
+                  onRefresh: () async {
+                    await context
+                        .read<HomeCubit>()
+                        .loadHomeData(forceRefresh: true);
                   },
+                  color: AppColors.primaryBlue,
+                  child: Builder(
+                    builder: (context) {
+                      if (state is HomeLoading) {
+                        return const HomeSkeleton();
+                      } else if (state is HomeEmpty) {
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                                minHeight:
+                                    MediaQuery.of(context).size.height - 150),
+                            child: HomeEmptyBody(data: state.data),
+                          ),
+                        );
+                      } else if (state is HomeLoaded) {
+                        return SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: HomePopulatedBody(data: state.data));
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                 ),
               );
             },
