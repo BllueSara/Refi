@@ -38,6 +38,8 @@ class BookRepositoryImpl implements BookRepository {
         status: book.status,
         currentPage: book.currentPage,
         categories: book.categories,
+        googleBookId: book.googleBookId,
+        source: book.source,
       );
       await remoteDataSource.addBookToLibrary(bookModel);
       return const Right(null);
