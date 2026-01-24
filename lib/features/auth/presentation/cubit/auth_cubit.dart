@@ -9,6 +9,7 @@ import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/signin_with_google_usecase.dart';
 
 import '../../domain/usecases/reset_password_usecase.dart';
+import '../../domain/usecases/update_password_usecase.dart';
 
 // States
 abstract class AuthState extends Equatable {
@@ -50,6 +51,7 @@ class AuthCubit extends Cubit<AuthState> {
   final SignInWithGoogleUseCase signInWithGoogleUseCase;
 
   final ResetPasswordUseCase resetPasswordUseCase;
+  final UpdatePasswordUseCase updatePasswordUseCase;
   final SharedPreferences sharedPreferences;
 
   AuthCubit({
@@ -59,6 +61,7 @@ class AuthCubit extends Cubit<AuthState> {
     required this.getCurrentUserUseCase,
     required this.signInWithGoogleUseCase,
     required this.resetPasswordUseCase,
+    required this.updatePasswordUseCase,
     required this.sharedPreferences,
   }) : super(AuthInitial());
 
@@ -123,6 +126,15 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) => emit(AuthError(failure.message)),
       (user) => emit(AuthAuthenticated(user)),
+    );
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    emit(AuthLoading());
+    final result = await updatePasswordUseCase(newPassword);
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (_) => emit(AuthPasswordResetSent()), // Reuse this state for success
     );
   }
 }

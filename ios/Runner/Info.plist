@@ -59,8 +59,8 @@
 				<key>CFBundleURLSchemes</key>
 				<array>
 					<string>refi</string>
-					<!-- TODO: Replace the string below with your REVERSE_CLIENT_ID from GoogleService-Info.plist -->
-					<string>https://thfehrycowozthjkzjuv.supabase.co/auth/v1/callback</string>
+					<!-- This URL scheme is used for Supabase OAuth redirect -->
+					<!-- Make sure 'refi://auth-callback' is configured in Supabase dashboard -->
 				</array>
 			</dict>
 		</array>

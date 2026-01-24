@@ -13,6 +13,7 @@ import '../../features/auth/domain/usecases/signup_usecase.dart';
 import '../../features/auth/domain/usecases/signin_with_google_usecase.dart';
 
 import '../../features/auth/domain/usecases/reset_password_usecase.dart';
+import '../../features/auth/domain/usecases/update_password_usecase.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 
 import '../../features/library/data/datasources/book_remote_data_source.dart';
@@ -65,6 +66,7 @@ Future<void> init(SharedPreferences sharedPreferences) async {
       getCurrentUserUseCase: sl(),
       signInWithGoogleUseCase: sl(),
       resetPasswordUseCase: sl(),
+      updatePasswordUseCase: sl(),
       sharedPreferences: sl(),
     ),
   );
@@ -77,6 +79,7 @@ Future<void> init(SharedPreferences sharedPreferences) async {
   sl.registerLazySingleton(() => SignInWithGoogleUseCase(sl()));
 
   sl.registerLazySingleton(() => ResetPasswordUseCase(sl()));
+  sl.registerLazySingleton(() => UpdatePasswordUseCase(sl()));
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(
