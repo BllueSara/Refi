@@ -18,4 +18,24 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> updateProfile({
+    required String userId,
+    String? fullName,
+    int? annualGoal,
+    String? avatarUrl,
+  }) async {
+    try {
+      await remoteDataSource.updateProfile(
+        userId: userId,
+        fullName: fullName,
+        annualGoal: annualGoal,
+        avatarUrl: avatarUrl,
+      );
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

@@ -7,10 +7,13 @@ abstract class QuoteRemoteDataSource {
     String? bookId,
     required String feeling,
     String? notes,
+    bool isFavorite = false,
   });
 
   Future<List<QuoteModel>> getUserQuotes();
   Future<List<QuoteModel>> getBookQuotes(String bookId);
+  Future<void> toggleFavorite(
+      {required String quoteId, required bool isFavorite});
 }
 
 class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
@@ -24,6 +27,7 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
     String? bookId,
     required String feeling,
     String? notes,
+    bool isFavorite = false,
   }) async {
     final userId = supabaseClient.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
@@ -37,6 +41,7 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
         'book_id': bookId,
         'emotion': feeling,
         'personal_note': notes,
+        'is_favorite': isFavorite,
       });
       print('✅ Quote saved successfully!');
     } catch (e) {
@@ -60,15 +65,18 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
       // Extract book info from join
       String? bookTitle;
       String? bookAuthor;
+      String? bookCoverUrl;
       if (json['books'] != null) {
         bookTitle = json['books']['title'];
         bookAuthor = json['books']['author'];
+        bookCoverUrl = json['books']['cover_url'];
       }
 
       return QuoteModel.fromJson({
         ...json,
         'book_title': bookTitle,
         'book_author': bookAuthor,
+        'book_cover_url': bookCoverUrl,
       });
     }).toList();
   }
@@ -88,16 +96,39 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
     return (response as List).map((json) {
       String? bookTitle;
       String? bookAuthor;
+      String? bookCoverUrl;
       if (json['books'] != null) {
         bookTitle = json['books']['title'];
         bookAuthor = json['books']['author'];
+        bookCoverUrl = json['books']['cover_url'];
       }
 
       return QuoteModel.fromJson({
         ...json,
         'book_title': bookTitle,
         'book_author': bookAuthor,
+        'book_cover_url': bookCoverUrl,
       });
     }).toList();
+  }
+
+  @override
+  Future<void> toggleFavorite({
+    required String quoteId,
+    required bool isFavorite,
+  }) async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    try {
+      await supabaseClient
+          .from('quotes')
+          .update({'is_favorite': isFavorite})
+          .eq('id', quoteId)
+          .eq('user_id', userId);
+    } catch (e) {
+      print('❌ Error toggling favorite: $e');
+      rethrow;
+    }
   }
 }

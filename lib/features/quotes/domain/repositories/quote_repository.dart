@@ -8,9 +8,15 @@ abstract class QuoteRepository {
     String? bookId,
     required String feeling,
     String? notes,
+    bool isFavorite = false,
   });
 
   Future<Either<Failure, List<QuoteEntity>>> getUserQuotes();
 
   Future<Either<Failure, List<QuoteEntity>>> getBookQuotes(String bookId);
+
+  Future<Either<Failure, void>> toggleFavorite({
+    required String quoteId,
+    required bool isFavorite,
+  });
 }

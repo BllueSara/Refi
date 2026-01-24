@@ -12,12 +12,14 @@ class SaveQuoteUseCase {
     String? bookId,
     required String feeling,
     String? notes,
+    bool isFavorite = false,
   }) async {
     return await repository.saveQuote(
       text: text,
       bookId: bookId,
       feeling: feeling,
       notes: notes,
+      isFavorite: isFavorite,
     );
   }
 }

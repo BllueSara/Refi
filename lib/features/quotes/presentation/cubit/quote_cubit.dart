@@ -4,6 +4,7 @@ import '../../domain/entities/quote_entity.dart';
 import '../../domain/usecases/save_quote_usecase.dart';
 import '../../domain/usecases/get_user_quotes_usecase.dart';
 import '../../domain/usecases/get_book_quotes_usecase.dart';
+import '../../domain/usecases/toggle_favorite_usecase.dart';
 
 // States
 abstract class QuoteState extends Equatable {
@@ -39,11 +40,13 @@ class QuoteCubit extends Cubit<QuoteState> {
   final SaveQuoteUseCase saveQuoteUseCase;
   final GetUserQuotesUseCase getUserQuotesUseCase;
   final GetBookQuotesUseCase getBookQuotesUseCase;
+  final ToggleFavoriteUseCase toggleFavoriteUseCase;
 
   QuoteCubit({
     required this.saveQuoteUseCase,
     required this.getUserQuotesUseCase,
     required this.getBookQuotesUseCase,
+    required this.toggleFavoriteUseCase,
   }) : super(QuoteInitial());
 
   Future<void> saveQuote({
@@ -51,6 +54,7 @@ class QuoteCubit extends Cubit<QuoteState> {
     String? bookId,
     required String feeling,
     String? notes,
+    bool isFavorite = false,
   }) async {
     emit(QuoteSaving());
 
@@ -59,6 +63,7 @@ class QuoteCubit extends Cubit<QuoteState> {
       bookId: bookId,
       feeling: feeling,
       notes: notes,
+      isFavorite: isFavorite,
     );
 
     result.fold(
@@ -74,7 +79,12 @@ class QuoteCubit extends Cubit<QuoteState> {
 
     result.fold(
       (failure) => emit(QuoteError(failure.message)),
-      (quotes) => emit(QuotesLoaded(quotes)),
+      (quotes) {
+        // Smart Sorting: Latest Added First
+        final sortedQuotes = List<QuoteEntity>.from(quotes)
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        emit(QuotesLoaded(sortedQuotes));
+      },
     );
   }
 
@@ -86,6 +96,45 @@ class QuoteCubit extends Cubit<QuoteState> {
     result.fold(
       (failure) => emit(QuoteError(failure.message)),
       (quotes) => emit(QuotesLoaded(quotes)),
+    );
+  }
+
+  Future<void> toggleFavorite(QuoteEntity quote) async {
+    // Optimistic Update
+    if (state is QuotesLoaded) {
+      final currentQuotes = (state as QuotesLoaded).quotes;
+      final updatedQuotes = currentQuotes.map((q) {
+        if (q.id == quote.id) {
+          return QuoteEntity(
+            id: q.id,
+            text: q.text,
+            bookId: q.bookId,
+            bookTitle: q.bookTitle,
+            bookAuthor: q.bookAuthor,
+            bookCoverUrl: q.bookCoverUrl,
+            feeling: q.feeling,
+            notes: q.notes,
+            isFavorite: !q.isFavorite,
+            createdAt: q.createdAt,
+          );
+        }
+        return q;
+      }).toList();
+      emit(QuotesLoaded(updatedQuotes));
+    }
+
+    // Call Repository
+    final result = await toggleFavoriteUseCase(
+      quoteId: quote.id,
+      isFavorite: !quote.isFavorite,
+    );
+
+    result.fold(
+      (failure) {
+        // Revert or Reload
+        loadUserQuotes();
+      },
+      (_) => null,
     );
   }
 }

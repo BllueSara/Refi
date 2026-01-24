@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
-import '../../../scanner/presentation/pages/scanner_page.dart';
 import '../cubit/quote_cubit.dart';
 import '../../domain/entities/quote_entity.dart';
+import '../widgets/quote_card.dart';
+import '../widgets/quotes_empty_view.dart';
+import '../widgets/quotes_by_book_view.dart';
 
 class QuotesPage extends StatefulWidget {
   const QuotesPage({super.key});
@@ -100,30 +102,34 @@ class _QuotesPageState extends State<QuotesPage> {
 
                 if (state is QuoteError) {
                   return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: AppColors.textPlaceholder,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          state.message,
-                          style: const TextStyle(
-                            //fontFamily: 'Tajawal',
-                            color: AppColors.textSub,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: AppColors.textPlaceholder,
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<QuoteCubit>().loadUserQuotes();
-                          },
-                          child: const Text('إعادة المحاولة'),
-                        ),
-                      ],
+                          const SizedBox(height: 16),
+                          Text(
+                            state.message,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              //fontFamily: 'Tajawal',
+                              color: AppColors.textSub,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              context.read<QuoteCubit>().loadUserQuotes();
+                            },
+                            child: const Text('إعادة المحاولة'),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }
@@ -132,38 +138,71 @@ class _QuotesPageState extends State<QuotesPage> {
                   final quotes = state.quotes;
 
                   if (quotes.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.format_quote,
-                            size: 80,
-                            color: AppColors.textPlaceholder.withValues(
-                              alpha: 0.3,
+                    return const QuotesEmptyView();
+                  }
+
+                  // Filter logic based on tab
+                  List<QuoteEntity> displayedQuotes = quotes;
+
+                  if (_activeTab == AppStrings.filterByBook) {
+                    // Check if valid books exist, otherwise show specific empty state
+                    if (quotes
+                        .any((q) => q.bookId != null || q.bookTitle != null)) {
+                      return QuotesByBookView(quotes: quotes);
+                    } else {
+                      // Empty state for "By Book" if no books found
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.auto_stories_outlined,
+                              size: 80,
+                              color: AppColors.textPlaceholder.withOpacity(0.3),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          const Text(
-                            'لا توجد اقتباسات بعد',
-                            style: TextStyle(
-                              //fontFamily: 'Tajawal',
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textSub,
+                            const SizedBox(height: 16),
+                            const Text(
+                              'لم تضف أي اقتباسات لهذا الكتاب بعد..\nابدأ بالمسح الآن!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                //fontFamily: 'Tajawal',
+                                fontSize: 16,
+                                color: AppColors.textMain,
+                                height: 1.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'ابدأ بإضافة اقتباساتك المفضلة',
-                            style: TextStyle(
-                              //fontFamily: 'Tajawal',
-                              color: AppColors.textPlaceholder,
+                          ],
+                        ),
+                      );
+                    }
+                  } else if (_activeTab == AppStrings.filterFavorites) {
+                    displayedQuotes =
+                        quotes.where((q) => q.isFavorite).toList();
+                    if (displayedQuotes.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.favorite_border,
+                              size: 80,
+                              color: AppColors.textPlaceholder.withOpacity(0.3),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
+                            const SizedBox(height: 16),
+                            const Text(
+                              'لم تقم بإضافة أي اقتباسات للمفضلة بعد',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                //fontFamily: 'Tajawal',
+                                fontSize: 16,
+                                color: AppColors.textMain,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                   }
 
                   return RefreshIndicator(
@@ -172,11 +211,15 @@ class _QuotesPageState extends State<QuotesPage> {
                     },
                     child: ListView.separated(
                       padding: const EdgeInsets.all(16),
-                      itemCount: quotes.length,
+                      // Optimization: set itemExtent if height is fixed, prevents layout jumps.
+                      // However cards have variable height due to content, so we cannot use itemExtent.
+                      // We rely on standard ListView builder optimization.
+                      addAutomaticKeepAlives: true,
+                      itemCount: displayedQuotes.length,
                       separatorBuilder: (c, i) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
-                        final quote = quotes[index];
-                        return _QuoteCard(quote: quote);
+                        final quote = displayedQuotes[index];
+                        return QuoteCard(quote: quote);
                       },
                     ),
                   );
@@ -188,132 +231,7 @@ class _QuotesPageState extends State<QuotesPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (c) => const ScannerPage()),
-          );
-        },
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: AppColors.refiMeshGradient,
-          ),
-          child: const Icon(Icons.camera_alt, color: Colors.white),
-        ),
-      ),
-    );
-  }
-}
-
-class _QuoteCard extends StatelessWidget {
-  final QuoteEntity quote;
-
-  const _QuoteCard({required this.quote});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: AppColors.inputBorder),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            // Future: Navigate to quote details or edit
-          },
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  quote.text,
-                  style: const TextStyle(
-                    //fontFamily: 'Tajawal',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    height: 1.6,
-                    color: Colors.black,
-                  ),
-                ),
-                if (quote.notes != null && quote.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.inputBorder.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      quote.notes!,
-                      style: const TextStyle(
-                        //fontFamily: 'Tajawal',
-                        fontSize: 14,
-                        color: AppColors.textSub,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.bookmark,
-                            size: 16,
-                            color: AppColors.textSub,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              quote.bookTitle ?? 'بدون كتاب',
-                              style: const TextStyle(
-                                //fontFamily: 'Tajawal',
-                                fontSize: 12,
-                                color: AppColors.textSub,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.share,
-                      size: 20,
-                      color: AppColors.textPlaceholder,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      // Removed FloatingActionButton as requested
     );
   }
 }

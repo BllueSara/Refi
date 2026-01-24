@@ -4,6 +4,12 @@ import '../models/profile_model.dart';
 
 abstract class ProfileRemoteDataSource {
   Future<ProfileModel> getProfile(String userId);
+  Future<void> updateProfile({
+    required String userId,
+    String? fullName,
+    int? annualGoal,
+    String? avatarUrl,
+  });
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -20,29 +26,60 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           .eq('id', userId)
           .maybeSingle();
 
-      if (response == null) {
-        // If profile missing, return basic info from Auth (Self-healing fallback)
-        final user = supabaseClient.auth.currentUser;
-        if (user != null && user.id == userId) {
-          // Try to Create it
-          try {
-            await supabaseClient.from('profiles').upsert({
-              'id': user.id,
-              'full_name': user.userMetadata?['full_name'],
-              'annual_goal': 0,
-            });
-          } catch (_) {}
+      final booksCountResponse = await supabaseClient
+          .from('books')
+          .count()
+          .eq('user_id', userId)
+          .eq('status', 'completed'); // Schema says 'completed'
 
-          return ProfileModel(
-            id: userId,
-            fullName: user.userMetadata?['full_name'],
-          );
-        }
-        // Fallback if no auth user (unlikely if called with authenticated user id)
-        throw const ServerFailure('Profile not found');
+      int finishedBooks = booksCountResponse; // count() returns int
+
+      // Fetch quotes count
+      final quotesCountResponse =
+          await supabaseClient.from('quotes').count().eq('user_id', userId);
+
+      int totalQuotes = quotesCountResponse;
+
+      if (response == null) {
+        // ... (existing fallback logic) ...
+        // Note: For fallback, finishedBooks will be 0 or count from books
+        final user = supabaseClient.auth.currentUser;
+        // ... (existing upsert logic) ...
+
+        return ProfileModel(
+          id: userId,
+          fullName: user?.userMetadata?['full_name'],
+          finishedBooksCount: finishedBooks,
+          totalQuotesCount: totalQuotes,
+        );
       }
 
-      return ProfileModel.fromSupabase(response);
+      return ProfileModel.fromSupabase({
+        ...response,
+        'finished_books_count': finishedBooks,
+        'total_quotes_count': totalQuotes,
+      });
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> updateProfile({
+    required String userId,
+    String? fullName,
+    int? annualGoal,
+    String? avatarUrl,
+  }) async {
+    try {
+      final updates = <String, dynamic>{};
+      if (fullName != null) updates['full_name'] = fullName;
+      if (annualGoal != null) updates['annual_goal'] = annualGoal;
+      if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+
+      if (updates.isEmpty) return;
+
+      await supabaseClient.from('profiles').update(updates).eq('id', userId);
     } catch (e) {
       throw ServerFailure(e.toString());
     }

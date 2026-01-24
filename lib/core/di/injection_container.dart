@@ -30,6 +30,7 @@ import '../../features/profile/data/datasources/profile_remote_data_source.dart'
 import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/get_profile_usecase.dart';
+import '../../features/profile/domain/usecases/update_profile_usecase.dart';
 import '../../features/profile/presentation/cubit/profile_cubit.dart';
 
 import '../../features/scanner/data/datasources/ocr_service.dart';
@@ -45,6 +46,7 @@ import '../../features/quotes/domain/repositories/quote_repository.dart';
 import '../../features/quotes/domain/usecases/save_quote_usecase.dart';
 import '../../features/quotes/domain/usecases/get_user_quotes_usecase.dart';
 import '../../features/quotes/domain/usecases/get_book_quotes_usecase.dart';
+import '../../features/quotes/domain/usecases/toggle_favorite_usecase.dart';
 import '../../features/quotes/presentation/cubit/quote_cubit.dart';
 
 final sl = GetIt.instance;
@@ -100,7 +102,11 @@ Future<void> init(SharedPreferences sharedPreferences) async {
 
   // ! Features - Profile
   sl.registerFactory(
-    () => ProfileCubit(getProfileUseCase: sl(), supabaseClient: sl()),
+    () => ProfileCubit(
+      getProfileUseCase: sl(),
+      updateProfileUseCase: sl(),
+      supabaseClient: sl(),
+    ),
   );
 
   // Use Cases
@@ -133,6 +139,7 @@ Future<void> init(SharedPreferences sharedPreferences) async {
 
   // Use Case
   sl.registerLazySingleton(() => GetProfileUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateProfileUseCase(sl()));
 
   // ! Features - Scanner
   sl.registerFactory(
@@ -150,11 +157,13 @@ Future<void> init(SharedPreferences sharedPreferences) async {
       saveQuoteUseCase: sl(),
       getUserQuotesUseCase: sl(),
       getBookQuotesUseCase: sl(),
+      toggleFavoriteUseCase: sl(),
     ),
   );
   sl.registerLazySingleton(() => SaveQuoteUseCase(sl()));
   sl.registerLazySingleton(() => GetUserQuotesUseCase(sl()));
   sl.registerLazySingleton(() => GetBookQuotesUseCase(sl()));
+  sl.registerLazySingleton(() => ToggleFavoriteUseCase(sl()));
   sl.registerLazySingleton<QuoteRepository>(
     () => QuoteRepositoryImpl(remoteDataSource: sl()),
   );

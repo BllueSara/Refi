@@ -6,6 +6,8 @@ class ProfileEntity extends Equatable {
   final String? avatarUrl;
   final int? annualGoal;
   final int? currentStreak;
+  final int finishedBooksCount;
+  final int totalQuotesCount;
 
   const ProfileEntity({
     required this.id,
@@ -13,14 +15,18 @@ class ProfileEntity extends Equatable {
     this.avatarUrl,
     this.annualGoal,
     this.currentStreak,
+    this.finishedBooksCount = 0,
+    this.totalQuotesCount = 0,
   });
 
   @override
   List<Object?> get props => [
-    id,
-    fullName,
-    avatarUrl,
-    annualGoal,
-    currentStreak,
-  ];
+        id,
+        fullName,
+        avatarUrl,
+        annualGoal,
+        currentStreak,
+        finishedBooksCount,
+        totalQuotesCount,
+      ];
 }
