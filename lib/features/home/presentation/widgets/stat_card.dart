@@ -45,7 +45,6 @@ class StatCard extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
               fontSize: 20,
               color: AppColors.primaryBlue,
@@ -56,7 +55,6 @@ class StatCard extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontFamily: 'Tajawal',
               fontSize: 12,
               color: AppColors.textSub,
             ),

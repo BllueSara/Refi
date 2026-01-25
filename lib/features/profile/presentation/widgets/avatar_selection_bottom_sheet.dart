@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/colors.dart';
 
 class AvatarSelectionBottomSheet extends StatelessWidget {
@@ -6,18 +7,38 @@ class AvatarSelectionBottomSheet extends StatelessWidget {
 
   const AvatarSelectionBottomSheet({super.key, required this.onAvatarSelected});
 
-  // Placeholder URLs for premium avatars (3 boys, 3 girls)
-  /*
-    In a real app, replace these with actual asset paths or hosted URLs.
-    For now, using standard placeholders but distinguishable.
-  */
+  // Placeholder URLs for premium avatars - All girl names
   final List<String> _avatars = const [
-    'https://api.dicebear.com/7.x/avataaars/png?seed=Felix&backgroundColor=b6e3f4', // Boy 1
-    'https://api.dicebear.com/7.x/avataaars/png?seed=Aneka&backgroundColor=c0aede', // Girl 1
-    'https://api.dicebear.com/7.x/avataaars/png?seed=John&backgroundColor=ffdfbf', // Boy 2
-    'https://api.dicebear.com/7.x/avataaars/png?seed=Jane&backgroundColor=ffdfbf', // Girl 2
-    'https://api.dicebear.com/7.x/avataaars/png?seed=Mike&backgroundColor=b6e3f4', // Boy 3
-    'https://api.dicebear.com/7.x/avataaars/png?seed=Sara&backgroundColor=c0aede', // Girl 3
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Mia',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Emma',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Sophia',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Olivia',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Isabella',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Ava',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Charlotte',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Amelia',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Harper',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Evelyn',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Abigail',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Emily',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Ella',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Elizabeth',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Sofia',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Luna',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Grace',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Victoria',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Aria',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Scarlett',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Lily',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Zoe',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Chloe',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Penelope',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Layla',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Nora',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Hannah',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Mila',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Addison',
+    'https://api.dicebear.com/9.x/toon-head/svg?seed=Eleanor',
   ];
 
   @override
@@ -50,40 +71,52 @@ class AvatarSelectionBottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _avatars.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  onAvatarSelected(_avatars[index]);
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.inputBorder),
-                    image: DecorationImage(
-                      image: NetworkImage(_avatars[index]),
-                      fit: BoxFit.cover,
+          Flexible(
+            child: GridView.builder(
+              itemCount: _avatars.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    onAvatarSelected(_avatars[index]);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.inputBorder),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                    child: ClipOval(
+                      child: SvgPicture.network(
+                        _avatars[index],
+                        fit: BoxFit.cover,
+                        placeholderBuilder: (context) => Container(
+                          color: AppColors.inputBorder,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primaryBlue,
+                            ),
+                          ),
+                        ),
+                        semanticsLabel: 'Avatar ${index + 1}',
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
           const SizedBox(height: 24),
         ],

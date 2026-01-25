@@ -7,6 +7,7 @@ import '../../../../core/constants/sizes.dart';
 import '../cubit/auth_cubit.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/refi_auth_field.dart';
+import 'login_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -51,7 +52,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني',
             type: SnackBarType.success,
           );
-          Navigator.pop(context);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
         } else if (state is AuthError) {
           setState(() {
             _emailError = state.message;

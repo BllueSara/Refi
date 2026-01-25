@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/dimensions.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../cubit/profile_cubit.dart';
 import '../widgets/profile_option_tile.dart';
 import '../widgets/avatar_selection_bottom_sheet.dart';
@@ -85,40 +87,37 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                       }
                     },
                     onAvatarTap: () {
+                      final profileCubit = context.read<ProfileCubit>();
                       showModalBottomSheet(
                         context: context,
                         backgroundColor: Colors.transparent,
-                        builder: (context) => AvatarSelectionBottomSheet(
-                          onAvatarSelected: (newAvatarUrl) {
-                            context
-                                .read<ProfileCubit>()
-                                .updateProfile(avatarUrl: newAvatarUrl);
-                          },
+                        builder: (bottomSheetContext) => BlocProvider.value(
+                          value: profileCubit,
+                          child: AvatarSelectionBottomSheet(
+                            onAvatarSelected: (newAvatarUrl) {
+                              profileCubit.updateProfile(
+                                  avatarUrl: newAvatarUrl);
+                            },
+                          ),
                         ),
                       );
                     },
                   ),
                   const SizedBox(height: AppDimensions.paddingXL),
 
-                  // Stats & Settings
-                  ProfileOptionTile(
-                    title: 'الكتب المنجزة',
-                    showArrow: false,
-                    trailing: Text(
-                      "${profile.finishedBooksCount}",
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryBlue,
-                          ),
-                    ),
-                    onTap: () {},
+                  // Stats Section
+                  _StatsSection(
+                    finishedBooks: profile.finishedBooksCount,
+                    totalQuotes: profile.totalQuotesCount,
                   ),
-                  const SizedBox(height: AppDimensions.paddingM),
+                  const SizedBox(height: AppDimensions.paddingL),
+
+                  // Settings Section
                   ProfileOptionTile(
                     title: AppStrings.annualGoal,
-                    showArrow: true,
+                    showArrow: false,
                     trailing: Text(
-                      "${profile.annualGoal ?? 24} ${AppStrings.book}", // e.g., 24 كتاب
+                      "${profile.annualGoal ?? 24} ${AppStrings.book}",
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.primaryBlue,
@@ -130,65 +129,48 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                   ),
                   const SizedBox(height: AppDimensions.paddingM),
                   ProfileOptionTile(
-                    title: AppStrings.changePassword, // "Change Password"
-                    showArrow: true,
-                    onTap: () {
-                      Navigator.pushNamed(context,
-                          '/reset-password'); // Or Routes.resetPassword if available, assumes standard naming.
-                      // If Routes.resetPassword is not imported, I'll use string literal or verify routes later.
-                      // User said "Take him to reset password", assumes route exists or I should create it?
-                      // I'll stick to a safe string for now or better yet, verify routes.
-                      // I'll assume '/reset-password' is the route for now.
-                    },
-                  ),
-                  const SizedBox(height: AppDimensions.paddingM),
-                  ProfileOptionTile(
-                    title: 'إجمالي الاقتباسات',
-                    showArrow: false,
-                    trailing: Text(
-                      "${profile.totalQuotesCount}",
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryBlue,
-                          ),
-                    ),
-                    onTap: () {},
-                  ),
-                  const SizedBox(height: AppDimensions.paddingM),
-                  ProfileOptionTile(
                     title: AppStrings.changePassword,
                     showArrow: true,
                     onTap: () {
-                      // Change Password logic
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlocProvider.value(
+                            value: context.read<AuthCubit>(),
+                            child: const ForgotPasswordScreen(),
+                          ),
+                        ),
+                      );
                     },
                   ),
 
-                  const SizedBox(height: AppDimensions.paddingXXL),
+                  const SizedBox(height: AppDimensions.paddingXL),
 
-                  const SizedBox(height: AppDimensions.paddingXXL),
-
-                  // Logout
+                  // Logout Section
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () {
                         showDialog(
                           context: context,
-                          barrierColor:
-                              Colors.black.withOpacity(0.2), // Subtle barrier
+                          barrierColor: Colors.black.withOpacity(0.2),
                           builder: (context) => CustomLogoutDialog(
                             onLogout: () {
-                              Navigator.pop(context); // Close dialog
+                              Navigator.pop(context);
                               context.read<AuthCubit>().signOut();
                             },
                           ),
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: AppColors.errorRed),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        side: const BorderSide(
+                          color: AppColors.errorRed,
+                          // width: 1.5,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius:
+                              BorderRadius.circular(AppDimensions.radiusS),
                         ),
                       ),
                       child: Text(
@@ -196,14 +178,18 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: AppColors.errorRed,
+                              fontSize: 16,
                             ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.paddingS),
+                  const SizedBox(height: AppDimensions.paddingL),
                   Text(
                     "${AppStrings.appVersion} 1.0.0",
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSub,
+                          fontSize: 12,
+                        ),
                   ),
                 ],
               ),
@@ -212,6 +198,91 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
           return const SizedBox.shrink();
         },
       ),
+    );
+  }
+}
+
+// Stats Section Widget
+class _StatsSection extends StatelessWidget {
+  final int finishedBooks;
+  final int totalQuotes;
+
+  const _StatsSection({
+    required this.finishedBooks,
+    required this.totalQuotes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color ?? Colors.white,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _StatItem(
+              label: 'الكتب المنجزة',
+              value: finishedBooks.toString(),
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 40,
+            color: AppColors.inputBorder,
+          ),
+          Expanded(
+            child: _StatItem(
+              label: 'إجمالي الاقتباسات',
+              value: totalQuotes.toString(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _StatItem({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryBlue,
+                fontSize: 28,
+              ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSub,
+                fontSize: 14,
+              ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }
@@ -283,6 +354,8 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                 height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
+                  color:
+                      widget.avatarUrl == null ? AppColors.inputBorder : null,
                   border: Border.all(color: Colors.white, width: 4),
                   boxShadow: [
                     BoxShadow(
@@ -292,18 +365,34 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                       offset: const Offset(0, 4),
                     ),
                   ],
-                  image: DecorationImage(
-                    image: widget.avatarUrl != null
-                        ? NetworkImage(widget.avatarUrl!)
-                        : const AssetImage('assets/images/default_avatar.png')
-                            as ImageProvider, // Fallback
-                    fit: BoxFit.cover,
-                  ),
                 ),
-                // Fallback if asset missing or validation
                 child: widget.avatarUrl == null
                     ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                    : null,
+                    : widget.avatarUrl!.contains('/svg') ||
+                            widget.avatarUrl!.endsWith('.svg')
+                        ? ClipOval(
+                            child: SvgPicture.network(
+                              widget.avatarUrl!,
+                              fit: BoxFit.cover,
+                              placeholderBuilder: (context) => Container(
+                                color: AppColors.inputBorder,
+                                child: const Icon(Icons.person,
+                                    size: 50, color: Colors.grey),
+                              ),
+                            ),
+                          )
+                        : ClipOval(
+                            child: Image.network(
+                              widget.avatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                color: AppColors.inputBorder,
+                                child: const Icon(Icons.person,
+                                    size: 50, color: Colors.grey),
+                              ),
+                            ),
+                          ),
               ),
               Positioned(
                 bottom: 0,
