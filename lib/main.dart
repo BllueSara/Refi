@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:app_links/app_links.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
-import 'features/onboarding/presentation/screens/onboarding_screen.dart';
-import 'features/auth/presentation/screens/login_screen.dart';
-import 'core/widgets/main_navigation_screen.dart';
-import 'core/widgets/splash_page.dart';
-
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'core/secrets/app_secrets.dart';
 import 'core/di/injection_container.dart' as di;
+import 'features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
+import 'features/auth/presentation/screens/update_password_screen.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/library/presentation/cubit/library_cubit.dart';
 import 'features/scanner/presentation/cubit/scanner_cubit.dart';
 import 'features/quotes/presentation/cubit/quote_cubit.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'core/widgets/main_navigation_screen.dart';
+import 'core/widgets/splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +38,65 @@ Future<void> main() async {
   // Initialize DI
   await di.init(sharedPreferences);
 
+  // Handle OAuth deep links
+  _handleOAuthDeepLinks();
+
   runApp(const RefiApp());
+}
+
+// Global navigator key for deep link navigation
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void _handleOAuthDeepLinks() {
+  final appLinks = AppLinks();
+  
+  // Listen for deep links (OAuth callbacks and password reset)
+  appLinks.uriLinkStream.listen((uri) {
+    debugPrint('🔗 Deep link received: $uri');
+    
+    // Handle Supabase OAuth callback
+    final supabase = Supabase.instance.client;
+    
+    // Handle OAuth deep link callback (refi://auth-callback)
+    if (uri.scheme == 'refi' && uri.host == 'auth-callback') {
+      // Extract the session from the deep link URL
+      supabase.auth.getSessionFromUrl(uri).then((_) {
+        debugPrint('✅ OAuth session restored from deep link');
+      }).catchError((err) {
+        debugPrint('❌ Error restoring session from deep link: $err');
+      });
+    }
+    // Handle password reset deep link (refi://reset-password)
+    else if (uri.scheme == 'refi' && uri.host == 'reset-password') {
+      // Extract the session from the password reset URL
+      supabase.auth.getSessionFromUrl(uri).then((_) {
+        debugPrint('✅ Password reset session restored from deep link');
+        // Navigate to update password screen
+        if (navigatorKey.currentContext != null) {
+          Navigator.of(navigatorKey.currentContext!).push(
+            MaterialPageRoute(
+              builder: (context) => BlocProvider.value(
+                value: di.sl<AuthCubit>(),
+                child: const UpdatePasswordScreen(),
+              ),
+            ),
+          );
+        }
+      }).catchError((err) {
+        debugPrint('❌ Error restoring password reset session: $err');
+      });
+    }
+    // Also handle Supabase callback URLs (if redirected)
+    else if (uri.toString().contains('supabase.co/auth/v1/callback')) {
+      supabase.auth.getSessionFromUrl(uri).then((_) {
+        debugPrint('✅ OAuth session restored from Supabase callback');
+      }).catchError((err) {
+        debugPrint('❌ Error restoring session from callback: $err');
+      });
+    }
+  }, onError: (err) {
+    debugPrint('❌ Deep link error: $err');
+  });
 }
 
 class RefiApp extends StatelessWidget {
@@ -55,6 +114,7 @@ class RefiApp extends StatelessWidget {
         BlocProvider(create: (context) => di.sl<QuoteCubit>()),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: AppStrings.appName,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,

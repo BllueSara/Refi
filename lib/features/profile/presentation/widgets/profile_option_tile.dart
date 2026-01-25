@@ -18,7 +18,7 @@ class ProfileOptionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: showArrow ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.paddingL,
@@ -30,7 +30,7 @@ class ProfileOptionTile extends StatelessWidget {
               Theme.of(context).cardTheme.shape is RoundedRectangleBorder
               ? (Theme.of(context).cardTheme.shape as RoundedRectangleBorder)
                     .borderRadius
-              : BorderRadius.circular(24),
+              : BorderRadius.circular(AppDimensions.radiusM),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -46,17 +46,23 @@ class ProfileOptionTile extends StatelessWidget {
                 title,
                 style: Theme.of(
                   context,
-                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                ).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
-            if (trailing != null) ...[trailing!, const SizedBox(width: 8)],
+            if (trailing != null) ...[
+              trailing!,
+              if (showArrow) const SizedBox(width: 12),
+            ],
             if (showArrow)
               Icon(
                 Icons.arrow_forward_ios,
-                size: 16,
+                size: 14,
                 color: Theme.of(context).colorScheme.onSurface.withValues(
-                  alpha: 0.3,
-                ), // Placeholder gray
+                  alpha: 0.4,
+                ),
               ),
           ],
         ),

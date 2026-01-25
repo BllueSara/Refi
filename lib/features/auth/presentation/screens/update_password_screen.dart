@@ -9,36 +9,63 @@ import '../widgets/auth_header.dart';
 import '../widgets/refi_auth_field.dart';
 import 'login_screen.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+class UpdatePasswordScreen extends StatefulWidget {
+  const UpdatePasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<UpdatePasswordScreen> createState() => _UpdatePasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  String? _emailError;
+class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  String? _newPasswordError;
+  String? _confirmPasswordError;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _onSend() {
+  void _onUpdate() {
     setState(() {
-      _emailError = null;
+      _newPasswordError = null;
+      _confirmPasswordError = null;
     });
 
-    final email = _emailController.text.trim();
-    if (email.isEmpty) {
+    bool hasError = false;
+
+    if (_newPasswordController.text.trim().isEmpty) {
       setState(() {
-        _emailError = 'الرجاء إدخال البريد الإلكتروني';
+        _newPasswordError = 'الرجاء إدخال كلمة المرور الجديدة';
       });
-      return;
+      hasError = true;
+    } else if (_newPasswordController.text.length < 6) {
+      setState(() {
+        _newPasswordError = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+      });
+      hasError = true;
     }
-    context.read<AuthCubit>().resetPassword(email);
+
+    if (_confirmPasswordController.text.trim().isEmpty) {
+      setState(() {
+        _confirmPasswordError = 'الرجاء تأكيد كلمة المرور';
+      });
+      hasError = true;
+    } else if (_newPasswordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _confirmPasswordError = 'كلمات المرور غير متطابقة';
+      });
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    context.read<AuthCubit>().updatePassword(_newPasswordController.text.trim());
   }
 
   @override
@@ -48,17 +75,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         if (state is AuthPasswordResetSent) {
           RefiSnackBars.show(
             context,
-            message:
-                'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني',
+            message: 'تم تغيير كلمة المرور بنجاح',
             type: SnackBarType.success,
           );
-          Navigator.pushReplacement(
+          // Navigate to login screen
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (route) => false,
           );
         } else if (state is AuthError) {
           setState(() {
-            _emailError = state.message;
+            _newPasswordError = state.message;
           });
         }
       },
@@ -84,27 +112,46 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               children: [
                 // Header
                 const AuthHeader(
-                  title: AppStrings.forgotPasswordTitle,
-                  subtitle: AppStrings.forgotPasswordSubtitle,
+                  title: 'تغيير كلمة المرور',
+                  subtitle: 'أدخل كلمة المرور الجديدة',
                 ),
 
-                // Email field + button
+                const SizedBox(height: 32),
+
+                // Password fields + button
                 Column(
                   children: [
+                    // New Password
                     RefiAuthField(
-                      controller: _emailController,
-                      label: AppStrings.emailLabel,
-                      hintText: AppStrings.emailDomainHint,
+                      controller: _newPasswordController,
+                      label: 'كلمة المرور الجديدة',
+                      hintText: AppStrings.passwordDots,
+                      isPassword: true,
                       suffixIcon: const Icon(
-                        Icons.email_outlined,
+                        Icons.lock_outline,
                         color: AppColors.textPlaceholder,
                       ),
-                      errorText: _emailError,
+                      errorText: _newPasswordError,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Confirm Password
+                    RefiAuthField(
+                      controller: _confirmPasswordController,
+                      label: 'تأكيد كلمة المرور',
+                      hintText: AppStrings.passwordDots,
+                      isPassword: true,
+                      suffixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: AppColors.textPlaceholder,
+                      ),
+                      errorText: _confirmPasswordError,
                     ),
 
                     const SizedBox(height: 32),
 
-                    // Send Button
+                    // Update Button
                     Container(
                       width: double.infinity,
                       height: 56,
@@ -115,7 +162,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       ),
                       child: ElevatedButton(
-                        onPressed: isLoading ? null : _onSend,
+                        onPressed: isLoading ? null : _onUpdate,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -131,7 +178,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 strokeWidth: 3,
                               )
                             : const Text(
-                                AppStrings.sendLink,
+                                'تغيير كلمة المرور',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -150,3 +197,4 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 }
+

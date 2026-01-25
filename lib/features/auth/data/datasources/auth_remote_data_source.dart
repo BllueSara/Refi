@@ -1,4 +1,4 @@
-import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/error/failures.dart';
 import '../models/user_model.dart';
@@ -11,6 +11,7 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> signInWithGoogle();
 
   Future<void> resetPassword(String email);
+  Future<void> updatePassword(String newPassword);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -21,7 +22,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> resetPassword(String email) async {
     try {
-      await supabaseClient.auth.resetPasswordForEmail(email);
+      // Use deep link for password reset redirect to avoid localhost
+      // Make sure 'refi://reset-password' is added in Supabase Dashboard → Redirect URLs
+      const redirectTo = 'refi://reset-password';
+      
+      await supabaseClient.auth.resetPasswordForEmail(
+        email,
+        redirectTo: redirectTo,
+      );
+    } on AuthException catch (e) {
+      throw ServerFailure(e.message);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      await supabaseClient.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
     } on AuthException catch (e) {
       throw ServerFailure(e.message);
     } catch (e) {
@@ -106,12 +127,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      final googleSignIn = GoogleSignIn();
-      if (await googleSignIn.isSignedIn()) {
-        try {
-          await googleSignIn.signOut();
-        } catch (_) {}
-      }
       await supabaseClient.auth.signOut();
     } catch (e) {
       throw ServerFailure(e.toString());
@@ -157,47 +172,81 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-      if (googleUser == null) {
-        throw const ServerFailure('Google Sign In was canceled');
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final accessToken = googleAuth.accessToken;
-      final idToken = googleAuth.idToken;
-
-      if (idToken == null) {
-        throw const ServerFailure('No ID Token found from Google');
-      }
-
-      final response = await supabaseClient.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: accessToken,
+      // Use Supabase OAuth flow - Supabase handles all Google OAuth configuration
+      // For mobile apps: Use deep link directly to avoid localhost redirect
+      // IMPORTANT: Make sure 'refi://auth-callback' is added in Supabase Dashboard → Redirect URLs
+      const redirectUrl = 'refi://auth-callback';
+      
+      await supabaseClient.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
 
-      if (response.user == null) {
-        throw const ServerFailure(
-          'Supabase Google Sign In failed: User is null',
-        );
-      }
+      // The OAuth flow will redirect to Google, then back to the app via deep link
+      // The deep link handler in main.dart will process the callback
+      // We need to wait for the auth state to change
+      // Use a stream subscription to wait for authentication
+      final completer = Completer<UserModel>();
+      late StreamSubscription<AuthState> subscription;
+      
+      subscription = supabaseClient.auth.onAuthStateChange.listen((data) {
+        final AuthChangeEvent event = data.event;
+        final Session? session = data.session;
+        
+        if (event == AuthChangeEvent.signedIn && session != null) {
+          final user = session.user;
+          
+          // Fetch or create profile
+          supabaseClient.from('profiles')
+              .select()
+              .eq('id', user.id)
+              .maybeSingle()
+              .then((profile) {
+            final String? name = user.userMetadata?['full_name'] ?? 
+                                user.userMetadata?['name'] ??
+                                user.email?.split('@').first;
 
-      final String? name =
-          response.user!.userMetadata?['full_name'] ?? googleUser.displayName;
+            if (profile == null) {
+              supabaseClient.from('profiles').upsert({
+                'id': user.id,
+                'full_name': name,
+                'avatar_url': user.userMetadata?['avatar_url'],
+                'annual_goal': 0,
+              }).then((_) {
+                subscription.cancel();
+                completer.complete(UserModel.fromSupabase(user, name: name));
+              }).catchError((e) {
+                subscription.cancel();
+                completer.complete(UserModel.fromSupabase(user, name: name));
+              });
+            } else {
+              subscription.cancel();
+              completer.complete(UserModel.fromSupabase(user, name: name));
+            }
+          }).catchError((e) {
+            subscription.cancel();
+            final String? name = user.userMetadata?['full_name'] ?? 
+                                user.userMetadata?['name'] ??
+                                user.email?.split('@').first;
+            completer.complete(UserModel.fromSupabase(user, name: name));
+          });
+        } else if (event == AuthChangeEvent.signedOut) {
+          subscription.cancel();
+          if (!completer.isCompleted) {
+            completer.completeError(const ServerFailure('Google Sign In was canceled'));
+          }
+        }
+      });
 
-      try {
-        await supabaseClient.from('profiles').upsert({
-          'id': response.user!.id,
-          'full_name': name,
-          'avatar_url': googleUser.photoUrl,
-          'annual_goal': 0,
-        });
-      } catch (_) {}
-
-      return UserModel.fromSupabase(response.user!, name: name);
+      // Wait for authentication with timeout
+      return await completer.future.timeout(
+        const Duration(minutes: 2),
+        onTimeout: () {
+          subscription.cancel();
+          throw const ServerFailure('Google Sign In timed out');
+        },
+      );
     } on AuthException catch (e) {
       throw ServerFailure(e.message);
     } catch (e) {

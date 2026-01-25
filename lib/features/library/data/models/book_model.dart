@@ -105,10 +105,9 @@ class BookModel extends BookEntity {
       'categories': categories,
     };
 
-    // Only add these if they likely exist in schema to avoid PostgresException
-    // The user should run: ALTER TABLE books ADD COLUMN google_book_id TEXT;
-    // if (googleBookId != null) data['google_book_id'] = googleBookId;
-    // if (source != null) data['source'] = source;
+    // Add source and google_book_id if they exist
+    if (googleBookId != null) data['google_book_id'] = googleBookId;
+    if (source != null) data['source'] = source;
 
     return data;
   }

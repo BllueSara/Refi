@@ -398,7 +398,10 @@ class BookDetailsPage extends StatelessWidget {
 
   Widget _buildPopupMenu(BuildContext context) {
     // Strict Contextual Menu Logic
-    final bool isManualBook = book.source == 'manual';
+    // Show edit option only if book was added manually by user
+    // Books from API (google) should not have edit option
+    final bool isManualBook = book.source == 'manual' || 
+                               (book.source == null && book.googleBookId == null);
 
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, color: AppColors.textMain),
