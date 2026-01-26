@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class FloatingBookIllustration extends StatefulWidget {
   const FloatingBookIllustration({super.key});
@@ -42,19 +43,19 @@ class _FloatingBookIllustrationState extends State<FloatingBookIllustration>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 160,
-      width: 160,
+      height: 160.h(context),
+      width: 160.w(context),
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
           // 1. Background Large Blob (Soft Glow)
           Positioned(
-            top: 10,
-            right: 10,
+            top: 10.h(context),
+            right: 10.w(context),
             child: Container(
-              width: 100,
-              height: 100,
+              width: 100.w(context),
+              height: 100.h(context),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primaryBlue.withOpacity(0.08),
@@ -64,16 +65,16 @@ class _FloatingBookIllustrationState extends State<FloatingBookIllustration>
 
           // 2. Geometric Shape: Hollow Circle
           Positioned(
-            bottom: 25,
-            left: 25,
+            bottom: 25.h(context),
+            left: 25.w(context),
             child: Container(
-              width: 18,
-              height: 18,
+              width: 18.w(context),
+              height: 18.h(context),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: AppColors.secondaryBlue.withOpacity(0.3),
-                  width: 2,
+                  width: 2.w(context),
                 ),
               ),
             ),
@@ -81,13 +82,13 @@ class _FloatingBookIllustrationState extends State<FloatingBookIllustration>
 
           // 3. Geometric Shape: The "X"
           Positioned(
-            top: 25,
-            left: 35,
+            top: 25.h(context),
+            left: 35.w(context),
             child: Transform.rotate(
               angle: math.pi / 4,
               child: Icon(
                 Icons.add_rounded,
-                size: 24,
+                size: 24.sp(context),
                 color: AppColors.warningOrange.withOpacity(0.4),
               ),
             ),
@@ -95,11 +96,11 @@ class _FloatingBookIllustrationState extends State<FloatingBookIllustration>
 
           // 4. Geometric Shape: Small Solid Dot
           Positioned(
-            bottom: 40,
-            right: 25,
+            bottom: 40.h(context),
+            right: 25.w(context),
             child: Container(
-              width: 8,
-              height: 8,
+              width: 8.w(context),
+              height: 8.h(context),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primaryBlue.withOpacity(0.2),
@@ -120,21 +121,21 @@ class _FloatingBookIllustrationState extends State<FloatingBookIllustration>
               );
             },
             child: Container(
-              width: 80,
-              height: 110,
+              width: 80.w(context),
+              height: 110.h(context),
               decoration: BoxDecoration(
                 gradient: AppColors.refiMeshGradient,
-                borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                  topLeft: Radius.circular(3),
-                  bottomLeft: Radius.circular(3),
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(12.r(context)),
+                  bottomRight: Radius.circular(12.r(context)),
+                  topLeft: Radius.circular(3.r(context)),
+                  bottomLeft: Radius.circular(3.r(context)),
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primaryBlue.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
+                    blurRadius: 15.r(context),
+                    offset: Offset(0, 8.h(context)),
                   ),
                 ],
               ),
@@ -145,23 +146,23 @@ class _FloatingBookIllustrationState extends State<FloatingBookIllustration>
                     left: 0,
                     top: 0,
                     bottom: 0,
-                    width: 10,
+                    width: 10.w(context),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.1),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(3),
-                          bottomLeft: Radius.circular(3),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(3.r(context)),
+                          bottomLeft: Radius.circular(3.r(context)),
                         ),
                       ),
                     ),
                   ),
                   // Cover Detail (Curve)
                   Positioned(
-                    right: 6,
+                    right: 6.w(context),
                     top: 0,
                     bottom: 0,
-                    width: 3,
+                    width: 3.w(context),
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -179,15 +180,15 @@ class _FloatingBookIllustrationState extends State<FloatingBookIllustration>
                   // Icon
                   Center(
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: EdgeInsets.all(8.w(context)),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withOpacity(0.2),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.bookmark_outline_rounded,
                         color: Colors.white,
-                        size: 24,
+                        size: 24.sp(context),
                       ),
                     ),
                   ),

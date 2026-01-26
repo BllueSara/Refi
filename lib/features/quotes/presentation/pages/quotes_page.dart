@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../cubit/quote_cubit.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../widgets/quote_card.dart';
@@ -40,42 +41,44 @@ class _QuotesPageState extends State<QuotesPage> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.search, color: AppColors.textMain, size: 28),
+          icon: Icon(Icons.search,
+              color: AppColors.textMain, size: 28.sp(context)),
           onPressed: () {},
         ),
-        title: const Text(
+        title: Text(
           AppStrings.quotesVaultTitle,
           style: TextStyle(
             //fontFamily: 'Tajawal',
             fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 20.sp(context),
             color: AppColors.textMain,
           ),
         ),
-        actions: const [SizedBox(width: 48)],
+        actions: [SizedBox(width: 48.w(context))],
       ),
       body: Column(
         children: [
           // Filter Tabs
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            padding: EdgeInsets.symmetric(
+                vertical: 16.h(context), horizontal: 16.w(context)),
             child: Row(
               children: _tabs.map((tab) {
                 final isActive = _activeTab == tab;
                 return Padding(
-                  padding: const EdgeInsets.only(left: 12.0),
+                  padding: EdgeInsets.only(left: 12.0.w(context)),
                   child: GestureDetector(
                     onTap: () => setState(() => _activeTab = tab),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 10,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24.w(context),
+                        vertical: 10.h(context),
                       ),
                       decoration: BoxDecoration(
                         gradient: isActive ? AppColors.refiMeshGradient : null,
                         color: isActive ? null : AppColors.inputBorder,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(24.r(context)),
                       ),
                       child: Text(
                         tab,
@@ -83,6 +86,7 @@ class _QuotesPageState extends State<QuotesPage> {
                           //fontFamily: 'Tajawal',
                           fontWeight: FontWeight.bold,
                           color: isActive ? Colors.white : AppColors.textSub,
+                          fontSize: 14.sp(context),
                         ),
                       ),
                     ),
@@ -103,30 +107,32 @@ class _QuotesPageState extends State<QuotesPage> {
                 if (state is QuoteError) {
                   return Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: EdgeInsets.all(24.0.w(context)),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.error_outline,
-                            size: 64,
+                            size: 64.sp(context),
                             color: AppColors.textPlaceholder,
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h(context)),
                           Text(
                             state.message,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               //fontFamily: 'Tajawal',
                               color: AppColors.textSub,
+                              fontSize: 14.sp(context),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h(context)),
                           ElevatedButton(
                             onPressed: () {
                               context.read<QuoteCubit>().loadUserQuotes();
                             },
-                            child: const Text('إعادة المحاولة'),
+                            child: Text('إعادة المحاولة',
+                                style: TextStyle(fontSize: 14.sp(context))),
                           ),
                         ],
                       ),
@@ -157,16 +163,16 @@ class _QuotesPageState extends State<QuotesPage> {
                           children: [
                             Icon(
                               Icons.auto_stories_outlined,
-                              size: 80,
+                              size: 80.sp(context),
                               color: AppColors.textPlaceholder.withOpacity(0.3),
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
+                            SizedBox(height: 16.h(context)),
+                            Text(
                               'لم تضف أي اقتباسات لهذا الكتاب بعد..\nابدأ بالمسح الآن!',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 //fontFamily: 'Tajawal',
-                                fontSize: 16,
+                                fontSize: 16.sp(context),
                                 color: AppColors.textMain,
                                 height: 1.5,
                               ),
@@ -185,16 +191,16 @@ class _QuotesPageState extends State<QuotesPage> {
                           children: [
                             Icon(
                               Icons.favorite_border,
-                              size: 80,
+                              size: 80.sp(context),
                               color: AppColors.textPlaceholder.withOpacity(0.3),
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
+                            SizedBox(height: 16.h(context)),
+                            Text(
                               'لم تقم بإضافة أي اقتباسات للمفضلة بعد',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 //fontFamily: 'Tajawal',
-                                fontSize: 16,
+                                fontSize: 16.sp(context),
                                 color: AppColors.textMain,
                                 height: 1.5,
                               ),
@@ -210,13 +216,14 @@ class _QuotesPageState extends State<QuotesPage> {
                       context.read<QuoteCubit>().loadUserQuotes();
                     },
                     child: ListView.separated(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w(context)),
                       // Optimization: set itemExtent if height is fixed, prevents layout jumps.
                       // However cards have variable height due to content, so we cannot use itemExtent.
                       // We rely on standard ListView builder optimization.
                       addAutomaticKeepAlives: true,
                       itemCount: displayedQuotes.length,
-                      separatorBuilder: (c, i) => const SizedBox(height: 16),
+                      separatorBuilder: (c, i) =>
+                          SizedBox(height: 16.h(context)),
                       itemBuilder: (context, index) {
                         final quote = displayedQuotes[index];
                         return QuoteCard(quote: quote);

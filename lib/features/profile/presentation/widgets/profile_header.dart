@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/dimensions.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/profile_entity.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -16,9 +17,9 @@ class ProfileHeader extends StatelessWidget {
       children: [
         // Avatar
         Container(
-          width: 100,
-          height: 100,
-          padding: const EdgeInsets.all(3),
+          width: 100.w(context),
+          height: 100.h(context),
+          padding: EdgeInsets.all(3.w(context)),
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             gradient: AppColors.refiMeshGradient,
@@ -28,7 +29,7 @@ class ProfileHeader extends StatelessWidget {
               shape: BoxShape.circle,
               color: Theme.of(context).colorScheme.surface,
             ),
-            padding: const EdgeInsets.all(2),
+            padding: EdgeInsets.all(2.w(context)),
             child: CircleAvatar(
               backgroundColor: Theme.of(
                 context,
@@ -38,11 +39,11 @@ class ProfileHeader extends StatelessWidget {
                   : const NetworkImage(
                       "https://i.pravatar.cc/300?img=5",
                     ), // Fallback/Placeholder
-              radius: 46,
+              radius: 46.r(context),
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.paddingM),
+        SizedBox(height: AppDimensions.paddingM.h(context)),
 
         // Name and Edit
         Row(
@@ -54,7 +55,7 @@ class ProfileHeader extends StatelessWidget {
                 context,
               ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(width: AppDimensions.paddingS),
+            SizedBox(width: AppDimensions.paddingS.w(context)),
             GestureDetector(
               onTap: () {
                 // Edit Profile Logic
@@ -62,12 +63,12 @@ class ProfileHeader extends StatelessWidget {
               child: ShaderMask(
                 shaderCallback: (bounds) =>
                     AppColors.refiMeshGradient.createShader(bounds),
-                child: const Icon(Icons.edit, size: 20, color: Colors.white),
+                child: Icon(Icons.edit, size: 20.sp(context), color: Colors.white),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h(context)),
         Text(
           email ?? AppStrings.userEmailPlaceholder,
           style: Theme.of(context).textTheme.bodyMedium,

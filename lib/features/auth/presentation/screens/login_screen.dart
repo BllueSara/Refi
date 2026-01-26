@@ -5,6 +5,7 @@ import '../../../../core/constants/app_svgs.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/widgets/main_navigation_screen.dart';
 import '../cubit/auth_cubit.dart';
 import '../widgets/auth_header.dart';
@@ -92,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.p24),
+              padding: EdgeInsets.all(AppSizes.p24.w(context)),
               child: Column(
                 children: [
                   // Header
@@ -112,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         errorText: _emailError,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h(context)),
 
                       // Password
                       RefiAuthField(
@@ -136,32 +137,33 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           },
-                          child: const Text(
+                          child: Text(
                             AppStrings.forgotPasswordLink,
                             style: TextStyle(
                               color: AppColors.secondaryBlue,
                               fontWeight: FontWeight.bold,
+                              fontSize: 14.sp(context),
                               ////fontFamily: 'Tajawal',
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h(context)),
 
                       // Login Button
                       Container(
                         width: double.infinity,
-                        height: 56,
+                        height: 56.h(context),
                         decoration: BoxDecoration(
                           gradient: AppColors.refiMeshGradient,
                           borderRadius: BorderRadius.circular(
-                            AppSizes.buttonRadius,
+                            AppSizes.buttonRadius.r(context),
                           ),
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.primaryBlue.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              blurRadius: 10.r(context),
+                              offset: Offset(0, 4.h(context)),
                             ),
                           ],
                         ),
@@ -172,18 +174,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
-                                AppSizes.buttonRadius,
+                                AppSizes.buttonRadius.r(context),
                               ),
                             ),
                           ),
                           child: state is AuthLoading
-                              ? const CircularProgressIndicator(
+                              ? CircularProgressIndicator(
                                   color: Colors.white,
+                                  strokeWidth: 3.w(context),
                                 )
-                              : const Text(
+                              : Text(
                                   AppStrings.loginButton,
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 16.sp(context),
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     ////fontFamily: 'Tajawal',
@@ -194,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h(context)),
 
                   // Social + Sign up
                   Column(
@@ -204,16 +207,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Expanded(child: Divider(color: Colors.grey[200])),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
                             child: Text(
                               AppStrings.orSocialLogin,
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: 12.sp(context),
+                              ),
                             ),
                           ),
                           Expanded(child: Divider(color: Colors.grey[200])),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h(context)),
                       Row(
                         children: [
                           Expanded(
@@ -221,8 +226,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               label: AppStrings.google,
                               icon: SvgPicture.string(
                                 AppSvgs.googleLogo,
-                                width: 24,
-                                height: 24,
+                                width: 24.w(context),
+                                height: 24.h(context),
                               ),
                               onTap: () {
                                 context.read<AuthCubit>().signInWithGoogle();
@@ -232,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h(context)),
 
                       // Sign Up Link
                       Row(
@@ -240,7 +245,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Text(
                             AppStrings.dontHaveAccount,
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 14.sp(context),
+                            ),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -251,11 +258,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               );
                             },
-                            child: const Text(
+                            child: Text(
                               AppStrings.registerNow,
                               style: TextStyle(
                                 color: AppColors.primaryBlue,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 14.sp(context),
                                 ////fontFamily: 'Tajawal',
                               ),
                             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/widgets/scale_button.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/home_entity.dart';
 
 class BookCard extends StatelessWidget {
@@ -14,25 +15,25 @@ class BookCard extends StatelessWidget {
     return ScaleButton(
       onTap: onTap,
       child: Container(
-        width: 280, // Fixed width for horizontal list items
-        margin: const EdgeInsets.only(
-          left: 16,
+        width: 280.w(context), // Fixed width for horizontal list items
+        margin: EdgeInsets.only(
+          left: 16.w(context),
         ), // RTL: left means next item margin
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w(context)),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r(context)),
           border: Border.all(color: AppColors.inputBorder),
         ),
         child: Row(
           children: [
             // Book Cover Placeholder
             Container(
-              width: 60,
-              height: 90,
+              width: 60.w(context),
+              height: 90.h(context),
               decoration: BoxDecoration(
                 color: AppColors.inputBorder,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r(context)),
                 gradient: LinearGradient(
                   colors: [Colors.grey.shade300, Colors.grey.shade100],
                   begin: Alignment.topLeft,
@@ -41,20 +42,20 @@ class BookCard extends StatelessWidget {
               ),
               child: (book.coverUrl.isNotEmpty)
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r(context)),
                       child: Image.network(
                         book.coverUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(Icons.book, color: Colors.grey),
+                          return Center(
+                            child: Icon(Icons.book, color: Colors.grey, size: 24.sp(context)),
                           );
                         },
                       ),
                     )
-                  : const Center(child: Icon(Icons.book, color: Colors.grey)),
+                  : Center(child: Icon(Icons.book, color: Colors.grey, size: 24.sp(context))),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w(context)),
             // Info
             Expanded(
               child: Column(
@@ -65,43 +66,43 @@ class BookCard extends StatelessWidget {
                     book.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       //fontFamily: 'Tajawal',
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 16.sp(context),
                       color: AppColors.textMain,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h(context)),
                   Text(
                     book.author,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       //fontFamily: 'Tajawal',
-                      fontSize: 14,
+                      fontSize: 14.sp(context),
                       color: AppColors.textSub,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h(context)),
                   // Progress Bar
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r(context)),
                     child: LinearProgressIndicator(
                       value: book.progress,
                       backgroundColor: AppColors.inputBorder,
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         AppColors.primaryBlue,
                       ),
-                      minHeight: 6,
+                      minHeight: 6.h(context),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h(context)),
                   Text(
                     "%${(book.progress * 100).toInt()}",
-                    style: const TextStyle(
+                    style: TextStyle(
                       //fontFamily: 'Tajawal',
-                      fontSize: 12,
+                      fontSize: 12.sp(context),
                       color: AppColors.primaryBlue,
                       fontWeight: FontWeight.bold,
                     ),

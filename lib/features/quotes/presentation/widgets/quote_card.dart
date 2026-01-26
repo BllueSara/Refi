@@ -4,6 +4,7 @@ import 'package:flutter/services.dart'; // For HapticFeedback
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../cubit/quote_cubit.dart';
 
 class QuoteCard extends StatefulWidget {
@@ -21,20 +22,20 @@ class _QuoteCardState extends State<QuoteCard> {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(24.r(context)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(
                 0.8), // Using 0.8 for visibility/readability on white
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(24.r(context)),
             border: Border.all(color: Colors.white.withOpacity(0.2)),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primaryBlue.withOpacity(0.05),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                blurRadius: 20.r(context),
+                offset: Offset(0, 8.h(context)),
               ),
             ],
           ),
@@ -46,9 +47,9 @@ class _QuoteCardState extends State<QuoteCard> {
                   _isExpanded = !_isExpanded;
                 });
               },
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24.r(context)),
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24.w(context)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -60,10 +61,10 @@ class _QuoteCardState extends State<QuoteCard> {
                         builder: (context, constraints) {
                           final textSpan = TextSpan(
                             text: widget.quote.text,
-                            style: const TextStyle(
+                            style: TextStyle(
                               //fontFamily: 'Tajawal',
                               fontWeight: FontWeight.w500, // Medium
-                              fontSize: 16,
+                              fontSize: 16.sp(context),
                               height: 1.5,
                               color: Colors.black,
                             ),
@@ -85,15 +86,15 @@ class _QuoteCardState extends State<QuoteCard> {
                                   widget.quote.text,
                                   maxLines: 5,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     //fontFamily: 'Tajawal',
                                     fontWeight: FontWeight.w500,
-                                    fontSize: 16,
+                                    fontSize: 16.sp(context),
                                     height: 1.5,
                                     color: Colors.black,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: 8.h(context)),
                                 InkWell(
                                   onTap: () =>
                                       setState(() => _isExpanded = true),
@@ -103,7 +104,7 @@ class _QuoteCardState extends State<QuoteCard> {
                                       //fontFamily: 'Tajawal',
                                       color: AppColors.primaryBlue,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                      fontSize: 14.sp(context),
                                     ),
                                   ),
                                 ),
@@ -113,10 +114,10 @@ class _QuoteCardState extends State<QuoteCard> {
                             // Expanded state or short text
                             return SelectableText(
                               widget.quote.text,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 //fontFamily: 'Tajawal',
                                 fontWeight: FontWeight.w500, // Medium
-                                fontSize: 16,
+                                fontSize: 16.sp(context),
                                 height: 1.5,
                                 color: Colors.black,
                               ),
@@ -129,32 +130,32 @@ class _QuoteCardState extends State<QuoteCard> {
                     // Notes Section
                     if (widget.quote.notes != null &&
                         widget.quote.notes!.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h(context)),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12.w(context)),
                         decoration: BoxDecoration(
                           color: const Color(
                               0xFFF8FAFC), // Slight darker subtle box
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r(context)),
                           border: Border.all(
                               color: AppColors.inputBorder.withOpacity(0.5)),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.sticky_note_2_outlined,
-                              size: 16,
+                              size: 16.sp(context),
                               color: AppColors.textSub,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w(context)),
                             Expanded(
                               child: Text(
                                 widget.quote.notes!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   //fontFamily: 'Tajawal',
-                                  fontSize: 13,
+                                  fontSize: 13.sp(context),
                                   color: AppColors.textSub,
                                   height: 1.4,
                                 ),
@@ -165,7 +166,7 @@ class _QuoteCardState extends State<QuoteCard> {
                       ),
                     ],
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h(context)),
 
                     // Footer (Book Info & Actions)
                     Row(
@@ -177,11 +178,11 @@ class _QuoteCardState extends State<QuoteCard> {
                               // Book Cover Thumbnail
                               if (widget.quote.bookCoverUrl != null)
                                 Container(
-                                  width: 24,
-                                  height: 36,
-                                  margin: const EdgeInsets.only(left: 8),
+                                  width: 24.w(context),
+                                  height: 36.h(context),
+                                  margin: EdgeInsets.only(left: 8.w(context)),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius: BorderRadius.circular(4.r(context)),
                                     image: DecorationImage(
                                       image: NetworkImage(
                                           widget.quote.bookCoverUrl!),
@@ -190,20 +191,20 @@ class _QuoteCardState extends State<QuoteCard> {
                                   ),
                                 )
                               else
-                                const Icon(
+                                Icon(
                                   Icons.bookmark_outline,
-                                  size: 18,
+                                  size: 18.sp(context),
                                   color: AppColors.textSub,
                                 ),
 
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w(context)),
 
                               Expanded(
                                 child: Text(
                                   widget.quote.bookTitle ?? 'بدون كتاب',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     //fontFamily: 'Tajawal',
-                                    fontSize: 12,
+                                    fontSize: 12.sp(context),
                                     color: AppColors.textSub,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -221,7 +222,7 @@ class _QuoteCardState extends State<QuoteCard> {
                                 ? Icons.favorite
                                 : Icons.favorite_border,
                           ),
-                          iconSize: 22,
+                          iconSize: 22.sp(context),
                           color: widget.quote.isFavorite
                               ? AppColors.primaryBlue // App Brand Color
                               : AppColors.textPlaceholder,
@@ -231,7 +232,7 @@ class _QuoteCardState extends State<QuoteCard> {
                                 .read<QuoteCubit>()
                                 .toggleFavorite(widget.quote);
                           },
-                          splashRadius: 24,
+                          splashRadius: 24.r(context),
                           tooltip: widget.quote.isFavorite
                               ? 'إزالة من المفضلة'
                               : 'إضافة للمفضلة',

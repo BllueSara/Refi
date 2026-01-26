@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class RefiAuthField extends StatefulWidget {
   final String? hintText;
@@ -55,12 +56,12 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
               context,
             ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h(context)),
         ],
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).inputDecorationTheme.fillColor,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(24.r(context)),
             border: Border.all(
               color: widget.errorText != null
                   ? AppColors.errorRed
@@ -76,9 +77,9 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
               hintText: widget.hintText,
               hintStyle: Theme.of(context).inputDecorationTheme.hintStyle,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.p24, // Updated to 24 padding
-                vertical: 16,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppSizes.p24.w(context), // Updated to 24 padding
+                vertical: 16.h(context),
               ),
               prefixIcon: widget.prefixIcon != null
                   ? IconTheme(
@@ -95,7 +96,7 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
                         color: AppColors.textPlaceholder,
-                        size: 20,
+                        size: 20.sp(context),
                       ),
                       onPressed: _toggleVisibility,
                     )
@@ -111,14 +112,14 @@ class _RefiAuthFieldState extends State<RefiAuthField> {
           ),
         ),
         if (widget.errorText != null) ...[
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h(context)),
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: EdgeInsets.only(right: 12.w(context)),
             child: Text(
               widget.errorText!,
               style: TextStyle(
                 color: AppColors.errorRed,
-                fontSize: 12,
+                fontSize: 12.sp(context),
                 fontWeight: FontWeight.bold,
               ),
             ),

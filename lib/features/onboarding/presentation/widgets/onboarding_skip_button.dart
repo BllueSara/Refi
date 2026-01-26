@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class OnboardingSkipButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -11,12 +12,12 @@ class OnboardingSkipButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: onTap,
-      child: const Text(
+      child: Text(
         AppStrings.skip,
         style: TextStyle(
           color: AppColors.textSub,
           fontWeight: FontWeight.bold,
-          fontSize: 16,
+          fontSize: 16.sp(context),
           // //fontFamily: 'Tajawal',
         ),
       ),

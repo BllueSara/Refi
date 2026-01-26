@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../quotes/presentation/widgets/quote_review_modal.dart';
 
 import 'package:camera/camera.dart';
@@ -233,27 +234,27 @@ class _ScannerPageState extends State<ScannerPage>
 
             // 3. Top Bar
             Positioned(
-              top: 60,
-              left: 20,
-              right: 20,
+              top: 60.h(context),
+              left: 20.w(context),
+              right: 20.w(context),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.close,
                       color: Colors.white,
-                      size: 28,
+                      size: 28.sp(context),
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const Text(
+                  Text(
                     AppStrings.scanPointCamera,
                     style: TextStyle(
                       //fontFamily: 'Tajawal',
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 16.sp(context),
                     ),
                   ),
                   IconButton(
@@ -264,7 +265,7 @@ class _ScannerPageState extends State<ScannerPage>
                               ? Icons.flash_auto
                               : Icons.flash_on,
                       color: Colors.white,
-                      size: 28,
+                      size: 28.sp(context),
                     ),
                     onPressed: _toggleFlash,
                   ),
@@ -280,36 +281,36 @@ class _ScannerPageState extends State<ScannerPage>
                 child: Stack(
                   children: [
                     // Corners
-                    _buildCorner(top: true, left: true),
-                    _buildCorner(top: true, left: false),
-                    _buildCorner(top: false, left: true),
-                    _buildCorner(top: false, left: false),
+                    _buildCorner(context, top: true, left: true),
+                    _buildCorner(context, top: true, left: false),
+                    _buildCorner(context, top: false, left: true),
+                    _buildCorner(context, top: false, left: false),
 
                     // Text Highlights (Simulated Blue Overlays)
                     Positioned(
-                      top: 100,
-                      left: 20,
-                      right: 40,
+                      top: 100.h(context),
+                      left: 20.w(context),
+                      right: 40.w(context),
                       child: Container(
-                        height: 20,
+                        height: 20.h(context),
                         color: AppColors.primaryBlue.withValues(alpha: 0.3),
                       ),
                     ),
                     Positioned(
-                      top: 130,
-                      left: 30,
-                      right: 20,
+                      top: 130.h(context),
+                      left: 30.w(context),
+                      right: 20.w(context),
                       child: Container(
-                        height: 20,
+                        height: 20.h(context),
                         color: AppColors.primaryBlue.withValues(alpha: 0.3),
                       ),
                     ),
                     Positioned(
-                      top: 180,
-                      left: 20,
-                      right: 20,
+                      top: 180.h(context),
+                      left: 20.w(context),
+                      right: 20.w(context),
                       child: Container(
-                        height: 20,
+                        height: 20.h(context),
                         color: AppColors.primaryBlue.withValues(alpha: 0.3),
                       ),
                     ),
@@ -320,18 +321,18 @@ class _ScannerPageState extends State<ScannerPage>
 
             // 5. Status Toast
             Positioned(
-              bottom: 200,
+              bottom: 200.h(context),
               left: 0,
               right: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w(context),
+                    vertical: 10.h(context),
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(30.r(context)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -339,21 +340,21 @@ class _ScannerPageState extends State<ScannerPage>
                       ScaleTransition(
                         scale: _pulseAnimation,
                         child: Container(
-                          width: 8,
-                          height: 8,
+                          width: 8.w(context),
+                          height: 8.h(context),
                           decoration: const BoxDecoration(
                             color: AppColors.primaryBlue,
                             shape: BoxShape.circle,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
+                      SizedBox(width: 8.w(context)),
+                      Text(
                         AppStrings.scanDetecting,
                         style: TextStyle(
                           //fontFamily: 'Tajawal',
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 14.sp(context),
                         ),
                       ),
                     ],
@@ -368,7 +369,7 @@ class _ScannerPageState extends State<ScannerPage>
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.only(bottom: 40, top: 20),
+                padding: EdgeInsets.only(bottom: 40.h(context), top: 20.h(context)),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
@@ -386,10 +387,10 @@ class _ScannerPageState extends State<ScannerPage>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.photo_library,
                             color: Colors.white,
-                            size: 28,
+                            size: 28.sp(context),
                           ),
                           onPressed: () {
                             context.read<ScannerCubit>().scanImage(
@@ -400,8 +401,8 @@ class _ScannerPageState extends State<ScannerPage>
                         GestureDetector(
                           onTap: _onShutterPressed,
                           child: Container(
-                            width: 80,
-                            height: 80,
+                            width: 80.w(context),
+                            height: 80.h(context),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 4),
@@ -414,25 +415,25 @@ class _ScannerPageState extends State<ScannerPage>
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.settings,
                             color: Colors.white,
-                            size: 28,
+                            size: 28.sp(context),
                           ),
                           onPressed: () {},
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h(context)),
                     // Mode Switcher
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildModeItem(AppStrings.modeFile, 0),
-                        const SizedBox(width: 24),
-                        _buildModeItem(AppStrings.modeQuote, 1),
-                        const SizedBox(width: 24),
-                        _buildModeItem(AppStrings.modeTranslate, 2),
+                        _buildModeItem(context, AppStrings.modeFile, 0),
+                        SizedBox(width: 24.w(context)),
+                        _buildModeItem(context, AppStrings.modeQuote, 1),
+                        SizedBox(width: 24.w(context)),
+                        _buildModeItem(context, AppStrings.modeTranslate, 2),
                       ],
                     ),
                   ],
@@ -445,7 +446,7 @@ class _ScannerPageState extends State<ScannerPage>
     );
   }
 
-  Widget _buildModeItem(String label, int index) {
+  Widget _buildModeItem(BuildContext context, String label, int index) {
     final isSelected = _selectedModeIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _selectedModeIndex = index),
@@ -458,14 +459,14 @@ class _ScannerPageState extends State<ScannerPage>
               //fontFamily: 'Tajawal',
               color: isSelected ? AppColors.secondaryBlue : Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 16.sp(context),
             ),
           ),
           if (isSelected)
             Container(
-              margin: const EdgeInsets.only(top: 4),
-              width: 4,
-              height: 4,
+              margin: EdgeInsets.only(top: 4.h(context)),
+              width: 4.w(context),
+              height: 4.h(context),
               decoration: const BoxDecoration(
                 color: AppColors.secondaryBlue,
                 shape: BoxShape.circle,
@@ -476,37 +477,37 @@ class _ScannerPageState extends State<ScannerPage>
     );
   }
 
-  Widget _buildCorner({required bool top, required bool left}) {
+  Widget _buildCorner(BuildContext context, {required bool top, required bool left}) {
     return Positioned(
       top: top ? 0 : null,
       bottom: top ? null : 0,
       left: left ? 0 : null,
       right: left ? null : 0,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 40.w(context),
+        height: 40.h(context),
         decoration: BoxDecoration(
           border: Border(
             top: top
-                ? const BorderSide(color: AppColors.secondaryBlue, width: 4)
+                ? BorderSide(color: AppColors.secondaryBlue, width: 4)
                 : BorderSide.none,
             bottom: top
                 ? BorderSide.none
-                : const BorderSide(color: AppColors.secondaryBlue, width: 4),
+                : BorderSide(color: AppColors.secondaryBlue, width: 4),
             left: left
-                ? const BorderSide(color: AppColors.secondaryBlue, width: 4)
+                ? BorderSide(color: AppColors.secondaryBlue, width: 4)
                 : BorderSide.none,
             right: left
                 ? BorderSide.none
-                : const BorderSide(color: AppColors.secondaryBlue, width: 4),
+                : BorderSide(color: AppColors.secondaryBlue, width: 4),
           ),
           borderRadius: BorderRadius.only(
-            topLeft: (top && left) ? const Radius.circular(16) : Radius.zero,
-            topRight: (top && !left) ? const Radius.circular(16) : Radius.zero,
+            topLeft: (top && left) ? Radius.circular(16.r(context)) : Radius.zero,
+            topRight: (top && !left) ? Radius.circular(16.r(context)) : Radius.zero,
             bottomLeft:
-                (!top && left) ? const Radius.circular(16) : Radius.zero,
+                (!top && left) ? Radius.circular(16.r(context)) : Radius.zero,
             bottomRight:
-                (!top && !left) ? const Radius.circular(16) : Radius.zero,
+                (!top && !left) ? Radius.circular(16.r(context)) : Radius.zero,
           ),
         ),
       ),

@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../library/domain/entities/book_entity.dart';
 import '../../../library/presentation/cubit/library_cubit.dart';
 import '../../../../core/widgets/refi_success_widget.dart';
@@ -79,36 +80,38 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r(context)))),
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.w(context)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text("اختر غلاف الكتاب",
-                  style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 24),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 18.sp(context),
+                  )),
+              SizedBox(height: 24.h(context)),
               ListTile(
-                leading: const Icon(Icons.search),
-                title: const Text("بحث في الإنترنت"),
+                leading: Icon(Icons.search, size: 24.sp(context)),
+                title: Text("بحث في الإنترنت", style: TextStyle(fontSize: 14.sp(context))),
                 onTap: () {
                   Navigator.pop(context);
                   _searchCoverFromWeb();
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text("معرض الصور"),
+                leading: Icon(Icons.photo_library, size: 24.sp(context)),
+                title: Text("معرض الصور", style: TextStyle(fontSize: 14.sp(context))),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text("الكاميرا"),
+                leading: Icon(Icons.camera_alt, size: 24.sp(context)),
+                title: Text("الكاميرا", style: TextStyle(fontSize: 14.sp(context))),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -238,18 +241,18 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.addBookTitle),
+        title: Text(AppStrings.addBookTitle, style: TextStyle(fontSize: 20.sp(context))),
         leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: Icon(Icons.arrow_back, size: 24.sp(context)),
             onPressed: () => Navigator.pop(context)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w(context)),
         child: Column(
           children: [
             // 1. Cover
             _buildCoverPicker(),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h(context)),
             // 2. Fields
             Form(
               key: _formKey,
@@ -266,7 +269,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                         }
                         return null;
                       }),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h(context)),
                   _buildTextField(
                       label: AppStrings.authorNameLabel,
                       hint: AppStrings.enterAuthorName,
@@ -277,7 +280,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                         }
                         return null;
                       }),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h(context)),
                   _buildTextField(
                       label: "عدد صفحات الكتاب",
                       hint: "مثال: 200",
@@ -299,14 +302,14 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h(context)),
 
             // 4. Status
             _buildStatusSection(),
-            const SizedBox(height: 48),
+            SizedBox(height: 48.h(context)),
             // 5. Save Button
             _isSaving
-                ? const CircularProgressIndicator()
+                ? CircularProgressIndicator(strokeWidth: 3.w(context))
                 : _buildSaveButtonUI(
                     label: AppStrings.saveBook, onTap: _saveBook),
           ],
@@ -319,11 +322,11 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     return GestureDetector(
       onTap: _showImageSourceSheet,
       child: Container(
-        height: 250,
+        height: 250.h(context),
         width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.primaryBlue.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r(context)),
           image: (_imageFile != null || _webImageUrl != null)
               ? DecorationImage(
                   image: _imageFile != null
@@ -338,11 +341,13 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.add_a_photo,
-                        size: 48, color: AppColors.primaryBlue),
-                    const SizedBox(height: 16),
+                    Icon(Icons.add_a_photo,
+                        size: 48.sp(context), color: AppColors.primaryBlue),
+                    SizedBox(height: 16.h(context)),
                     Text(AppStrings.addBookCover,
-                        style: Theme.of(context).textTheme.titleMedium),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 16.sp(context),
+                        )),
                   ],
                 ),
               )
@@ -360,46 +365,51 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 8),
+        Text(label, style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          fontSize: 14.sp(context),
+        )),
+        SizedBox(height: 8.h(context)),
         TextFormField(
           controller: controller,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
           validator: validator,
           inputFormatters:
               isNumber ? [FilteringTextInputFormatter.digitsOnly] : [],
+          style: TextStyle(fontSize: 16.sp(context)),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(fontSize: 14.sp(context)),
             // Proper Error Styling
             errorStyle: GoogleFonts.tajawal(
-              fontSize: 12,
+              fontSize: 12.sp(context),
               fontWeight: FontWeight.w500,
               color: const Color(0xFFD32F2F),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r(context)),
               borderSide: const BorderSide(color: Color(0xFFD32F2F), width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r(context)),
               borderSide:
                   const BorderSide(color: Color(0xFFD32F2F), width: 1.5),
             ),
             // Default Styling
             filled: true,
             fillColor: Colors.white,
+            contentPadding: EdgeInsets.symmetric(horizontal: 16.w(context), vertical: 16.h(context)),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r(context)),
               borderSide: BorderSide(
                   color: AppColors.inputBorder.withOpacity(0.5), width: 1),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r(context)),
               borderSide: BorderSide(
                   color: AppColors.inputBorder.withOpacity(0.5), width: 1),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r(context)),
               borderSide:
                   const BorderSide(color: AppColors.primaryBlue, width: 1.5),
             ),
@@ -420,13 +430,15 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(AppStrings.readingStatusLabel,
-            style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 12),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontSize: 14.sp(context),
+            )),
+        SizedBox(height: 12.h(context)),
         Container(
-          padding: const EdgeInsets.all(4),
+          padding: EdgeInsets.all(4.w(context)),
           decoration: BoxDecoration(
               color: AppColors.inputBorder.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(24)),
+              borderRadius: BorderRadius.circular(24.r(context))),
           child: Row(
             children: list.map((s) {
               final sel = _readingStatus == s;
@@ -434,14 +446,14 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 child: GestureDetector(
                   onTap: () => setState(() => _readingStatus = s),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: EdgeInsets.symmetric(vertical: 12.h(context)),
                     decoration: BoxDecoration(
                         gradient: sel ? AppColors.refiMeshGradient : null,
-                        borderRadius: BorderRadius.circular(20)),
+                        borderRadius: BorderRadius.circular(20.r(context))),
                     alignment: Alignment.center,
                     child: Text(s.label,
                         style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp(context),
                             fontWeight: FontWeight.bold,
                             color: sel ? Colors.white : AppColors.textSub)),
                   ),
@@ -458,21 +470,21 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       {required String label, required VoidCallback onTap}) {
     return Container(
       width: double.infinity,
-      height: 56,
+      height: 56.h(context),
       decoration: BoxDecoration(
           gradient: AppColors.refiMeshGradient,
-          borderRadius: BorderRadius.circular(24)),
+          borderRadius: BorderRadius.circular(24.r(context))),
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24))),
+                borderRadius: BorderRadius.circular(24.r(context)))),
         child: Text(label,
             style: GoogleFonts.tajawal(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 16.sp(context),
                 color: Colors.white)),
       ),
     );
@@ -525,32 +537,35 @@ class _WebCoverSearchDialogState extends State<_WebCoverSearchDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w(context)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
                 controller: _ctrl,
-                decoration: const InputDecoration(
-                    hintText: "ابحث عن غلاف", prefixIcon: Icon(Icons.search)),
+                style: TextStyle(fontSize: 16.sp(context)),
+                decoration: InputDecoration(
+                    hintText: "ابحث عن غلاف",
+                    hintStyle: TextStyle(fontSize: 14.sp(context)),
+                    prefixIcon: Icon(Icons.search, size: 24.sp(context))),
                 onSubmitted: _search),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h(context)),
             SizedBox(
-                height: 300,
+                height: 300.h(context),
                 child: _load
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(child: CircularProgressIndicator(strokeWidth: 3.w(context)))
                     : GridView.builder(
                         gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
+                            SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 3,
                                 childAspectRatio: 0.7,
-                                crossAxisSpacing: 8,
-                                mainAxisSpacing: 8),
+                                crossAxisSpacing: 8.w(context),
+                                mainAxisSpacing: 8.h(context)),
                         itemCount: _res.length,
                         itemBuilder: (c, i) => GestureDetector(
                             onTap: () => widget.onImageSelected(_res[i]),
                             child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8.r(context)),
                                 child:
                                     Image.network(_res[i], fit: BoxFit.cover))),
                       )),

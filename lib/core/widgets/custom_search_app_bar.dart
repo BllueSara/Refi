@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/sizes.dart';
 import '../constants/strings.dart';
+import '../utils/responsive_utils.dart';
 
 class CustomSearchAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -21,18 +22,18 @@ class CustomSearchAppBar extends StatelessWidget
       elevation: 0,
       scrolledUnderElevation: 0,
       forceMaterialTransparency: true,
-      titleSpacing: AppSizes.p16,
+      titleSpacing: AppSizes.p16.w(context),
       title: Container(
-        height: 48,
+        height: 48.h(context),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+          borderRadius: BorderRadius.circular(AppSizes.inputRadius.r(context)),
           border: Border.all(color: AppColors.inputBorder),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              blurRadius: 10.r(context),
+              offset: Offset(0, 2.h(context)),
             ),
           ],
         ),
@@ -40,10 +41,12 @@ class CustomSearchAppBar extends StatelessWidget
           controller: controller,
           onChanged: onChanged,
           textAlignVertical: TextAlignVertical.center,
-          decoration: const InputDecoration(
+          style: TextStyle(fontSize: 13.sp(context)),
+          decoration: InputDecoration(
             hintText: AppStrings.searchPlaceholder,
-            hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
-            prefixIcon: Icon(Icons.search, color: Colors.grey),
+            hintStyle: TextStyle(color: Colors.grey, fontSize: 13.sp(context)),
+            prefixIcon:
+                Icon(Icons.search, color: Colors.grey, size: 20.sp(context)),
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,

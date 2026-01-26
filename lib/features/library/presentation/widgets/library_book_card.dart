@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/book_entity.dart';
 
 class LibraryBookCard extends StatelessWidget {
@@ -28,13 +29,13 @@ class LibraryBookCard extends StatelessWidget {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(24.r(context)),
                     color: Colors.grey[200],
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        blurRadius: 10.r(context),
+                        offset: Offset(0, 4.h(context)),
                       ),
                     ],
                   ),
@@ -45,37 +46,37 @@ class LibraryBookCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           width: double.infinity,
                           errorBuilder: (context, error, stackTrace) =>
-                              const Center(
+                              Center(
                             child: Icon(
                               Icons.book,
-                              size: 48,
+                              size: 48.sp(context),
                               color: Colors.grey,
                             ),
                           ),
                         )
-                      : const Center(
-                          child: Icon(Icons.book, size: 48, color: Colors.grey),
+                      : Center(
+                          child: Icon(Icons.book, size: 48.sp(context), color: Colors.grey),
                         ),
                 ),
                 // Finished Badge - Only show in "All" view when progress is 100%
                 if (activeTab == AppStrings.tabAll &&
                     book.progressPercentage >= 100)
                   Positioned(
-                    top: 12,
-                    left: 12,
+                    top: 12.h(context),
+                    left: 12.w(context),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r(context)),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w(context),
+                            vertical: 6.h(context),
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF10B981)
                                 .withOpacity(0.85), // Frosted Green Glass
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r(context)),
                             border: Border.all(
                               color: Colors.white.withOpacity(0.3),
                               width: 1,
@@ -84,23 +85,23 @@ class LibraryBookCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.emoji_events,
-                                size: 14,
+                                size: 14.sp(context),
                                 color: Colors.white,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4.w(context)),
                               Text(
                                 "تم الانتهاء",
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 11,
+                                  fontSize: 11.sp(context),
                                   fontWeight: FontWeight.bold,
                                   shadows: [
                                     Shadow(
                                       color: Colors.black.withOpacity(0.2),
-                                      offset: const Offset(0, 1),
-                                      blurRadius: 2,
+                                      offset: Offset(0, 1.h(context)),
+                                      blurRadius: 2.r(context),
                                     ),
                                   ],
                                 ),
@@ -114,47 +115,47 @@ class LibraryBookCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h(context)),
           Text(
             book.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               //fontFamily: 'Tajawal',
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 16.sp(context),
               color: AppColors.textMain,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h(context)),
           Text(
             book.authors.isNotEmpty ? book.authors.first : 'Unknown Author',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               //fontFamily: 'Tajawal',
-              fontSize: 12,
+              fontSize: 12.sp(context),
               color: AppColors.textSub,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h(context)),
           // Progress Bar
           if (book.status == BookStatus.reading) ...[
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.r(context)),
               child: LinearProgressIndicator(
                 value: book.progress,
                 backgroundColor: AppColors.inputBorder,
                 color: AppColors.primaryBlue,
-                minHeight: 6,
+                minHeight: 6.h(context),
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h(context)),
             Text(
               "${book.progressPercentage}%",
-              style: const TextStyle(
+              style: TextStyle(
                 //fontFamily: 'Tajawal',
-                fontSize: 10,
+                fontSize: 10.sp(context),
                 color: AppColors.secondaryBlue,
                 fontWeight: FontWeight.bold,
               ),

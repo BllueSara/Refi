@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class VisualStatsCard extends StatelessWidget {
   final int bookCount;
@@ -18,15 +19,15 @@ class VisualStatsCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w(context)),
       decoration: BoxDecoration(
         gradient: AppColors.refiMeshGradient,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r(context)),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryBlue.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            blurRadius: 20.r(context),
+            offset: Offset(0, 10.h(context)),
           ),
         ],
       ),
@@ -36,54 +37,54 @@ class VisualStatsCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'الهدف السنوي',
                 style: TextStyle(
                   //fontFamily: 'Tajawal',
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp(context),
                 ),
               ),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    EdgeInsets.symmetric(horizontal: 10.w(context), vertical: 4.h(context)),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r(context)),
                 ),
                 child: Text(
                   '${(progress * 100).toInt()}%',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 14.sp(context),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h(context)),
 
           // Progress Bar
           Stack(
             children: [
               Container(
-                height: 8,
+                height: 8.h(context),
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r(context)),
                 ),
               ),
               LayoutBuilder(
                 builder: (context, constraints) {
                   return Container(
-                    height: 8,
+                    height: 8.h(context),
                     width: constraints.maxWidth * progress,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r(context)),
                     ),
                   );
                 },
@@ -91,18 +92,18 @@ class VisualStatsCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h(context)),
           Row(
             children: [
-              const Icon(Icons.menu_book, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.menu_book, color: Colors.white, size: 20.sp(context)),
+              SizedBox(width: 8.w(context)),
               Text(
                 '$bookCount كتب منجزة',
-                style: const TextStyle(
+                style: TextStyle(
                   //fontFamily: 'Tajawal',
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
-                  fontSize: 14,
+                  fontSize: 14.sp(context),
                 ),
               ),
             ],

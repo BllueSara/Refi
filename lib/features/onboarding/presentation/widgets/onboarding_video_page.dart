@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import 'looping_video_player.dart';
 
 class OnboardingVideoPage extends StatelessWidget {
@@ -18,31 +19,31 @@ class OnboardingVideoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSizes.p24),
+      padding: EdgeInsets.all(AppSizes.p24.w(context)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Illustration Container
           Container(
-            height: 300,
+            height: 300.h(context),
             width: double.infinity,
             decoration: BoxDecoration(
               color: AppColors.white,
-              borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
+              borderRadius: BorderRadius.circular(AppSizes.buttonRadius.r(context)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+                  blurRadius: 20.r(context),
+                  offset: Offset(0, 10.h(context)),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
+              borderRadius: BorderRadius.circular(AppSizes.buttonRadius.r(context)),
               child: LoopingVideoPlayer(assetPath: videoAssetPath),
             ),
           ),
-          const SizedBox(height: AppSizes.p48),
+          SizedBox(height: AppSizes.p48.h(context)),
 
           // Headline
           Text(
@@ -53,7 +54,7 @@ class OnboardingVideoPage extends StatelessWidget {
               color: AppColors.textMain,
             ),
           ),
-          const SizedBox(height: AppSizes.p16),
+          SizedBox(height: AppSizes.p16.h(context)),
 
           // Body
           Text(

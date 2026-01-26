@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/book_entity.dart';
 import '../widgets/library_skeleton.dart';
 import '../cubit/library_cubit.dart';
@@ -133,12 +134,12 @@ class _LibraryPageState extends State<LibraryPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           AppStrings.libraryTitle,
           style: TextStyle(
             //fontFamily: 'Tajawal',
             fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 20.sp(context),
             color: AppColors.textMain,
           ),
         ),
@@ -160,7 +161,12 @@ class _LibraryPageState extends State<LibraryPage> {
           } else if (state is LibraryEmpty) {
             return LibraryEmptyView(activeTab: _activeTab);
           } else if (state is LibraryError) {
-            return Center(child: Text(state.message));
+            return Center(
+              child: Text(
+                state.message,
+                style: TextStyle(fontSize: 14.sp(context)),
+              ),
+            );
           } else if (state is LibraryLoaded) {
             final filteredBooks = _filterBooks(state.books);
 
@@ -169,30 +175,30 @@ class _LibraryPageState extends State<LibraryPage> {
                 // Search Bar
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 16.w(context), vertical: 12.h(context)),
                   child: TextField(
                     controller: _searchController,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textMain,
-                      fontSize: 16,
+                      fontSize: 16.sp(context),
                     ),
                     decoration: InputDecoration(
                       hintText: AppStrings.searchHint,
                       hintStyle: GoogleFonts.tajawal(
                         color: AppColors.textSub.withOpacity(0.6),
-                        fontSize: 14,
+                        fontSize: 14.sp(context),
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.search,
                         color: AppColors.textSub,
-                        size: 20,
+                        size: 20.sp(context),
                       ),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.clear,
                                 color: AppColors.textSub,
-                                size: 20,
+                                size: 20.sp(context),
                               ),
                               onPressed: () {
                                 setState(() {
@@ -204,12 +210,12 @@ class _LibraryPageState extends State<LibraryPage> {
                       filled: true,
                       fillColor: AppColors.inputBorder,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r(context)),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16.w(context),
+                        vertical: 12.h(context),
                       ),
                     ),
                     onChanged: (_) {
@@ -219,13 +225,13 @@ class _LibraryPageState extends State<LibraryPage> {
                 ),
                 // Tabs
                 Container(
-                  height: 50,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  height: 50.h(context),
+                  margin: EdgeInsets.only(bottom: 16.h(context)),
                   child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
                     scrollDirection: Axis.horizontal,
                     itemCount: _tabs.length,
-                    separatorBuilder: (c, i) => const SizedBox(width: 12),
+                    separatorBuilder: (c, i) => SizedBox(width: 12.w(context)),
                     itemBuilder: (context, index) {
                       final tab = _tabs[index];
                       final isActive = _activeTab == tab;
@@ -236,15 +242,15 @@ class _LibraryPageState extends State<LibraryPage> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w(context),
+                            vertical: 8.h(context),
                           ),
                           decoration: BoxDecoration(
                             gradient:
                                 isActive ? AppColors.refiMeshGradient : null,
                             color: isActive ? null : AppColors.inputBorder,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(24.r(context)),
                           ),
                           alignment: Alignment.center,
                           child: Text(
@@ -253,7 +259,7 @@ class _LibraryPageState extends State<LibraryPage> {
                               fontWeight: FontWeight.bold,
                               color:
                                   isActive ? Colors.white : AppColors.textSub,
-                              fontSize: 14,
+                              fontSize: 14.sp(context),
                             ),
                           ),
                         ),
@@ -327,13 +333,13 @@ class _LibraryPageState extends State<LibraryPage> {
                                 ),
                               )
                             : GridView.builder(
-                                padding: const EdgeInsets.all(16),
+                                padding: EdgeInsets.all(16.w(context)),
                                 gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                    SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
                                   childAspectRatio: 0.65,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 24,
+                                  crossAxisSpacing: 16.w(context),
+                                  mainAxisSpacing: 24.h(context),
                                 ),
                                 itemCount: filteredBooks.length,
                                 itemBuilder: (context, index) {

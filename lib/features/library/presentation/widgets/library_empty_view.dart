@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../add_book/presentation/screens/search_screen.dart';
 
 class LibraryEmptyView extends StatelessWidget {
@@ -53,15 +54,15 @@ class LibraryEmptyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 24.w(context), vertical: 16.h(context)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             // Premium Lottie Animation - Reduced size to fit screen
             SizedBox(
-              width: 220,
-              height: 220,
+              width: 220.w(context),
+              height: 220.h(context),
               child: Lottie.asset(
                 _lottieAsset,
                 fit: BoxFit.contain,
@@ -69,47 +70,47 @@ class LibraryEmptyView extends StatelessWidget {
                 // No container, no gray backgrounds
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h(context)),
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
               child: Text(
                 _title,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.tajawal(
                   fontWeight: FontWeight.bold,
-                  fontSize: 20,
+                  fontSize: 20.sp(context),
                   color: AppColors.textMain,
                   height: 1.4,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h(context)),
             // Subtitle
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: 24.w(context)),
               child: Text(
                 _subtitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.tajawal(
-                  fontSize: 14,
+                  fontSize: 14.sp(context),
                   color: AppColors.textSub,
                   height: 1.5,
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h(context)),
 
             // Premium Button
             Container(
               decoration: BoxDecoration(
                 gradient: AppColors.refiMeshGradient,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(24.r(context)),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primaryBlue.withValues(alpha: 0.25),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    blurRadius: 20.r(context),
+                    offset: Offset(0, 8.h(context)),
                   ),
                 ],
               ),
@@ -121,24 +122,24 @@ class LibraryEmptyView extends StatelessWidget {
                         builder: (context) => const SearchScreen()),
                   );
                 },
-                icon: const Icon(Icons.search, color: Colors.white, size: 20),
+                icon: Icon(Icons.search, color: Colors.white, size: 20.sp(context)),
                 label: Text(
                   "ابدأ بالبحث عن كتاب",
                   style: GoogleFonts.tajawal(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 16.sp(context),
                     color: Colors.white,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 14,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 32.w(context),
+                    vertical: 14.h(context),
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(24.r(context)),
                   ),
                 ),
               ),

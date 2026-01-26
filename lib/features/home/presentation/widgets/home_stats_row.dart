@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/home_entity.dart';
 import 'stat_card.dart';
 
@@ -19,7 +20,7 @@ class HomeStatsRow extends StatelessWidget {
             label: AppStrings.booksCompleted,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w(context)),
         Expanded(
           child: StatCard(
             icon: Icons.format_list_numbered,
@@ -27,7 +28,7 @@ class HomeStatsRow extends StatelessWidget {
             label: AppStrings.totalQuotes,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w(context)),
         Expanded(
           child: StatCard(
             icon: Icons.hourglass_empty_rounded,

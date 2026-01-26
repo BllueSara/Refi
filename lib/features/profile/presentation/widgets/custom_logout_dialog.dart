@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class CustomLogoutDialog extends StatelessWidget {
   final VoidCallback onLogout;
@@ -15,16 +16,16 @@ class CustomLogoutDialog extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.w(context)),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(24.r(context)),
             border: Border.all(color: Colors.white.withOpacity(0.2)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                blurRadius: 20.r(context),
+                offset: Offset(0, 10.h(context)),
               ),
             ],
           ),
@@ -32,7 +33,7 @@ class CustomLogoutDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w(context)),
                 decoration: BoxDecoration(
                   color: AppColors.errorRed.withOpacity(
                       0.1), // Assumes Red exists or use error color
@@ -40,32 +41,32 @@ class CustomLogoutDialog extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.logout,
-                  size: 32,
+                  size: 32.sp(context),
                   color: Theme.of(context).colorScheme.error,
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16.h(context)),
+              Text(
                 'تسجيل الخروج',
                 style: TextStyle(
                   //fontFamily: 'Tajawal',
-                  fontSize: 22, // Larger
+                  fontSize: 22.sp(context), // Larger
                   fontWeight: FontWeight.bold,
                   color: AppColors.textMain,
                 ),
               ),
-              const SizedBox(height: 12),
-              const Text(
+              SizedBox(height: 12.h(context)),
+              Text(
                 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   //fontFamily: 'Tajawal',
-                  fontSize: 16,
+                  fontSize: 16.sp(context),
                   color: AppColors.textSub,
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h(context)),
               Row(
                 children: [
                   // Cancel Button -> Blue Gradient
@@ -73,23 +74,23 @@ class CustomLogoutDialog extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: AppColors.refiMeshGradient,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r(context)),
                       ),
                       child: ElevatedButton(
                         onPressed: () => Navigator.pop(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: EdgeInsets.symmetric(vertical: 12.h(context)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r(context)),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'تراجع',
                           style: TextStyle(
                             //fontFamily: 'Tajawal',
-                            fontSize: 16,
+                            fontSize: 16.sp(context),
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -97,23 +98,23 @@ class CustomLogoutDialog extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w(context)),
 
                   // Logout Button -> Simple Red Text
                   Expanded(
                     child: TextButton(
                       onPressed: onLogout,
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h(context)),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r(context)),
                         ),
                       ),
                       child: Text(
                         'خروج',
                         style: TextStyle(
                           //fontFamily: 'Tajawal',
-                          fontSize: 16,
+                          fontSize: 16.sp(context),
                           fontWeight: FontWeight.bold,
                           color: AppColors.errorRed,
                         ),

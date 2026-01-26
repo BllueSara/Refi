@@ -11,6 +11,7 @@ import '../widgets/home_empty_body.dart';
 import '../widgets/home_populated_body.dart';
 import '../widgets/home_skeleton.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../profile/domain/usecases/get_profile_usecase.dart';
 import '../../../library/domain/usecases/fetch_user_library_usecase.dart';
@@ -139,53 +140,53 @@ class _HomePageState extends State<HomePage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r(context))),
       ),
       builder: (ctx) {
         return Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.w(context)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h(context)),
               Lottie.asset(
                 'assets/images/Success.json',
-                width: 200,
-                height: 200,
+                width: 200.w(context),
+                height: 200.h(context),
                 repeat: false,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h(context)),
               Text(
                 title,
                 style: GoogleFonts.tajawal(
-                  fontSize: 24,
+                  fontSize: 24.sp(context),
                   fontWeight: FontWeight.bold,
                   color: AppColors.textMain,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h(context)),
               Text(
                 message,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.tajawal(
-                  fontSize: 16,
+                  fontSize: 16.sp(context),
                   color: AppColors.textSub,
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h(context)),
               // Continue Button
               Container(
                 width: double.infinity,
-                height: 56,
+                height: 56.h(context),
                 decoration: BoxDecoration(
                   gradient: AppColors.refiMeshGradient,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r(context)),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.primaryBlue.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: 10.r(context),
+                      offset: Offset(0, 4.h(context)),
                     ),
                   ],
                 ),
@@ -195,13 +196,13 @@ class _HomePageState extends State<HomePage> {
                     onTap: () {
                       Navigator.pop(ctx);
                     },
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r(context)),
                     child: Center(
                       child: Text(
                         "رائع",
                         style: GoogleFonts.tajawal(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 16.sp(context),
                           color: Colors.white,
                         ),
                       ),
@@ -209,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h(context)),
             ],
           ),
         );

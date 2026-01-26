@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/sizes.dart';
+import '../utils/responsive_utils.dart';
 
 class RefiGradientButton extends StatelessWidget {
   final String text;
@@ -20,15 +21,15 @@ class RefiGradientButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width ?? double.infinity,
-      height: height,
+      height: height.h(context),
       decoration: BoxDecoration(
         gradient: AppColors.refiMeshGradient,
-        borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
+        borderRadius: BorderRadius.circular(AppSizes.buttonRadius.r(context)),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryBlue.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            blurRadius: 12.r(context),
+            offset: Offset(0, 6.h(context)),
           ),
         ],
       ),
@@ -36,13 +37,13 @@ class RefiGradientButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
+          borderRadius: BorderRadius.circular(AppSizes.buttonRadius.r(context)),
           child: Center(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 16.sp(context),
                 fontWeight: FontWeight.bold,
               ),
             ),

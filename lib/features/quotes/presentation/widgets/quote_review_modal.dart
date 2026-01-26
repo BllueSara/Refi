@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../library/presentation/cubit/library_cubit.dart';
 import '../../../library/domain/entities/book_entity.dart';
 import '../cubit/quote_cubit.dart';
@@ -48,10 +49,12 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.symmetric(
+          horizontal: 24.w(context), vertical: 24.h(context)),
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(24.r(context))),
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -61,15 +64,15 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
             // Drag Handle
             Center(
               child: Container(
-                width: 40,
-                height: 4,
+                width: 40.w(context),
+                height: 4.h(context),
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r(context)),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h(context)),
 
             // Header
             Row(
@@ -77,80 +80,85 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     AppStrings.cancel,
                     style: TextStyle(
                       //fontFamily: 'Tajawal',
                       color: AppColors.primaryBlue,
+                      fontSize: 14.sp(context),
                     ),
                   ),
                 ),
-                const Text(
+                Text(
                   AppStrings.reviewTitle,
                   style: TextStyle(
                     //fontFamily: 'Tajawal',
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 18.sp(context),
                     color: AppColors.textMain,
                   ),
                 ),
-                const SizedBox(width: 48), // Balance for cancel button
+                SizedBox(width: 48.w(context)), // Balance for cancel button
               ],
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h(context)),
 
             // Quote Text Field
             Text(
               AppStrings
                   .quoteTextLabel, // "نص الاقتباس" but prompt image says "نص الاقتباس" above field? No, it just shows text.
               // Prompt says: Fields: نص الاقتباس: A large editable text field
-              style: const TextStyle(
+              style: TextStyle(
                 //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
+                fontSize: 16.sp(context),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h(context)),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w(context)),
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.inputBorder),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r(context)),
               ),
               child: TextField(
                 controller: _textController,
                 maxLines: 5,
-                style: const TextStyle(
+                style: TextStyle(
                   //fontFamily: 'Tajawal',
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp(context),
                   height: 1.5,
                 ),
                 decoration: const InputDecoration(border: InputBorder.none),
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h(context)),
 
             // Feelings
-            const Text(
+            Text(
               AppStrings.feelingLabel,
               style: TextStyle(
                 //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
+                fontSize: 16.sp(context),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h(context)),
             Row(
               children: _feelings.map((feeling) {
                 final isSelected = _selectedFeeling == feeling;
                 return Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
+                  padding: EdgeInsets.only(left: 8.0.w(context)),
                   child: ChoiceChip(
-                    label: Text(feeling),
+                    label: Text(feeling,
+                        style: TextStyle(fontSize: 14.sp(context))),
                     labelStyle: TextStyle(
                       //fontFamily: 'Tajawal',
                       color: isSelected ? Colors.white : AppColors.textSub,
+                      fontSize: 14.sp(context),
                     ),
                     selected: isSelected,
                     selectedColor: AppColors
@@ -160,7 +168,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                     // I will simulate with Container and GestureDetector for pixel perfection.
                     backgroundColor: AppColors.inputBorder,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20.r(context)),
                       side: BorderSide.none,
                     ),
                     onSelected: (val) {
@@ -175,50 +183,53 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
             // Leaving ChoiceChip for now as it's cleaner standard widget, but `selectedColor` takes single Color.
             // I'll leave it as Primary Blue solid for safety unless I want to rebuild everything.
             // AppColors.primaryBlue is close enough to gradient start/end average or main color.
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h(context)),
 
             // Personal Notes
-            const Text(
+            Text(
               AppStrings.notesLabel,
               style: TextStyle(
                 //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
+                fontSize: 16.sp(context),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h(context)),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(color: AppColors.inputBorder),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r(context)),
               ),
               child: TextField(
                 controller: _notesController,
                 maxLines: 3,
-                style: const TextStyle( fontSize: 14),
-                decoration: const InputDecoration(
+                style: TextStyle(fontSize: 14.sp(context)),
+                decoration: InputDecoration(
                   hintText: AppStrings.notesHint,
                   hintStyle: TextStyle(
                     //fontFamily: 'Tajawal',
                     color: AppColors.textPlaceholder,
+                    fontSize: 14.sp(context),
                   ),
                   border: InputBorder.none,
                 ),
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h(context)),
 
             // Source Book Dropdown
-            const Text(
+            Text(
               AppStrings.sourceBookLabel,
               style: TextStyle(
                 //fontFamily: 'Tajawal',
                 fontWeight: FontWeight.bold,
+                fontSize: 16.sp(context),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h(context)),
             BlocBuilder<LibraryCubit, LibraryState>(
               builder: (context, state) {
                 List<BookEntity> userBooks = [];
@@ -228,27 +239,27 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                 }
 
                 return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w(context),
+                    vertical: 4.h(context),
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r(context)),
                     border: Border.all(
-                      color: _showBookError
-                          ? Colors.red
-                          : AppColors.inputBorder,
+                      color:
+                          _showBookError ? Colors.red : AppColors.inputBorder,
                       width: _showBookError ? 2 : 1,
                     ),
                   ),
                   child: userBooks.isEmpty
                       ? Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: EdgeInsets.all(16.0.w(context)),
                           child: Text(
                             'لا توجد كتب محفوظة',
                             style: TextStyle(
                               //fontFamily: 'Tajawal',
                               color: AppColors.textPlaceholder,
+                              fontSize: 14.sp(context),
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -256,11 +267,11 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                       : DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             isExpanded: true,
-                            hint: const Text(
+                            hint: Text(
                               "اختر الكتاب المصدر",
                               style: TextStyle(
                                 //fontFamily: 'Tajawal',
-                                fontSize: 14,
+                                fontSize: 14.sp(context),
                               ),
                             ),
                             value: _selectedBook,
@@ -270,8 +281,9 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                                     value: book.id,
                                     child: Text(
                                       '${book.title} - ${book.author}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         //fontFamily: 'Tajawal',
+                                        fontSize: 14.sp(context),
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -286,15 +298,15 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
               },
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h(context)),
 
             // Save Button
             Container(
               width: double.infinity,
-              height: 56,
+              height: 56.h(context),
               decoration: BoxDecoration(
                 gradient: AppColors.refiMeshGradient,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(24.r(context)),
               ),
               child: BlocConsumer<QuoteCubit, QuoteState>(
                 listener: (context, state) {
@@ -339,30 +351,31 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                             }
 
                             context.read<QuoteCubit>().saveQuote(
-                              text: _textController.text.trim(),
-                              bookId: _selectedBook!,
-                              feeling: _selectedFeeling ?? 'محايد',
-                              notes: _notesController.text.trim().isNotEmpty
-                                  ? _notesController.text.trim()
-                                  : null,
-                            );
+                                  text: _textController.text.trim(),
+                                  bookId: _selectedBook!,
+                                  feeling: _selectedFeeling ?? 'محايد',
+                                  notes: _notesController.text.trim().isNotEmpty
+                                      ? _notesController.text.trim()
+                                      : null,
+                                );
                           },
                     icon: isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
+                        ? SizedBox(
+                            width: 20.w(context),
+                            height: 20.h(context),
                             child: CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2,
                             ),
                           )
-                        : const Icon(Icons.check_circle, color: Colors.white),
+                        : Icon(Icons.check_circle,
+                            color: Colors.white, size: 20.sp(context)),
                     label: Text(
                       isSaving ? 'جاري الحفظ...' : AppStrings.save,
-                      style: const TextStyle(
+                      style: TextStyle(
                         //fontFamily: 'Tajawal',
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 16.sp(context),
                         color: Colors.white,
                       ),
                     ),
@@ -370,14 +383,14 @@ class _QuoteReviewModalState extends State<QuoteReviewModal> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(24.r(context)),
                       ),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 24), // Bottom padding
+            SizedBox(height: 24.h(context)), // Bottom padding
           ],
         ),
       ),

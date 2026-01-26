@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/home_entity.dart';
 import '../../../add_book/presentation/screens/search_screen.dart';
 
@@ -31,14 +32,14 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
             children: [
               Row(
                 children: [
-                  const Text("👋", style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 8),
+                  Text("👋", style: TextStyle(fontSize: 20.sp(context))),
+                  SizedBox(width: 8.w(context)),
                   Text(
                     "${AppStrings.hello} ${data.username}",
-                    style: const TextStyle(
+                    style: TextStyle(
                       //fontFamily: 'Tajawal',
                       fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontSize: 20.sp(context),
                       color: AppColors.textMain,
                     ),
                   ),
@@ -56,9 +57,9 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
               MaterialPageRoute(builder: (context) => const SearchScreen()),
             );
           },
-          icon: const Icon(Icons.search, color: AppColors.textMain, size: 28),
+          icon: Icon(Icons.search, color: AppColors.textMain, size: 28.sp(context)),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w(context)),
       ],
     );
   }

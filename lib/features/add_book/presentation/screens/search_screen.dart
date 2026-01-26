@@ -6,6 +6,7 @@ import '../../../../core/widgets/refi_success_widget.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../library/domain/entities/book_entity.dart';
 import '../../../library/presentation/cubit/library_cubit.dart';
@@ -106,9 +107,9 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
+          top: Radius.circular(24.r(context)),
         ),
       ),
       builder: (ctx) {
@@ -120,30 +121,30 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
             ),
             child: SingleChildScrollView(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 24.w(context), vertical: 32.h(context)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 40,
-                      height: 4,
+                      width: 40.w(context),
+                      height: 4.h(context),
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(2.r(context)),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h(context)),
                     Container(
-                      width: 120,
-                      height: 180,
+                      width: 120.w(context),
+                      height: 180.h(context),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r(context)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                            blurRadius: 20.r(context),
+                            offset: Offset(0, 10.h(context)),
                           ),
                         ],
                         image: book.imageUrl != null
@@ -155,27 +156,28 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                         color: Colors.grey[200],
                       ),
                       child: book.imageUrl == null
-                          ? const Icon(Icons.book, size: 50, color: Colors.grey)
+                          ? Icon(Icons.book,
+                              size: 50.sp(context), color: Colors.grey)
                           : null,
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h(context)),
                     Text(
                       "هذا الكتاب موجود بالفعل في مكتبتك",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.tajawal(
-                        fontSize: 20,
+                        fontSize: 20.sp(context),
                         fontWeight: FontWeight.bold,
                         color: AppColors.textMain,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h(context)),
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 56.h(context),
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: AppColors.refiMeshGradient,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r(context)),
                         ),
                         child: ElevatedButton(
                           onPressed: () {
@@ -193,27 +195,28 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius:
+                                  BorderRadius.circular(16.r(context)),
                             ),
                           ),
                           child: Text(
                             "انتقل إلى الكتاب في مكتبتي",
                             style: GoogleFonts.tajawal(
                               fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                              fontSize: 18.sp(context),
                               color: Colors.white,
                             ),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h(context)),
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
                       child: Text(
                         "إغلاق",
                         style: GoogleFonts.tajawal(
-                          fontSize: 16,
+                          fontSize: 16.sp(context),
                           color: AppColors.textSub,
                         ),
                       ),
@@ -236,35 +239,35 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
               ),
               child: SingleChildScrollView(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 24.w(context), vertical: 12.h(context)),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Drag Handle
                       Center(
                         child: Container(
-                          width: 40,
-                          height: 4,
+                          width: 40.w(context),
+                          height: 4.h(context),
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(2.r(context)),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h(context)),
 
                       // Book Cover
                       Container(
-                        width: 120,
-                        height: 180,
+                        width: 120.w(context),
+                        height: 180.h(context),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r(context)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
+                              blurRadius: 20.r(context),
+                              offset: Offset(0, 10.h(context)),
                             ),
                           ],
                           image: book.imageUrl != null
@@ -276,47 +279,48 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                           color: Colors.grey[200],
                         ),
                         child: book.imageUrl == null
-                            ? const Icon(Icons.book,
-                                size: 50, color: Colors.grey)
+                            ? Icon(Icons.book,
+                                size: 50.sp(context), color: Colors.grey)
                             : null,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h(context)),
 
                       // Title & Subtitle
                       Text(
                         "هل تود إضافة هذا الكتاب؟",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.tajawal(
-                          fontSize: 20,
+                          fontSize: 20.sp(context),
                           fontWeight: FontWeight.bold,
                           color: AppColors.textMain,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h(context)),
                       Text(
                         "سيتم حفظ الكتاب في قائمة كتبك الخاصة",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.tajawal(
-                          fontSize: 14,
+                          fontSize: 14.sp(context),
                           color: AppColors.textSub,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h(context)),
 
                       // Status Selector
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16.w(context)),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF5F5F5),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r(context)),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<BookStatus>(
                             value: selectedStatus,
                             isExpanded: true,
-                            icon: const Icon(
-                                Icons.arrow_drop_down_circle_outlined,
-                                color: AppColors.primaryBlue),
+                            icon: Icon(Icons.arrow_drop_down_circle_outlined,
+                                color: AppColors.primaryBlue,
+                                size: 24.sp(context)),
                             onChanged: (BookStatus? newValue) {
                               if (newValue != null) {
                                 setState(() {
@@ -330,7 +334,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                                 child: Text(
                                   BookStatus.wishlist.label,
                                   style: GoogleFonts.tajawal(
-                                    fontSize: 16,
+                                    fontSize: 16.sp(context),
                                     color: AppColors.textMain,
                                   ),
                                   textAlign: TextAlign.right,
@@ -341,7 +345,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                                 child: Text(
                                   BookStatus.reading.label,
                                   style: GoogleFonts.tajawal(
-                                    fontSize: 16,
+                                    fontSize: 16.sp(context),
                                     color: AppColors.textMain,
                                   ),
                                   textAlign: TextAlign.right,
@@ -352,7 +356,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                                 child: Text(
                                   BookStatus.completed.label,
                                   style: GoogleFonts.tajawal(
-                                    fontSize: 16,
+                                    fontSize: 16.sp(context),
                                     color: AppColors.textMain,
                                   ),
                                   textAlign: TextAlign.right,
@@ -362,16 +366,16 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h(context)),
 
                       // Primary Action
                       SizedBox(
                         width: double.infinity,
-                        height: 56,
+                        height: 56.h(context),
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: AppColors.refiMeshGradient,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(16.r(context)),
                           ),
                           child: ElevatedButton(
                             onPressed: () {
@@ -405,21 +409,22 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                               backgroundColor: Colors.transparent,
                               shadowColor: Colors.transparent,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius:
+                                    BorderRadius.circular(16.r(context)),
                               ),
                             ),
                             child: Text(
                               "إضافة إلى مكتبتي",
                               style: GoogleFonts.tajawal(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                                fontSize: 18.sp(context),
                                 color: Colors.white,
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h(context)),
 
                       // Secondary Action
                       TextButton(
@@ -427,12 +432,12 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                         child: Text(
                           "إلغاء",
                           style: GoogleFonts.tajawal(
-                            fontSize: 16,
+                            fontSize: 16.sp(context),
                             color: AppColors.textSub,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h(context)),
                     ],
                   ),
                 ),
@@ -452,26 +457,26 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: Container(),
-        leadingWidth: 0,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new,
+              color: Colors.black, size: 20.sp(context)),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          },
+          tooltip: 'رجوع',
+        ),
+        leadingWidth: 56.w(context),
         title: Text(
           "بحث",
           style: GoogleFonts.tajawal(
             color: Colors.black,
-            fontSize: 20,
+            fontSize: 20.sp(context),
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_forward_ios_rounded,
-                  color: Colors.black, size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-        ],
       ),
       body: Stack(
         children: [
@@ -479,7 +484,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
             children: [
               // 1. Search Field
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0.w(context)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -487,23 +492,26 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                       controller: _searchController,
                       textAlign: TextAlign.right,
                       onChanged: _onSearchChanged,
-                      style: GoogleFonts.tajawal(fontWeight: FontWeight.bold),
+                      style: GoogleFonts.tajawal(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.sp(context)),
                       decoration: InputDecoration(
                         hintText: "ابن خلدون",
-                        hintStyle: GoogleFonts.tajawal(color: Colors.grey),
-                        suffixIcon:
-                            const Icon(Icons.search, color: Colors.grey),
+                        hintStyle: GoogleFonts.tajawal(
+                            color: Colors.grey, fontSize: 14.sp(context)),
+                        suffixIcon: Icon(Icons.search,
+                            color: Colors.grey, size: 24.sp(context)),
                         filled: true,
                         fillColor: const Color(0xFFF5F5F5),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r(context)),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16.w(context), vertical: 16.h(context)),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h(context)),
                     // Sub-header
                     Row(
                       mainAxisAlignment:
@@ -512,7 +520,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                         Text(
                           "نتائج البحث",
                           style: GoogleFonts.tajawal(
-                            fontSize: 14,
+                            fontSize: 14.sp(context),
                             fontWeight: FontWeight.bold,
                             color: Colors.grey, // textSub
                           ),
@@ -533,14 +541,15 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                       return Center(
                         child: Lottie.asset(
                           'assets/images/search imm.json',
-                          width: 200,
-                          height: 200,
+                          width: 200.w(context),
+                          height: 200.h(context),
                         ),
                       );
                     } else if (state is SearchError) {
                       return Center(
                           child: Text(state.message,
-                              style: GoogleFonts.tajawal()));
+                              style: GoogleFonts.tajawal(
+                                  fontSize: 14.sp(context))));
                     } else if (state is SearchSuccess) {
                       if (state.books.isEmpty) {
                         return SearchEmptyWidget(
@@ -551,15 +560,15 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                       final otherBooks = state.books.skip(1).toList();
 
                       return ListView(
-                        padding: const EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: 100), // Spacing for fab
+                        padding: EdgeInsets.only(
+                            left: 16.w(context),
+                            right: 16.w(context),
+                            bottom: 100.h(context)), // Spacing for fab
                         children: [
                           // Hero Card
                           if (state.books.isNotEmpty) ...[
                             _buildHeroCard(heroBook),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16.h(context)),
                           ],
 
                           // List
@@ -567,8 +576,8 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: otherBooks.length,
-                            separatorBuilder: (c, i) => const Divider(
-                                height: 1,
+                            separatorBuilder: (c, i) => Divider(
+                                height: 1.h(context),
                                 color: Colors.grey), // Light grey divider
                             itemBuilder: (context, index) {
                               final book = otherBooks[index];
@@ -587,33 +596,33 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
 
           // 4. Footer Button (Floating at bottom)
           Positioned(
-            bottom: 24,
-            left: 16,
-            right: 16,
+            bottom: 24.h(context),
+            left: 16.w(context),
+            right: 16.w(context),
             child: SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 56.h(context),
               child: OutlinedButton(
                 onPressed: _navigateToAddManually,
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(
                       color: AppColors.primaryBlue), // Blue border
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(16.r(context))),
                   backgroundColor: Colors.white,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.add_circle_outline,
-                        color: AppColors.primaryBlue),
-                    const SizedBox(width: 8),
+                    Icon(Icons.add_circle_outline,
+                        color: AppColors.primaryBlue, size: 24.sp(context)),
+                    SizedBox(width: 8.w(context)),
                     Text(
                       "لم تجد كتابك؟ أضفه يدوياً",
                       style: GoogleFonts.tajawal(
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryBlue,
-                        fontSize: 16,
+                        fontSize: 16.sp(context),
                       ),
                     ),
                   ],
@@ -661,15 +670,15 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
             }
           : () => _showAddSheet(book),
       child: Container(
-        constraints: const BoxConstraints(minHeight: 180),
+        constraints: BoxConstraints(minHeight: 180.h(context)),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              blurRadius: 10.r(context),
+              offset: Offset(0, 4.h(context)),
             ),
           ],
         ),
@@ -679,7 +688,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(16.0.w(context)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end, // RTL
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -695,18 +704,18 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                         }
 
                         return Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w(context), vertical: 4.h(context)),
                           decoration: BoxDecoration(
                             color: isInLibrary
                                 ? Colors.green.withOpacity(0.1)
                                 : AppColors.primaryBlue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r(context)),
                           ),
                           child: Text(
                             isInLibrary ? "موجود في مكتبتك" : "أفضل تطابق",
                             style: GoogleFonts.tajawal(
-                              fontSize: 12,
+                              fontSize: 12.sp(context),
                               color: isInLibrary
                                   ? Colors.green
                                   : AppColors.primaryBlue,
@@ -715,7 +724,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                           ),
                         );
                       }),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h(context)),
                       Flexible(
                         child: Text(
                           book.title,
@@ -723,13 +732,13 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.tajawal(
-                            fontSize: 18,
+                            fontSize: 18.sp(context),
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h(context)),
                       Text(
                         book.authors.isNotEmpty
                             ? book.authors.first
@@ -738,11 +747,11 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.tajawal(
-                          fontSize: 14,
+                          fontSize: 14.sp(context),
                           color: Colors.grey,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h(context)),
                       // Metadata
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -750,18 +759,23 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                           Text(
                             "التاريخ", // Placeholder category
                             style: GoogleFonts.tajawal(
-                                fontSize: 12, color: Colors.grey),
+                                fontSize: 12.sp(context), color: Colors.grey),
                           ),
-                          const SizedBox(width: 4),
-                          const Text("•", style: TextStyle(color: Colors.grey)),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4.w(context)),
+                          Text("•",
+                              style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 12.sp(context))),
+                          SizedBox(width: 4.w(context)),
                           Text(
                             "${book.rating ?? 4.9}",
                             style: GoogleFonts.tajawal(
-                                fontSize: 12, fontWeight: FontWeight.bold),
+                                fontSize: 12.sp(context),
+                                fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.star, size: 14, color: Colors.amber),
+                          SizedBox(width: 4.w(context)),
+                          Icon(Icons.star,
+                              size: 14.sp(context), color: Colors.amber),
                         ],
                       ),
                     ],
@@ -770,17 +784,17 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
               ),
               // Cover Image
               ClipRRect(
-                borderRadius:
-                    const BorderRadius.horizontal(right: Radius.circular(24)),
+                borderRadius: BorderRadius.horizontal(
+                    right: Radius.circular(24.r(context))),
                 child: Container(
-                  width: 120,
+                  width: 120.w(context),
                   // height: 180, // Removed to allow stretching via IntrinsicHeight
                   decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
-                      topLeft: Radius.circular(24),
-                      bottomLeft: Radius.circular(24),
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(24.r(context)),
+                      bottomRight: Radius.circular(24.r(context)),
+                      topLeft: Radius.circular(24.r(context)),
+                      bottomLeft: Radius.circular(24.r(context)),
                     ), // Rounded all corners for image
                     image: DecorationImage(
                       image: NetworkImage(book.imageUrl ?? ''),
@@ -790,11 +804,12 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                     color: Colors.grey[200],
                   ),
                   child: book.imageUrl == null
-                      ? const Icon(Icons.book, size: 40, color: Colors.grey)
+                      ? Icon(Icons.book,
+                          size: 40.sp(context), color: Colors.grey)
                       : null,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w(context)),
             ],
           ),
         ), // Close IntrinsicHeight
@@ -837,13 +852,14 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
             }
           : () => _showAddSheet(book),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        padding: EdgeInsets.symmetric(vertical: 12.0.h(context)),
         child: Row(
           children: [
             // Chevron Left (indicator) - Visually Left
             Icon(
               isInLibrary ? Icons.check_circle : Icons.chevron_left,
               color: isInLibrary ? Colors.green : Colors.grey,
+              size: 24.sp(context),
             ),
             const Spacer(),
             // Text Center (Right aligned logically in RTL context)
@@ -859,31 +875,31 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.tajawal(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 16.sp(context),
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h(context)),
                   Text(
                     book.authors.isNotEmpty ? book.authors.first : "Unknown",
                     textAlign: TextAlign.right,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.tajawal(
-                      fontSize: 14,
+                      fontSize: 14.sp(context),
                       color: Colors.grey,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w(context)),
             // Image Right
             Container(
-              width: 50,
-              height: 75,
+              width: 50.w(context),
+              height: 75.h(context),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r(context)),
                 color: Colors.grey[200],
                 image: DecorationImage(
                   image: NetworkImage(book.imageUrl ?? ''),
@@ -892,7 +908,7 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                 ),
               ),
               child: book.imageUrl == null
-                  ? const Icon(Icons.book, color: Colors.grey, size: 20)
+                  ? Icon(Icons.book, color: Colors.grey, size: 20.sp(context))
                   : null,
             ),
           ],

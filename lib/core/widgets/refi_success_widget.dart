@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:ui';
 import '../constants/colors.dart';
+import '../utils/responsive_utils.dart';
 
 class RefiSuccessWidget extends StatelessWidget {
   final String title;
@@ -30,25 +31,25 @@ class RefiSuccessWidget extends StatelessWidget {
         children: [
           // Close button at top-right
           Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
-            right: 20,
+            top: MediaQuery.of(context).padding.top + 16.h(context),
+            right: 20.w(context),
             child: IconButton(
-              icon: const Icon(Icons.close, color: AppColors.textSub, size: 28),
+              icon: Icon(Icons.close, color: AppColors.textSub, size: 28.sp(context)),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
 
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: EdgeInsets.symmetric(horizontal: 32.w(context)),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Lottie Animation Container - Perfectly Centered
                   Container(
-                    width: 260,
-                    height: 260,
+                    width: 260.w(context),
+                    height: 260.h(context),
                     decoration: BoxDecoration(
                       color: AppColors.primaryBlue.withValues(alpha: 0.05),
                       shape: BoxShape.circle,
@@ -61,30 +62,30 @@ class RefiSuccessWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  SizedBox(height: 48.h(context)),
 
                   // Success Message - Tajawal Extra Bold
                   Text(
                     title,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.tajawal(
-                      fontSize: 28,
+                      fontSize: 28.sp(context),
                       fontWeight: FontWeight.w800,
                       color: AppColors.primaryBlue,
                       height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h(context)),
                   Text(
                     subtitle,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.tajawal(
-                      fontSize: 17,
+                      fontSize: 17.sp(context),
                       color: AppColors.textSub,
                       height: 1.6,
                     ),
                   ),
-                  const SizedBox(height: 56),
+                  SizedBox(height: 56.h(context)),
 
                   // Primary Action (Refi Mesh Gradient Button)
                   _buildGradientButton(
@@ -96,17 +97,17 @@ class RefiSuccessWidget extends StatelessWidget {
                   // Secondary Action
                   if (secondaryButtonLabel != null &&
                       onSecondaryAction != null) ...[
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h(context)),
                     TextButton(
                       onPressed: onSecondaryAction,
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 32),
+                        padding: EdgeInsets.symmetric(
+                            vertical: 12.h(context), horizontal: 32.w(context)),
                       ),
                       child: Text(
                         secondaryButtonLabel!,
                         style: GoogleFonts.tajawal(
-                          fontSize: 16,
+                          fontSize: 16.sp(context),
                           fontWeight: FontWeight.bold,
                           color: AppColors.textSub,
                         ),
@@ -129,15 +130,15 @@ class RefiSuccessWidget extends StatelessWidget {
   }) {
     return Container(
       width: double.infinity,
-      height: 60,
+      height: 60.h(context),
       decoration: BoxDecoration(
         gradient: AppColors.refiMeshGradient,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r(context)),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryBlue.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            blurRadius: 20.r(context),
+            offset: Offset(0, 10.h(context)),
           ),
         ],
       ),
@@ -145,12 +146,12 @@ class RefiSuccessWidget extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r(context)),
           child: Center(
             child: Text(
               label,
               style: GoogleFonts.tajawal(
-                fontSize: 18,
+                fontSize: 18.sp(context),
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 letterSpacing: 0.5,
