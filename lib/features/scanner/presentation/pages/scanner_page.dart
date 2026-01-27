@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../quotes/presentation/widgets/quote_review_modal.dart';
 import '../cubit/scanner_cubit.dart';
@@ -22,10 +23,20 @@ class _ScannerPageState extends State<ScannerPage>
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
   FlashMode _currentFlashMode = FlashMode.off;
+  int _selectedModeIndex = 1; // Default to Quote mode
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
     _initializeCamera();
   }
 
@@ -65,6 +76,7 @@ class _ScannerPageState extends State<ScannerPage>
   @override
   void dispose() {
     _cameraController?.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -212,14 +224,8 @@ class _ScannerPageState extends State<ScannerPage>
                       ],
                     ),
                   ),
-                  : Container(
-                      color: Colors.black,
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primaryBlue,
-                        ),
-                      ),
-                    ),
+                ],
+              ),
             ),
 
             // 2. Dark Overlay
@@ -266,28 +272,6 @@ class _ScannerPageState extends State<ScannerPage>
               ),
             ),
 
-                  // Bottom Bar (Shutter)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 40),
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: _onShutterPressed,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 4),
-                            color: Colors.white.withValues(alpha: 0.2),
-                          ),
-                          child: const Icon(Icons.camera,
-                              color: Colors.transparent),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             // 4. Scanning Frame (Center)
             Center(
               child: SizedBox(
@@ -334,65 +318,49 @@ class _ScannerPageState extends State<ScannerPage>
               ),
             ),
 
-            // Loading Overlay
+            // Status Toast
             if (_isProcessing)
-              Container(
-                color: Colors.black.withValues(alpha: 0.7),
-                child: const Center(
-                  child: Column(
-            // 5. Status Toast
-            Positioned(
-              bottom: 200.h(context),
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w(context),
-                    vertical: 10.h(context),
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(30.r(context)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(color: AppColors.primaryBlue),
-                      SizedBox(height: 20),
-                      Text(
-                        "جاري معالجة الاقتباس...",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-                      ScaleTransition(
-                        scale: _pulseAnimation,
-                        child: Container(
-                          width: 8.w(context),
-                          height: 8.h(context),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryBlue,
-                            shape: BoxShape.circle,
+              Positioned(
+                bottom: 200.h(context),
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.w(context),
+                      vertical: 10.h(context),
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(30.r(context)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ScaleTransition(
+                          scale: _pulseAnimation,
+                          child: Container(
+                            width: 8.w(context),
+                            height: 8.h(context),
+                            decoration: const BoxDecoration(
+                              color: AppColors.primaryBlue,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 8.w(context)),
-                      Text(
-                        AppStrings.scanDetecting,
-                        style: TextStyle(
-                          //fontFamily: 'Tajawal',
-                          color: Colors.white,
-                          fontSize: 14.sp(context),
+                        SizedBox(width: 8.w(context)),
+                        Text(
+                          AppStrings.scanDetecting,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14.sp(context),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
             // 6. Controls & Mode Switcher
             Positioned(

@@ -3,8 +3,11 @@ import 'package:flutter/services.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
+import '../../../../core/widgets/scale_button.dart';
 import '../../domain/entities/home_entity.dart';
 import '../../../add_book/presentation/screens/search_screen.dart';
+import '../../../subscription/presentation/screens/market_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   final HomeData data;
@@ -50,6 +53,56 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
+        // Market Button
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.w(context)),
+          child: ScaleButton(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MarketScreen(),
+                ),
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 12.w(context),
+                vertical: 8.h(context),
+              ),
+              decoration: BoxDecoration(
+                gradient: AppColors.refiMeshGradient,
+                borderRadius: BorderRadius.circular(16.r(context)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryBlue.withOpacity(0.2),
+                    blurRadius: 8.r(context),
+                    offset: Offset(0, 4.h(context)),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.star_rounded,
+                    color: Colors.white,
+                    size: 18.sp(context),
+                  ),
+                  SizedBox(width: 6.w(context)),
+                  Text(
+                    AppStrings.marketTitle,
+                    style: GoogleFonts.tajawal(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp(context),
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
         IconButton(
           onPressed: () {
             Navigator.push(

@@ -1,5 +1,5 @@
 class AppStrings {
-  static const String appName = 'Refi';
+  static const String appName = 'جليس';
 
   // Navigation
   static const String navHome = 'الرئيسية';

@@ -1,7 +1,7 @@
 class AppStrings {
   // General
   static const String searchHint = "ابحث عن كتاب، مؤلف، أو اقتباس...";
-  static const String appName = "رفي";
+  static const String appName = "جليس";
 
   // Navigation
   static const String navHome = "الرئيسية";
@@ -178,10 +178,34 @@ class AppStrings {
   static const String annualGoalValue = "٢٤ كتاباً"; // Placeholder
   static const String changePassword = "تغيير كلمة المرور";
   static const String readingNotifications = "تنبيهات القراءة";
-  static const String aboutRefi = "عن رفي";
+  static const String aboutRefi = "عن جليس";
+  static const String subscriptionPlan = "الباقة";
+  static const String currentPlan = "الباقة الحالية";
   static const String logout = "تسجيل الخروج";
   static const String appVersion = "إصدار ١.٠.٠";
   static const String userNamePlaceholder = "سارة";
   static const String userEmailPlaceholder = "sara@example.com";
   static const String book = "كتاب";
+
+  // Market/Subscription
+  static const String marketTitle = "اختر باقاتك";
+  static const String marketSubtitle = "اختر الباقة المناسبة لك واستمتع بمميزات إضافية";
+  static const String planBasic = "الأساسية";
+  static const String planPremium = "المميزة";
+  static const String planPro = "المحترفة";
+  static const String monthly = "شهرياً";
+  static const String yearly = "سنوياً";
+  static const String selectPlan = "اختر الباقة";
+  static const String mostPopular = "الأكثر شعبية";
+  static const String bestValue = "الأفضل قيمة";
+  static const String unlimitedQuotes = "اقتباسات غير محدودة";
+  static const String unlimitedBooks = "كتب غير محدودة";
+  static const String advancedScanning = "مسح ضوئي متقدم";
+  static const String cloudBackup = "نسخ احتياطي سحابي";
+  static const String exportQuotes = "تصدير الاقتباسات";
+  static const String prioritySupport = "دعم فني ذو أولوية";
+  static const String adFree = "بدون إعلانات";
+  static const String customTags = "وسوم مخصصة";
+  static const String analytics = "تحليلات متقدمة";
+  static const String free = "مجاني";
 }

@@ -29,6 +29,6 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Refi needs access to the camera to scan book quotes.</string>
+	<string>جليس يحتاج إلى الوصول إلى الكاميرا لمسح اقتباسات الكتب.</string>
 </dict>
 </plist>

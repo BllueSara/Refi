@@ -8,6 +8,7 @@ import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../../../features/auth/presentation/screens/forgot_password_screen.dart';
+import '../../../subscription/presentation/screens/market_screen.dart';
 import '../cubit/profile_cubit.dart';
 import '../widgets/profile_option_tile.dart';
 import '../widgets/avatar_selection_bottom_sheet.dart';
@@ -116,6 +117,38 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                   SizedBox(height: AppDimensions.paddingL.h(context)),
 
                   // Settings Section
+                  // Subscription Plan
+                  ProfileOptionTile(
+                    title: AppStrings.subscriptionPlan,
+                    showArrow: true,
+                    trailing: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w(context),
+                        vertical: 6.h(context),
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.refiMeshGradient,
+                        borderRadius: BorderRadius.circular(12.r(context)),
+                      ),
+                      child: Text(
+                        AppStrings.planBasic, // TODO: Get from user subscription
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 12.sp(context),
+                            ),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MarketScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: AppDimensions.paddingM.h(context)),
                   ProfileOptionTile(
                     title: AppStrings.annualGoal,
                     showArrow: false,

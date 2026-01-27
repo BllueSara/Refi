@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Refi</string>
+	<string>جليس</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>refi</string>
+	<string>جليس</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -38,11 +38,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Refi needs access to the camera to scan book quotes and capture covers.</string>
+	<string>جليس يحتاج إلى الوصول إلى الكاميرا لمسح اقتباسات الكتب والتقاط الأغلفة.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Refi needs access to the microphone for video recording.</string>
+	<string>جليس يحتاج إلى الوصول إلى الميكروفون لتسجيل الفيديو.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Refi needs access to your photo library to select book covers.</string>
+	<string>جليس يحتاج إلى الوصول إلى مكتبة الصور لاختيار أغلفة الكتب.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
