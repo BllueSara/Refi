@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
@@ -81,7 +83,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       context: context,
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r(context)))),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(24.r(context)))),
       builder: (context) {
         return Padding(
           padding: EdgeInsets.all(24.w(context)),
@@ -90,12 +93,13 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             children: [
               Text("اختر غلاف الكتاب",
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontSize: 18.sp(context),
-                  )),
+                        fontSize: 18.sp(context),
+                      )),
               SizedBox(height: 24.h(context)),
               ListTile(
                 leading: Icon(Icons.search, size: 24.sp(context)),
-                title: Text("بحث في الإنترنت", style: TextStyle(fontSize: 14.sp(context))),
+                title: Text("بحث في الإنترنت",
+                    style: TextStyle(fontSize: 14.sp(context))),
                 onTap: () {
                   Navigator.pop(context);
                   _searchCoverFromWeb();
@@ -103,7 +107,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library, size: 24.sp(context)),
-                title: Text("معرض الصور", style: TextStyle(fontSize: 14.sp(context))),
+                title: Text("معرض الصور",
+                    style: TextStyle(fontSize: 14.sp(context))),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
@@ -111,7 +116,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               ),
               ListTile(
                 leading: Icon(Icons.camera_alt, size: 24.sp(context)),
-                title: Text("الكاميرا", style: TextStyle(fontSize: 14.sp(context))),
+                title: Text("الكاميرا",
+                    style: TextStyle(fontSize: 14.sp(context))),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -140,19 +146,111 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     );
   }
 
+  Future<void> _deleteOldCover(String? imageUrl) async {
+    if (imageUrl == null || imageUrl.isEmpty) return;
+
+    try {
+      const bucketName = 'book_covers';
+      const publicPath = '/storage/v1/object/public/$bucketName/';
+
+      if (!imageUrl.contains(publicPath)) {
+        return;
+      }
+
+      final uri = Uri.parse(imageUrl);
+      final fullPath = uri.path;
+
+      final pathIndex = fullPath.indexOf(publicPath);
+      if (pathIndex == -1) {
+        return;
+      }
+
+      final filePath = fullPath.substring(pathIndex + publicPath.length);
+      if (filePath.isEmpty) {
+        return;
+      }
+
+      await Supabase.instance.client.storage
+          .from(bucketName)
+          .remove([filePath]);
+    } catch (e) {
+      // Silently fail - old image deletion is not critical
+    }
+  }
+
   Future<String?> _uploadCover() async {
     if (_imageFile == null) return null;
     try {
-      final bytes = await _imageFile!.readAsBytes();
-      final fileExt = _imageFile!.path.split('.').last;
-      final fileName = '${DateTime.now().toIso8601String()}.$fileExt';
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        throw Exception('يجب تسجيل الدخول أولاً');
+      }
+
+      final compressedFile = await _compressImage(_imageFile!);
+      if (compressedFile == null) {
+        throw Exception('فشل ضغط الصورة');
+      }
+
+      final bytes = await compressedFile.readAsBytes();
+      final fileExt = 'jpg';
+      final userId = user.id;
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${userId.substring(0, 8)}.$fileExt';
       final filePath = 'covers/$fileName';
-      await Supabase.instance.client.storage
-          .from('book_covers')
-          .uploadBinary(filePath, bytes);
-      return Supabase.instance.client.storage
-          .from('book_covers')
+
+      const bucketName = 'book_covers';
+
+      await Supabase.instance.client.storage.from(bucketName).uploadBinary(
+            filePath,
+            bytes,
+            fileOptions: FileOptions(
+              upsert: true,
+              contentType: 'image/jpeg',
+            ),
+          );
+
+      final publicUrl = Supabase.instance.client.storage
+          .from(bucketName)
           .getPublicUrl(filePath);
+
+      try {
+        await compressedFile.delete();
+      } catch (_) {}
+
+      return publicUrl;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في رفع الصورة: ${e.toString()}'),
+            backgroundColor: AppColors.errorRed,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return null;
+    }
+  }
+
+  Future<File?> _compressImage(File imageFile) async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final targetPath =
+          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      final compressedBytes = await FlutterImageCompress.compressWithFile(
+        imageFile.absolute.path,
+        minWidth: 800,
+        minHeight: 800,
+        quality: 85,
+      );
+
+      if (compressedBytes == null) return null;
+
+      final compressedFile = File(targetPath);
+      await compressedFile.writeAsBytes(compressedBytes);
+
+      return compressedFile;
     } catch (e) {
       return null;
     }
@@ -166,8 +264,17 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     setState(() => _isSaving = true);
 
     String? finalImageUrl = _webImageUrl;
+
     if (_imageFile != null) {
+      if (widget.book != null && widget.book!.imageUrl != null) {
+        await _deleteOldCover(widget.book!.imageUrl);
+      }
+
       finalImageUrl = await _uploadCover();
+      if (finalImageUrl == null) {
+        setState(() => _isSaving = false);
+        return;
+      }
     }
 
     final book = BookEntity(
@@ -241,7 +348,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppStrings.addBookTitle, style: TextStyle(fontSize: 20.sp(context))),
+        title: Text(AppStrings.addBookTitle,
+            style: TextStyle(fontSize: 20.sp(context))),
         leading: IconButton(
             icon: Icon(Icons.arrow_back, size: 24.sp(context)),
             onPressed: () => Navigator.pop(context)),
@@ -345,9 +453,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                         size: 48.sp(context), color: AppColors.primaryBlue),
                     SizedBox(height: 16.h(context)),
                     Text(AppStrings.addBookCover,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 16.sp(context),
-                        )),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontSize: 16.sp(context),
+                                )),
                   ],
                 ),
               )
@@ -365,9 +474,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          fontSize: 14.sp(context),
-        )),
+        Text(label,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontSize: 14.sp(context),
+                )),
         SizedBox(height: 8.h(context)),
         TextFormField(
           controller: controller,
@@ -397,7 +507,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
             // Default Styling
             filled: true,
             fillColor: Colors.white,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w(context), vertical: 16.h(context)),
+            contentPadding: EdgeInsets.symmetric(
+                horizontal: 16.w(context), vertical: 16.h(context)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r(context)),
               borderSide: BorderSide(
@@ -431,8 +542,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       children: [
         Text(AppStrings.readingStatusLabel,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontSize: 14.sp(context),
-            )),
+                  fontSize: 14.sp(context),
+                )),
         SizedBox(height: 12.h(context)),
         Container(
           padding: EdgeInsets.all(4.w(context)),
@@ -553,19 +664,21 @@ class _WebCoverSearchDialogState extends State<_WebCoverSearchDialog> {
             SizedBox(
                 height: 300.h(context),
                 child: _load
-                    ? Center(child: CircularProgressIndicator(strokeWidth: 3.w(context)))
+                    ? Center(
+                        child: CircularProgressIndicator(
+                            strokeWidth: 3.w(context)))
                     : GridView.builder(
-                        gridDelegate:
-                            SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                childAspectRatio: 0.7,
-                                crossAxisSpacing: 8.w(context),
-                                mainAxisSpacing: 8.h(context)),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            childAspectRatio: 0.7,
+                            crossAxisSpacing: 8.w(context),
+                            mainAxisSpacing: 8.h(context)),
                         itemCount: _res.length,
                         itemBuilder: (c, i) => GestureDetector(
                             onTap: () => widget.onImageSelected(_res[i]),
                             child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8.r(context)),
+                                borderRadius:
+                                    BorderRadius.circular(8.r(context)),
                                 child:
                                     Image.network(_res[i], fit: BoxFit.cover))),
                       )),

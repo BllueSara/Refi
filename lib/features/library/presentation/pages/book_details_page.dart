@@ -39,7 +39,8 @@ class BookDetailsPage extends StatelessWidget {
           elevation: 0,
           centerTitle: true,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios, color: AppColors.textMain, size: 20.sp(context)),
+            icon: Icon(Icons.arrow_back_ios,
+                color: AppColors.textMain, size: 20.sp(context)),
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
@@ -52,94 +53,132 @@ class BookDetailsPage extends StatelessWidget {
             ).textTheme.headlineMedium?.copyWith(fontSize: 20.sp(context)),
           ),
         ),
-        body: BlocBuilder<BookDetailsCubit, BookDetailsState>(
-          builder: (context, state) {
-            return SingleChildScrollView(
-              padding: EdgeInsets.all(AppDimensions.paddingL.w(context)),
-              child: Column(
-                children: [
-                  // Cover
-                  Container(
-                    width: 140.w(context),
-                    height: 210.h(context),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16.r(context)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 20.r(context),
-                          offset: Offset(0, 10.h(context)),
+        body: BlocBuilder<LibraryCubit, LibraryState>(
+          builder: (context, libraryState) {
+            BookEntity updatedBook;
+            if (libraryState is LibraryLoaded) {
+              try {
+                final foundBook = libraryState.books.firstWhere(
+                  (b) => b.id == book.id,
+                );
+                updatedBook = BookEntity(
+                  id: foundBook.id,
+                  title: foundBook.title,
+                  authors: foundBook.authors,
+                  imageUrl: foundBook.imageUrl,
+                  rating: foundBook.rating,
+                  description: foundBook.description,
+                  publishedDate: foundBook.publishedDate,
+                  pageCount: foundBook.pageCount,
+                  status: foundBook.status,
+                  currentPage: foundBook.currentPage,
+                  categories: foundBook.categories,
+                  googleBookId: foundBook.googleBookId,
+                  source: foundBook.source,
+                );
+              } catch (_) {
+                updatedBook = book;
+              }
+            } else {
+              updatedBook = book;
+            }
+
+            return BlocBuilder<BookDetailsCubit, BookDetailsState>(
+              builder: (context, state) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.all(AppDimensions.paddingL.w(context)),
+                  child: Column(
+                    children: [
+                      // Cover
+                      Container(
+                        width: 140.w(context),
+                        height: 210.h(context),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16.r(context)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 20.r(context),
+                              offset: Offset(0, 10.h(context)),
+                            ),
+                          ],
+                          color: const Color(0xFFA8C6CB),
                         ),
-                      ],
-                      // Fallback color if image fails or doesn't exist
-                      color: const Color(0xFFA8C6CB),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: (book.imageUrl != null && book.imageUrl!.isNotEmpty)
-                        ? Image.network(
-                            book.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
+                        clipBehavior: Clip.antiAlias,
+                        child: (updatedBook.imageUrl != null &&
+                                updatedBook.imageUrl!.isNotEmpty)
+                            ? Image.network(
+                                updatedBook.imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Icon(
+                                      Icons.book,
+                                      size: 48.sp(context),
+                                      color: Colors.white.withOpacity(0.5),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Center(
                                 child: Icon(
                                   Icons.book,
                                   size: 48.sp(context),
                                   color: Colors.white.withOpacity(0.5),
                                 ),
-                              );
-                            },
-                          )
-                        : Center(
-                            child: Icon(
-                              Icons.book,
-                              size: 48.sp(context),
-                              color: Colors.white.withOpacity(0.5),
-                            ),
-                          ),
+                              ),
+                      ),
+                      SizedBox(height: AppDimensions.paddingL.h(context)),
+
+                      // Title & Author
+                      Text(
+                        updatedBook.title,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(
+                          context,
+                        )
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(fontSize: 24.sp(context)),
+                      ),
+                      SizedBox(height: 8.h(context)),
+                      Text(
+                        updatedBook.author,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(
+                          context,
+                        )
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(color: AppColors.textSub),
+                      ),
+
+                      // Status Chips Selection (Simple View)
+                      SizedBox(height: AppDimensions.paddingM.h(context)),
+                      BookStatusSelector(
+                        currentStatus: state.status,
+                        onStatusChanged: (s) =>
+                            context.read<BookDetailsCubit>().changeStatus(s),
+                      ),
+
+                      SizedBox(height: AppDimensions.paddingL.h(context)),
+
+                      // Progress (Only if reading or completed)
+                      if (state.status == BookStatus.reading ||
+                          state.status == BookStatus.completed)
+                        ProgressCard(
+                          state: state,
+                          onUpdatePressed: () => _showUpdateDialog(context),
+                        ),
+
+                      SizedBox(height: AppDimensions.paddingXL.h(context)),
+
+                      // Quotes List Section
+                      _buildQuotesSection(context, state),
+                    ],
                   ),
-                  SizedBox(height: AppDimensions.paddingL.h(context)),
-
-                  // Title & Author
-                  Text(
-                    book.title,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineMedium?.copyWith(fontSize: 24.sp(context)),
-                  ),
-                  SizedBox(height: 8.h(context)),
-                  Text(
-                    book.author,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: AppColors.textSub),
-                  ),
-
-                  // Status Chips Selection (Simple View)
-                  SizedBox(height: AppDimensions.paddingM.h(context)),
-                  BookStatusSelector(
-                    currentStatus: state.status,
-                    onStatusChanged: (s) =>
-                        context.read<BookDetailsCubit>().changeStatus(s),
-                  ),
-
-                  SizedBox(height: AppDimensions.paddingL.h(context)),
-
-                  // Progress (Only if reading or completed)
-                  if (state.status == BookStatus.reading ||
-                      state.status == BookStatus.completed)
-                    ProgressCard(
-                      state: state,
-                      onUpdatePressed: () => _showUpdateDialog(context),
-                    ),
-
-                  SizedBox(height: AppDimensions.paddingXL.h(context)),
-
-                  // Quotes List Section
-                  _buildQuotesSection(context, state),
-                ],
-              ),
+                );
+              },
             );
           },
         ),
@@ -206,7 +245,8 @@ class BookDetailsPage extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: state.quotes.length,
-            separatorBuilder: (context, index) => SizedBox(height: 12.h(context)),
+            separatorBuilder: (context, index) =>
+                SizedBox(height: 12.h(context)),
             itemBuilder: (context, index) {
               final quote = state.quotes[index];
               return Container(
@@ -295,7 +335,8 @@ class BookDetailsPage extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r(ctx))),
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(24.r(ctx))),
           ),
           child: Form(
             key: formKey,
@@ -401,11 +442,12 @@ class BookDetailsPage extends StatelessWidget {
     // Strict Contextual Menu Logic
     // Show edit option only if book was added manually by user
     // Books from API (google) should not have edit option
-    final bool isManualBook = book.source == 'manual' || 
-                               (book.source == null && book.googleBookId == null);
+    final bool isManualBook = book.source == 'manual' ||
+        (book.source == null && book.googleBookId == null);
 
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, color: AppColors.textMain, size: 24.sp(context)),
+      icon: Icon(Icons.more_vert,
+          color: AppColors.textMain, size: 24.sp(context)),
       offset: Offset(0, 50.h(context)),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24.r(context)),
@@ -454,7 +496,8 @@ class BookDetailsPage extends StatelessWidget {
               value: 'delete',
               child: Row(
                 children: [
-                  Icon(Icons.delete_outline, size: 20.sp(context), color: Colors.red),
+                  Icon(Icons.delete_outline,
+                      size: 20.sp(context), color: Colors.red),
                   SizedBox(width: 12.w(context)),
                   Text(
                     "حذف الكتاب",
@@ -476,7 +519,8 @@ class BookDetailsPage extends StatelessWidget {
             value: 'delete',
             child: Row(
               children: [
-                Icon(Icons.delete_outline, size: 20.sp(context), color: Colors.red),
+                Icon(Icons.delete_outline,
+                    size: 20.sp(context), color: Colors.red),
                 SizedBox(width: 12.w(context)),
                 Text(
                   "حذف الكتاب",
