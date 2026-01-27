@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
@@ -21,6 +22,7 @@ class _QuotesPageState extends State<QuotesPage>
     with SingleTickerProviderStateMixin {
   String _activeTab = AppStrings.tabAll;
   late AnimationController _tabAnimationController;
+  final TextEditingController _searchController = TextEditingController();
 
   final List<String> _tabs = [
     AppStrings.tabAll,
@@ -42,6 +44,7 @@ class _QuotesPageState extends State<QuotesPage>
   @override
   void dispose() {
     _tabAnimationController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -50,16 +53,10 @@ class _QuotesPageState extends State<QuotesPage>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.search,
-              color: AppColors.textMain, size: 28.sp(context)),
-          onPressed: () {
-            // TODO: Implement search functionality
-          },
-        ),
+        automaticallyImplyLeading: false,
         title: BlocBuilder<QuoteCubit, QuoteState>(
           builder: (context, state) {
             int quoteCount = 0;
@@ -102,10 +99,62 @@ class _QuotesPageState extends State<QuotesPage>
             );
           },
         ),
-        actions: [SizedBox(width: 48.w(context))],
       ),
       body: Column(
         children: [
+          // Search Bar
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: 16.w(context),
+              vertical: 12.h(context),
+            ),
+            child: TextField(
+              controller: _searchController,
+              style: TextStyle(
+                color: AppColors.textMain,
+                fontSize: 16.sp(context),
+              ),
+              decoration: InputDecoration(
+                hintText: "ابحث في الاقتباسات...",
+                hintStyle: TextStyle(
+                  color: AppColors.textSub.withOpacity(0.6),
+                  fontSize: 14.sp(context),
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: AppColors.textSub,
+                  size: 20.sp(context),
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.clear,
+                          color: AppColors.textSub,
+                          size: 20.sp(context),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                          });
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: AppColors.inputBorder,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r(context)),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w(context),
+                  vertical: 12.h(context),
+                ),
+              ),
+              onChanged: (_) {
+                setState(() {});
+              },
+            ),
+          ),
           // Filter Tabs
           BlocBuilder<QuoteCubit, QuoteState>(
             builder: (context, state) {
@@ -274,11 +323,38 @@ class _QuotesPageState extends State<QuotesPage>
                   // Filter logic based on tab
                   List<QuoteEntity> displayedQuotes = quotes;
 
+                  // Apply search filter
+                  if (_searchController.text.isNotEmpty) {
+                    final query = _searchController.text.toLowerCase();
+                    displayedQuotes = displayedQuotes.where((quote) {
+                      final textMatch = quote.text.toLowerCase().contains(query);
+                      final bookTitleMatch = quote.bookTitle?.toLowerCase().contains(query) ?? false;
+                      final bookAuthorMatch = quote.bookAuthor?.toLowerCase().contains(query) ?? false;
+                      final notesMatch = quote.notes?.toLowerCase().contains(query) ?? false;
+                      return textMatch || bookTitleMatch || bookAuthorMatch || notesMatch;
+                    }).toList();
+                  }
+
                   if (_activeTab == AppStrings.filterByBook) {
+                    // Filter books by search query
+                    List<QuoteEntity> booksQuotes = quotes
+                        .where((q) => q.bookId != null || q.bookTitle != null)
+                        .toList();
+                    
+                    if (_searchController.text.isNotEmpty) {
+                      final query = _searchController.text.toLowerCase();
+                      booksQuotes = booksQuotes.where((quote) {
+                        final textMatch = quote.text.toLowerCase().contains(query);
+                        final bookTitleMatch = quote.bookTitle?.toLowerCase().contains(query) ?? false;
+                        final bookAuthorMatch = quote.bookAuthor?.toLowerCase().contains(query) ?? false;
+                        final notesMatch = quote.notes?.toLowerCase().contains(query) ?? false;
+                        return textMatch || bookTitleMatch || bookAuthorMatch || notesMatch;
+                      }).toList();
+                    }
+                    
                     // Check if valid books exist, otherwise show specific empty state
-                    if (quotes
-                        .any((q) => q.bookId != null || q.bookTitle != null)) {
-                      return QuotesByBookView(quotes: quotes);
+                    if (booksQuotes.isNotEmpty) {
+                      return QuotesByBookView(quotes: booksQuotes);
                     } else {
                       // Empty state for "By Book" if no books found
                       return Center(

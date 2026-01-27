@@ -57,7 +57,7 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
 
     final response = await supabaseClient
         .from('quotes')
-        .select('*, books(title, author)')
+        .select('*, books(title, author, cover_url)')
         .eq('user_id', userId)
         .order('created_at', ascending: false);
 
@@ -88,7 +88,7 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
 
     final response = await supabaseClient
         .from('quotes')
-        .select('*, books(title, author)')
+        .select('*, books(title, author, cover_url)')
         .eq('user_id', userId)
         .eq('book_id', bookId)
         .order('created_at', ascending: false);

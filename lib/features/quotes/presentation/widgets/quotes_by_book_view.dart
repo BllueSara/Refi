@@ -147,8 +147,8 @@ class QuotesByBookView extends StatelessWidget {
 
                 // Badge
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w(context), vertical: 4.h(context)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 8.w(context), vertical: 4.h(context)),
                   decoration: BoxDecoration(
                     color: AppColors.primaryBlue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8.r(context)),
