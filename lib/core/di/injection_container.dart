@@ -50,6 +50,7 @@ import '../../features/quotes/domain/usecases/save_quote_usecase.dart';
 import '../../features/quotes/domain/usecases/get_user_quotes_usecase.dart';
 import '../../features/quotes/domain/usecases/get_book_quotes_usecase.dart';
 import '../../features/quotes/domain/usecases/toggle_favorite_usecase.dart';
+import '../../features/quotes/domain/usecases/delete_quote_usecase.dart';
 import '../../features/quotes/presentation/cubit/quote_cubit.dart';
 
 final sl = GetIt.instance;
@@ -159,24 +160,33 @@ Future<void> init(SharedPreferences sharedPreferences) async {
   sl.registerLazySingleton(() => ExtractTextFromImageUseCase(sl()));
 
   // ! Features - Quotes
+  // Register Use Cases first (dependencies)
+  sl.registerLazySingleton(() => SaveQuoteUseCase(sl()));
+  sl.registerLazySingleton(() => GetUserQuotesUseCase(sl()));
+  sl.registerLazySingleton(() => GetBookQuotesUseCase(sl()));
+  sl.registerLazySingleton(() => ToggleFavoriteUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteQuoteUseCase(sl()));
+  
+  // Register Repository
+  sl.registerLazySingleton<QuoteRepository>(
+    () => QuoteRepositoryImpl(remoteDataSource: sl()),
+  );
+  
+  // Register Data Source
+  sl.registerLazySingleton<QuoteRemoteDataSource>(
+    () => QuoteRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+  
+  // Register Cubit last (depends on Use Cases)
   sl.registerFactory(
     () => QuoteCubit(
       saveQuoteUseCase: sl(),
       getUserQuotesUseCase: sl(),
       getBookQuotesUseCase: sl(),
       toggleFavoriteUseCase: sl(),
+      deleteQuoteUseCase: sl(),
       extractTextFromImageUseCase: sl(),
     ),
-  );
-  sl.registerLazySingleton(() => SaveQuoteUseCase(sl()));
-  sl.registerLazySingleton(() => GetUserQuotesUseCase(sl()));
-  sl.registerLazySingleton(() => GetBookQuotesUseCase(sl()));
-  sl.registerLazySingleton(() => ToggleFavoriteUseCase(sl()));
-  sl.registerLazySingleton<QuoteRepository>(
-    () => QuoteRepositoryImpl(remoteDataSource: sl()),
-  );
-  sl.registerLazySingleton<QuoteRemoteDataSource>(
-    () => QuoteRemoteDataSourceImpl(supabaseClient: sl()),
   );
 
   // ! Services

@@ -14,6 +14,7 @@ abstract class QuoteRemoteDataSource {
   Future<List<QuoteModel>> getBookQuotes(String bookId);
   Future<void> toggleFavorite(
       {required String quoteId, required bool isFavorite});
+  Future<void> deleteQuote(String quoteId);
 }
 
 class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
@@ -128,6 +129,24 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
           .eq('user_id', userId);
     } catch (e) {
       print('❌ Error toggling favorite: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteQuote(String quoteId) async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    try {
+      await supabaseClient
+          .from('quotes')
+          .delete()
+          .eq('id', quoteId)
+          .eq('user_id', userId);
+      print('✅ Quote deleted successfully!');
+    } catch (e) {
+      print('❌ Error deleting quote: $e');
       rethrow;
     }
   }

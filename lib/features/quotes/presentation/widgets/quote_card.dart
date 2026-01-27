@@ -8,6 +8,7 @@ import '../../domain/entities/quote_entity.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../cubit/quote_cubit.dart';
+import 'quote_review_modal.dart';
 
 class QuoteCard extends StatefulWidget {
   final QuoteEntity quote;
@@ -70,6 +71,73 @@ class _QuoteCardState extends State<QuoteCard>
   Color _getFeelingColor(String feeling) {
     // جميع المشاعر باللون الأزرق الفاتح
     return AppColors.secondaryBlue; // الأزرق الفاتح
+  }
+
+  void _showEditQuoteModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => QuoteReviewModal(
+        quote: widget.quote,
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r(context)),
+        ),
+        title: Text(
+          'حذف الاقتباس',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.sp(context),
+            color: AppColors.textMain,
+          ),
+        ),
+        content: Text(
+          'هل أنت متأكد من حذف هذا الاقتباس؟ لا يمكن التراجع عن هذا الإجراء.',
+          style: TextStyle(
+            fontSize: 14.sp(context),
+            color: AppColors.textSub,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'إلغاء',
+              style: TextStyle(
+                color: AppColors.textSub,
+                fontSize: 14.sp(context),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteQuote(context);
+            },
+            child: Text(
+              'حذف',
+              style: TextStyle(
+                color: AppColors.errorRed,
+                fontWeight: FontWeight.bold,
+                fontSize: 14.sp(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteQuote(BuildContext context) {
+    context.read<QuoteCubit>().deleteQuote(widget.quote.id);
   }
 
   @override
@@ -374,7 +442,7 @@ class _QuoteCardState extends State<QuoteCard>
                           ),
                         ),
 
-                        // Action Buttons
+                        // Action Buttons (compact)
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -420,6 +488,71 @@ class _QuoteCardState extends State<QuoteCard>
                                         : AppColors.textPlaceholder,
                                   ),
                                 ),
+                              ),
+                            ),
+                            SizedBox(width: 4.w(context)),
+                            // More actions (Edit / Delete)
+                            PopupMenuButton<String>(
+                              tooltip: 'المزيد',
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(16.r(context)),
+                              ),
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  HapticFeedback.selectionClick();
+                                  _showEditQuoteModal(context);
+                                } else if (value == 'delete') {
+                                  HapticFeedback.mediumImpact();
+                                  _showDeleteConfirmation(context);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        size: 18.sp(context),
+                                        color: AppColors.primaryBlue,
+                                      ),
+                                      SizedBox(width: 8.w(context)),
+                                      Text(
+                                        'تعديل الاقتباس',
+                                        style: TextStyle(
+                                          fontSize: 14.sp(context),
+                                          color: AppColors.textMain,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline,
+                                        size: 18.sp(context),
+                                        color: AppColors.errorRed,
+                                      ),
+                                      SizedBox(width: 8.w(context)),
+                                      Text(
+                                        'حذف الاقتباس',
+                                        style: TextStyle(
+                                          fontSize: 14.sp(context),
+                                          color: AppColors.errorRed,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              icon: Icon(
+                                Icons.more_vert,
+                                size: 22.sp(context),
+                                color: AppColors.textSub,
                               ),
                             ),
                           ],

@@ -19,4 +19,6 @@ abstract class QuoteRepository {
     required String quoteId,
     required bool isFavorite,
   });
+
+  Future<Either<Failure, void>> deleteQuote(String quoteId);
 }

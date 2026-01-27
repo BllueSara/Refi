@@ -85,4 +85,17 @@ class QuoteRepositoryImpl implements QuoteRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> deleteQuote(String quoteId) async {
+    try {
+      await remoteDataSource.deleteQuote(quoteId);
+      return const Right(null);
+    } catch (e) {
+      if (e.toString().contains('PostgresException')) {
+        return const Left(ServerFailure('تعذر حذف الاقتباس حالياً'));
+      }
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

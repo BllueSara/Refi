@@ -5,6 +5,7 @@ import '../../domain/usecases/save_quote_usecase.dart';
 import '../../domain/usecases/get_user_quotes_usecase.dart';
 import '../../domain/usecases/get_book_quotes_usecase.dart';
 import '../../domain/usecases/toggle_favorite_usecase.dart';
+import '../../domain/usecases/delete_quote_usecase.dart';
 import '../../../../features/scanner/domain/usecases/extract_text_from_image_usecase.dart';
 
 // States
@@ -51,6 +52,7 @@ class QuoteCubit extends Cubit<QuoteState> {
   final GetUserQuotesUseCase getUserQuotesUseCase;
   final GetBookQuotesUseCase getBookQuotesUseCase;
   final ToggleFavoriteUseCase toggleFavoriteUseCase;
+  final DeleteQuoteUseCase deleteQuoteUseCase;
   final ExtractTextFromImageUseCase extractTextFromImageUseCase;
 
   QuoteCubit({
@@ -58,6 +60,7 @@ class QuoteCubit extends Cubit<QuoteState> {
     required this.getUserQuotesUseCase,
     required this.getBookQuotesUseCase,
     required this.toggleFavoriteUseCase,
+    required this.deleteQuoteUseCase,
     required this.extractTextFromImageUseCase,
   }) : super(QuoteInitial());
 
@@ -156,6 +159,28 @@ class QuoteCubit extends Cubit<QuoteState> {
     result.fold(
       (failure) => emit(QuoteError(failure.message)),
       (text) => emit(QuoteScanned(text)),
+    );
+  }
+
+  Future<void> deleteQuote(String quoteId) async {
+    // Optimistic delete - remove from UI immediately
+    if (state is QuotesLoaded) {
+      final currentQuotes = (state as QuotesLoaded).quotes;
+      final updatedQuotes =
+          currentQuotes.where((q) => q.id != quoteId).toList();
+      emit(QuotesLoaded(updatedQuotes));
+    }
+
+    // Call Repository
+    final result = await deleteQuoteUseCase(quoteId);
+
+    result.fold(
+      (failure) {
+        // Revert or Reload on error
+        loadUserQuotes();
+        emit(QuoteError(failure.message));
+      },
+      (_) => null,
     );
   }
 }

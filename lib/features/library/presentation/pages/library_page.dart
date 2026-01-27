@@ -144,6 +144,30 @@ class _LibraryPageState extends State<LibraryPage> {
           ),
         ),
         automaticallyImplyLeading: false,
+        leadingWidth: 56.w(context),
+        leading: Padding(
+          padding: EdgeInsets.only(right: 16.w(context)),
+          child: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SearchScreen(),
+                ),
+              ).then((_) {
+                // Refresh library when coming back
+                if (context.mounted) {
+                  context.read<LibraryCubit>().loadLibrary(forceRefresh: true);
+                }
+              });
+            },
+            icon: Icon(
+              Icons.add,
+              color: AppColors.primaryBlue,
+              size: 28.sp(context),
+            ),
+          ),
+        ),
       ),
       body: BlocListener<LibraryCubit, LibraryState>(
         listener: (context, state) {
@@ -156,222 +180,230 @@ class _LibraryPageState extends State<LibraryPage> {
             return true;
           },
           builder: (context, state) {
-          if (state is LibraryLoading) {
-            return const LibrarySkeleton();
-          } else if (state is LibraryEmpty) {
-            return LibraryEmptyView(activeTab: _activeTab);
-          } else if (state is LibraryError) {
-            return Center(
-              child: Text(
-                state.message,
-                style: TextStyle(fontSize: 14.sp(context)),
-              ),
-            );
-          } else if (state is LibraryLoaded) {
-            final filteredBooks = _filterBooks(state.books);
-
-            return Column(
-              children: [
-                // Search Bar
-                Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w(context), vertical: 12.h(context)),
-                  child: TextField(
-                    controller: _searchController,
-                    style: TextStyle(
-                      color: AppColors.textMain,
-                      fontSize: 16.sp(context),
-                    ),
-                    decoration: InputDecoration(
-                      hintText: AppStrings.searchHint,
-                      hintStyle: GoogleFonts.tajawal(
-                        color: AppColors.textSub.withOpacity(0.6),
-                        fontSize: 14.sp(context),
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: AppColors.textSub,
-                        size: 20.sp(context),
-                      ),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(
-                                Icons.clear,
-                                color: AppColors.textSub,
-                                size: 20.sp(context),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _searchController.clear();
-                                });
-                              },
-                            )
-                          : null,
-                      filled: true,
-                      fillColor: AppColors.inputBorder,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r(context)),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16.w(context),
-                        vertical: 12.h(context),
-                      ),
-                    ),
-                    onChanged: (_) {
-                      setState(() {});
-                    },
-                  ),
+            if (state is LibraryLoading) {
+              return const LibrarySkeleton();
+            } else if (state is LibraryEmpty) {
+              return LibraryEmptyView(activeTab: _activeTab);
+            } else if (state is LibraryError) {
+              return Center(
+                child: Text(
+                  state.message,
+                  style: TextStyle(fontSize: 14.sp(context)),
                 ),
-                // Tabs
-                Container(
-                  height: 50.h(context),
-                  margin: EdgeInsets.only(bottom: 16.h(context)),
-                  child: ListView.separated(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _tabs.length,
-                    separatorBuilder: (c, i) => SizedBox(width: 12.w(context)),
-                    itemBuilder: (context, index) {
-                      final tab = _tabs[index];
-                      final isActive = _activeTab == tab;
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _activeTab = tab;
-                          });
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20.w(context),
-                            vertical: 8.h(context),
-                          ),
-                          decoration: BoxDecoration(
-                            gradient:
-                                isActive ? AppColors.refiMeshGradient : null,
-                            color: isActive ? null : AppColors.inputBorder,
-                            borderRadius: BorderRadius.circular(24.r(context)),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            tab,
-                            style: GoogleFonts.tajawal(
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  isActive ? Colors.white : AppColors.textSub,
-                              fontSize: 14.sp(context),
+              );
+            } else if (state is LibraryLoaded) {
+              final filteredBooks = _filterBooks(state.books);
+
+              return Column(
+                children: [
+                  // Search Bar
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 16.w(context), vertical: 12.h(context)),
+                    child: TextField(
+                      controller: _searchController,
+                      style: TextStyle(
+                        color: AppColors.textMain,
+                        fontSize: 16.sp(context),
+                      ),
+                      decoration: InputDecoration(
+                        hintText: AppStrings.searchHint,
+                        hintStyle: GoogleFonts.tajawal(
+                          color: AppColors.textSub.withOpacity(0.6),
+                          fontSize: 14.sp(context),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: AppColors.textSub,
+                          size: 20.sp(context),
+                        ),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(
+                                  Icons.clear,
+                                  color: AppColors.textSub,
+                                  size: 20.sp(context),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _searchController.clear();
+                                  });
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: AppColors.inputBorder,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r(context)),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w(context),
+                          vertical: 12.h(context),
+                        ),
+                      ),
+                      onChanged: (_) {
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  // Tabs
+                  Container(
+                    height: 50.h(context),
+                    margin: EdgeInsets.only(bottom: 16.h(context)),
+                    child: ListView.separated(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _tabs.length,
+                      separatorBuilder: (c, i) =>
+                          SizedBox(width: 12.w(context)),
+                      itemBuilder: (context, index) {
+                        final tab = _tabs[index];
+                        final isActive = _activeTab == tab;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _activeTab = tab;
+                            });
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w(context),
+                              vertical: 8.h(context),
+                            ),
+                            decoration: BoxDecoration(
+                              gradient:
+                                  isActive ? AppColors.refiMeshGradient : null,
+                              color: isActive ? null : AppColors.inputBorder,
+                              borderRadius:
+                                  BorderRadius.circular(24.r(context)),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              tab,
+                              style: GoogleFonts.tajawal(
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    isActive ? Colors.white : AppColors.textSub,
+                                fontSize: 14.sp(context),
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
 
-                // Grid
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      await context
-                          .read<LibraryCubit>()
-                          .loadLibrary(forceRefresh: true);
-                    },
-                    child: (state.books.isEmpty)
-                        ? LibraryEmptyView(activeTab: _activeTab) // No scroll needed - fits screen
-                        : filteredBooks.isEmpty
-                            ? Center(
-                                child: Builder(
-                                  builder: (context) {
-                                    String title = "لا توجد نتائج";
-                                    String? subtitle =
-                                        "جرب البحث بكلمات مختلفة";
+                  // Grid
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        await context
+                            .read<LibraryCubit>()
+                            .loadLibrary(forceRefresh: true);
+                      },
+                      child: (state.books.isEmpty)
+                          ? LibraryEmptyView(
+                              activeTab:
+                                  _activeTab) // No scroll needed - fits screen
+                          : filteredBooks.isEmpty
+                              ? Center(
+                                  child: Builder(
+                                    builder: (context) {
+                                      String title = "لا توجد نتائج";
+                                      String? subtitle =
+                                          "جرب البحث بكلمات مختلفة";
 
-                                    if (_searchController.text.isEmpty) {
-                                      switch (_activeTab) {
-                                        case AppStrings.tabReading:
-                                          title =
-                                              "رفوفك الحالية فارغة.. ما هو رفيقك القادم؟";
-                                          subtitle = null;
-                                          break;
-                                        case AppStrings.tabCompleted:
-                                          title =
-                                              "مكتبة الإنجازات تنتظر بطلها الأول!";
-                                          subtitle = null;
-                                          break;
-                                        case AppStrings.tabWishlist:
-                                          title =
-                                              "قائمة الأمنيات فارغة، استكشف كتباً تثير فضولك.";
-                                          subtitle = null;
-                                          break;
-                                        default:
-                                          title =
-                                              "لا توجد كتب في هذا القسم بعد، استمر في القراءة لملئه!";
-                                          subtitle = null;
+                                      if (_searchController.text.isEmpty) {
+                                        switch (_activeTab) {
+                                          case AppStrings.tabReading:
+                                            title =
+                                                "رفوفك الحالية فارغة.. ما هو رفيقك القادم؟";
+                                            subtitle = null;
+                                            break;
+                                          case AppStrings.tabCompleted:
+                                            title =
+                                                "مكتبة الإنجازات تنتظر بطلها الأول!";
+                                            subtitle = null;
+                                            break;
+                                          case AppStrings.tabWishlist:
+                                            title =
+                                                "قائمة الأمنيات فارغة، استكشف كتباً تثير فضولك.";
+                                            subtitle = null;
+                                            break;
+                                          default:
+                                            title =
+                                                "لا توجد كتب في هذا القسم بعد، استمر في القراءة لملئه!";
+                                            subtitle = null;
+                                        }
                                       }
-                                    }
 
-                                    return EmptyStateWidget(
-                                      title: title,
-                                      subtitle: subtitle,
+                                      return EmptyStateWidget(
+                                        title: title,
+                                        subtitle: subtitle,
+                                        activeTab: _activeTab,
+                                        // Add search button for wishlist tab
+                                        actionLabel:
+                                            _activeTab == AppStrings.tabWishlist
+                                                ? "ابدأ بالبحث عن كتاب"
+                                                : null,
+                                        onAction:
+                                            _activeTab == AppStrings.tabWishlist
+                                                ? () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const SearchScreen(),
+                                                      ),
+                                                    );
+                                                  }
+                                                : null,
+                                      );
+                                    },
+                                  ),
+                                )
+                              : GridView.builder(
+                                  padding: EdgeInsets.all(16.w(context)),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    childAspectRatio: 0.65,
+                                    crossAxisSpacing: 16.w(context),
+                                    mainAxisSpacing: 24.h(context),
+                                  ),
+                                  itemCount: filteredBooks.length,
+                                  itemBuilder: (context, index) {
+                                    final book = filteredBooks[index];
+                                    return LibraryBookCard(
+                                      book: book,
                                       activeTab: _activeTab,
-                                      // Add search button for wishlist tab
-                                      actionLabel: _activeTab == AppStrings.tabWishlist
-                                          ? "ابدأ بالبحث عن كتاب"
-                                          : null,
-                                      onAction: _activeTab == AppStrings.tabWishlist
-                                          ? () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => const SearchScreen(),
-                                                ),
-                                              );
-                                            }
-                                          : null,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                BookDetailsPage(book: book),
+                                          ),
+                                        ).then((_) {
+                                          // Refresh library when coming back (in case status changed)
+                                          if (context.mounted) {
+                                            context
+                                                .read<LibraryCubit>()
+                                                .loadLibrary(
+                                                    forceRefresh: true);
+                                          }
+                                        });
+                                      },
                                     );
                                   },
                                 ),
-                              )
-                            : GridView.builder(
-                                padding: EdgeInsets.all(16.w(context)),
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 0.65,
-                                  crossAxisSpacing: 16.w(context),
-                                  mainAxisSpacing: 24.h(context),
-                                ),
-                                itemCount: filteredBooks.length,
-                                itemBuilder: (context, index) {
-                                  final book = filteredBooks[index];
-                                  return LibraryBookCard(
-                                    book: book,
-                                    activeTab: _activeTab,
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              BookDetailsPage(book: book),
-                                        ),
-                                      ).then((_) {
-                                        // Refresh library when coming back (in case status changed)
-                                        if (context.mounted) {
-                                          context
-                                              .read<LibraryCubit>()
-                                              .loadLibrary(forceRefresh: true);
-                                        }
-                                      });
-                                    },
-                                  );
-                                },
-                              ),
+                    ),
                   ),
-                ),
-              ],
-            );
-          }
-          return const SizedBox.shrink();
+                ],
+              );
+            }
+            return const SizedBox.shrink();
           },
         ),
       ),

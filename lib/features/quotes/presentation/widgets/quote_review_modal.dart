@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
+import '../../../../core/widgets/refi_success_widget.dart';
 import '../cubit/quote_cubit.dart';
+import '../../domain/entities/quote_entity.dart';
 import 'quote_review_header.dart';
 import 'quote_text_field_section.dart';
 import 'feelings_selector_section.dart';
@@ -12,7 +15,13 @@ import 'save_quote_button.dart';
 
 class QuoteReviewModal extends StatefulWidget {
   final String initialText;
-  const QuoteReviewModal({super.key, this.initialText = ""});
+  final QuoteEntity? quote; // For editing existing quote
+
+  const QuoteReviewModal({
+    super.key,
+    this.initialText = "",
+    this.quote,
+  });
 
   @override
   State<QuoteReviewModal> createState() => _QuoteReviewModalState();
@@ -32,9 +41,14 @@ class _QuoteReviewModalState extends State<QuoteReviewModal>
   void initState() {
     super.initState();
     _textController = TextEditingController(
-      text: widget.initialText.isNotEmpty ? widget.initialText : "",
+      text: widget.quote?.text ??
+          (widget.initialText.isNotEmpty ? widget.initialText : ""),
     );
-    _notesController = TextEditingController();
+    _notesController = TextEditingController(
+      text: widget.quote?.notes ?? "",
+    );
+    _selectedFeeling = widget.quote?.feeling;
+    _selectedBook = widget.quote?.bookId;
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -54,7 +68,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal>
     super.dispose();
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (_textController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -79,7 +93,7 @@ class _QuoteReviewModalState extends State<QuoteReviewModal>
       return;
     }
 
-    if (_selectedBook == null) {
+    if (_selectedBook == null && widget.quote == null) {
       setState(() => _showBookError = true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -104,14 +118,57 @@ class _QuoteReviewModalState extends State<QuoteReviewModal>
       return;
     }
 
+    // Use existing bookId if editing, otherwise use selected book
+    final bookId = widget.quote?.bookId ?? _selectedBook;
+
+    // If editing, delete old quote first, then create new one
+    if (widget.quote != null) {
+      // Delete old quote first
+      await context.read<QuoteCubit>().deleteQuote(widget.quote!.id);
+    }
+
+    // Create new quote
     context.read<QuoteCubit>().saveQuote(
           text: _textController.text.trim(),
-          bookId: _selectedBook!,
-          feeling: _selectedFeeling ?? 'محايد',
+          bookId: bookId,
+          feeling: _selectedFeeling ?? widget.quote?.feeling ?? 'محايد',
           notes: _notesController.text.trim().isNotEmpty
               ? _notesController.text.trim()
               : null,
+          isFavorite: widget.quote?.isFavorite ?? false,
         );
+  }
+
+  void _showSuccessScreen(BuildContext context) {
+    HapticFeedback.heavyImpact();
+    final isEdit = widget.quote != null;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (ctx) => RefiSuccessWidget(
+          title: isEdit ? "تم تحديث الاقتباس بنجاح!" : "تم حفظ الاقتباس بنجاح!",
+          subtitle: isEdit
+              ? "تم حفظ التعديلات الجديدة في اقتباساتك"
+              : "أصبح الاقتباس الآن جزءاً من رحلتك المعرفية المثرية",
+          primaryButtonLabel: "العودة للاقتباسات",
+          onPrimaryAction: () {
+            Navigator.of(ctx).pop();
+          },
+          secondaryButtonLabel: "إضافة اقتباس آخر",
+          onSecondaryAction: () {
+            Navigator.of(ctx).pop();
+            // Show modal again for new quote
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const QuoteReviewModal(),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -202,28 +259,8 @@ class _QuoteReviewModalState extends State<QuoteReviewModal>
                     BlocConsumer<QuoteCubit, QuoteState>(
                       listener: (context, state) {
                         if (state is QuoteSaved) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                children: [
-                                  Icon(
-                                    Icons.check_circle,
-                                    color: Colors.white,
-                                    size: 20.sp(context),
-                                  ),
-                                  SizedBox(width: 12.w(context)),
-                                  const Text('تم حفظ الاقتباس بنجاح'),
-                                ],
-                              ),
-                              backgroundColor: AppColors.successGreen,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(12.r(context)),
-                              ),
-                            ),
-                          );
+                          Navigator.pop(context); // Close modal
+                          _showSuccessScreen(context);
                           context.read<QuoteCubit>().loadUserQuotes();
                         } else if (state is QuoteError) {
                           ScaffoldMessenger.of(context).showSnackBar(
