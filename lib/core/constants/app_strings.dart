@@ -208,4 +208,20 @@ class AppStrings {
   static const String customTags = "وسوم مخصصة";
   static const String analytics = "تحليلات متقدمة";
   static const String free = "مجاني";
+
+  // Contact Us
+  static const String contactUs = "اترك لنا رسالة";
+  static const String contactUsTitle = "اترك لنا رسالة";
+  static const String contactUsSubtitle = "نسعد بتواصلك معنا دائماً";
+  static const String whatToTalkAbout = "ما الذي تريد الحديث عنه؟";
+  static const String categoryProblem = "مشكلة 🐛";
+  static const String categorySuggestion = "اقتراح ✨";
+  static const String categoryOther = "شيء آخر 🤔";
+  static const String messageHint = "رسالتك...";
+  static const String sendMessage = "إرسال";
+  static const String messageSent = "تم إرسال رسالتك بنجاح!";
+  static const String messageSentDesc = "شكراً لتواصلك معنا. سنرد عليك في أقرب وقت ممكن.";
+  static const String messageError = "حدث خطأ أثناء إرسال الرسالة";
+  static const String pleaseSelectCategory = "الرجاء اختيار نوع الرسالة";
+  static const String pleaseEnterMessage = "الرجاء كتابة رسالتك";
 }

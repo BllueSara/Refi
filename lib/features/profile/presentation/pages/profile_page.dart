@@ -9,6 +9,7 @@ import '../../../../core/di/injection_container.dart' as di;
 import '../../../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../../subscription/presentation/screens/market_screen.dart';
+import '../../../contact_us/presentation/pages/contact_us_page.dart';
 import '../cubit/profile_cubit.dart';
 import '../widgets/profile_option_tile.dart';
 import '../widgets/avatar_selection_bottom_sheet.dart';
@@ -175,6 +176,19 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                             value: context.read<AuthCubit>(),
                             child: const ForgotPasswordScreen(),
                           ),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: AppDimensions.paddingM.h(context)),
+                  ProfileOptionTile(
+                    title: AppStrings.contactUs,
+                    showArrow: true,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ContactUsPage(),
                         ),
                       );
                     },
