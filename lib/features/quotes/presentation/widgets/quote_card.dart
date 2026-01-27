@@ -2,7 +2,6 @@ import 'dart:ui'; // For ImageFilter
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For HapticFeedback
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../../../../core/constants/colors.dart';
@@ -41,16 +40,6 @@ class _QuoteCardState extends State<QuoteCard>
   void dispose() {
     _animationController.dispose();
     super.dispose();
-  }
-
-  void _shareQuote() {
-    HapticFeedback.mediumImpact();
-    final shareText = widget.quote.text +
-        (widget.quote.bookTitle != null
-            ? '\n\n— ${widget.quote.bookTitle}'
-            : '') +
-        (widget.quote.bookAuthor != null ? '، ${widget.quote.bookAuthor}' : '');
-    Share.share(shareText);
   }
 
   String _formatDate(DateTime date) {
@@ -446,24 +435,6 @@ class _QuoteCardState extends State<QuoteCard>
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Share Button
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: _shareQuote,
-                                borderRadius:
-                                    BorderRadius.circular(20.r(context)),
-                                child: Padding(
-                                  padding: EdgeInsets.all(8.w(context)),
-                                  child: Icon(
-                                    Icons.share_outlined,
-                                    size: 20.sp(context),
-                                    color: AppColors.textSub,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 4.w(context)),
                             // Favorite Button
                             Material(
                               color: Colors.transparent,
