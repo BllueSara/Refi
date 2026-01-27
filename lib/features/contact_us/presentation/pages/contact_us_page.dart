@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
+import '../../../../core/widgets/refi_success_widget.dart';
 
 class ContactUsPage extends StatefulWidget {
   const ContactUsPage({super.key});
@@ -218,84 +219,19 @@ class _ContactUsPageState extends State<ContactUsPage> {
   }
 
   void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24.r(context)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(32.w(context)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Success Icon
-              Container(
-                padding: EdgeInsets.all(20.w(context)),
-                decoration: BoxDecoration(
-                  gradient: AppColors.refiMeshGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle_outline,
-                  size: 60.sp(context),
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 24.h(context)),
-              
-              // Success Title
-              Text(
-                AppStrings.messageSent,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20.sp(context),
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textMain,
-                ),
-              ),
-              SizedBox(height: 12.h(context)),
-              
-              // Success Description
-              Text(
-                AppStrings.messageSentDesc,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14.sp(context),
-                  color: AppColors.textSub,
-                  height: 1.5,
-                ),
-              ),
-              SizedBox(height: 32.h(context)),
-              
-              // Close Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Close dialog
-                    Navigator.pop(context); // Close contact page
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
-                    padding: EdgeInsets.symmetric(vertical: 16.h(context)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r(context)),
-                    ),
-                  ),
-                  child: Text(
-                    'حسناً',
-                    style: TextStyle(
-                      fontSize: 16.sp(context),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+    HapticFeedback.heavyImpact();
+    
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (ctx) => RefiSuccessWidget(
+          title: AppStrings.messageSent,
+          subtitle: AppStrings.messageSentDesc,
+          primaryButtonLabel: "العودة",
+          onPrimaryAction: () {
+            Navigator.of(ctx).pop(); // Close success screen
+            Navigator.of(context).pop(); // Close contact page
+          },
         ),
       ),
     );
