@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class AvatarSelectionBottomSheet extends StatelessWidget {
   final Function(String) onAvatarSelected;
@@ -44,40 +45,40 @@ class AvatarSelectionBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.all(24.w(context)),
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r(context))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 40,
-            height: 4,
+            width: 40.w(context),
+            height: 4.h(context),
             decoration: BoxDecoration(
               color: AppColors.inputBorder,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.r(context)),
             ),
           ),
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: 24.h(context)),
+          Text(
             'اختر الصورة الشخصية',
             style: TextStyle(
               //fontFamily: 'Tajawal',
-              fontSize: 18,
+              fontSize: 18.sp(context),
               fontWeight: FontWeight.bold,
               color: AppColors.textMain,
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h(context)),
           Flexible(
             child: GridView.builder(
               itemCount: _avatars.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+                crossAxisSpacing: 16.w(context),
+                mainAxisSpacing: 16.h(context),
               ),
               itemBuilder: (context, index) {
                 return GestureDetector(
@@ -92,8 +93,8 @@ class AvatarSelectionBottomSheet extends StatelessWidget {
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          blurRadius: 10.r(context),
+                          offset: Offset(0, 4.h(context)),
                         ),
                       ],
                     ),
@@ -103,7 +104,7 @@ class AvatarSelectionBottomSheet extends StatelessWidget {
                         fit: BoxFit.cover,
                         placeholderBuilder: (context) => Container(
                           color: AppColors.inputBorder,
-                          child: const Center(
+                          child: Center(
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: AppColors.primaryBlue,
@@ -118,7 +119,7 @@ class AvatarSelectionBottomSheet extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h(context)),
         ],
       ),
     );

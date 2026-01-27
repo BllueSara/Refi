@@ -4,6 +4,7 @@ import '../../../../core/widgets/refi_snack_bar.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../cubit/auth_cubit.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/refi_auth_field.dart';
@@ -102,12 +103,13 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
               icon: Icon(
                 Icons.arrow_back,
                 color: Theme.of(context).iconTheme.color,
+                size: 24.sp(context),
               ),
               onPressed: () => Navigator.pop(context),
             ),
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSizes.p24),
+            padding: EdgeInsets.all(AppSizes.p24.w(context)),
             child: Column(
               children: [
                 // Header
@@ -116,7 +118,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                   subtitle: 'أدخل كلمة المرور الجديدة',
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h(context)),
 
                 // Password fields + button
                 Column(
@@ -127,14 +129,15 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                       label: 'كلمة المرور الجديدة',
                       hintText: AppStrings.passwordDots,
                       isPassword: true,
-                      suffixIcon: const Icon(
+                      suffixIcon: Icon(
                         Icons.lock_outline,
                         color: AppColors.textPlaceholder,
+                        size: 20.sp(context),
                       ),
                       errorText: _newPasswordError,
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h(context)),
 
                     // Confirm Password
                     RefiAuthField(
@@ -142,23 +145,24 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                       label: 'تأكيد كلمة المرور',
                       hintText: AppStrings.passwordDots,
                       isPassword: true,
-                      suffixIcon: const Icon(
+                      suffixIcon: Icon(
                         Icons.lock_outline,
                         color: AppColors.textPlaceholder,
+                        size: 20.sp(context),
                       ),
                       errorText: _confirmPasswordError,
                     ),
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h(context)),
 
                     // Update Button
                     Container(
                       width: double.infinity,
-                      height: 56,
+                      height: 56.h(context),
                       decoration: BoxDecoration(
                         gradient: AppColors.refiMeshGradient,
                         borderRadius: BorderRadius.circular(
-                          AppSizes.buttonRadius,
+                          AppSizes.buttonRadius.r(context),
                         ),
                       ),
                       child: ElevatedButton(
@@ -168,19 +172,19 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                           shadowColor: Colors.transparent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
-                              AppSizes.buttonRadius,
+                              AppSizes.buttonRadius.r(context),
                             ),
                           ),
                         ),
                         child: isLoading
-                            ? const CircularProgressIndicator(
+                            ? CircularProgressIndicator(
                                 color: Colors.white,
-                                strokeWidth: 3,
+                                strokeWidth: 3.w(context),
                               )
-                            : const Text(
+                            : Text(
                                 'تغيير كلمة المرور',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.sp(context),
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),

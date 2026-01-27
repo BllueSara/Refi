@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../widgets/quote_card.dart';
 
@@ -33,11 +34,11 @@ class BookQuotesDetailsPage extends StatelessWidget {
               Hero(
                 tag: 'cover_$bookId',
                 child: Container(
-                  width: 30,
-                  height: 45,
-                  margin: const EdgeInsets.only(left: 8),
+                  width: 30.w(context),
+                  height: 45.h(context),
+                  margin: EdgeInsets.only(left: 8.w(context)),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r(context)),
                     image: DecorationImage(
                       image: NetworkImage(bookCoverUrl!),
                       fit: BoxFit.cover,
@@ -49,10 +50,10 @@ class BookQuotesDetailsPage extends StatelessWidget {
               child: Text(
                 bookTitle,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   //fontFamily: 'Tajawal',
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+                  fontSize: 18.sp(context),
                   color: AppColors.textMain,
                 ),
               ),
@@ -61,9 +62,9 @@ class BookQuotesDetailsPage extends StatelessWidget {
         ),
       ),
       body: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w(context)),
         itemCount: quotes.length,
-        separatorBuilder: (c, i) => const SizedBox(height: 16),
+        separatorBuilder: (c, i) => SizedBox(height: 16.h(context)),
         itemBuilder: (context, index) {
           final quote = quotes[index];
           return QuoteCard(quote: quote);

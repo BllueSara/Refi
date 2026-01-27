@@ -2,8 +2,11 @@ import 'dart:ui'; // For ImageFilter
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For HapticFeedback
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../cubit/quote_cubit.dart';
 
 class QuoteCard extends StatefulWidget {
@@ -15,43 +18,149 @@ class QuoteCard extends StatefulWidget {
   State<QuoteCard> createState() => _QuoteCardState();
 }
 
-class _QuoteCardState extends State<QuoteCard> {
+class _QuoteCardState extends State<QuoteCard>
+    with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _shareQuote() {
+    HapticFeedback.mediumImpact();
+    final shareText = widget.quote.text +
+        (widget.quote.bookTitle != null
+            ? '\n\n— ${widget.quote.bookTitle}'
+            : '') +
+        (widget.quote.bookAuthor != null ? '، ${widget.quote.bookAuthor}' : '');
+    Share.share(shareText);
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return 'اليوم';
+    } else if (difference.inDays == 1) {
+      return 'أمس';
+    } else if (difference.inDays < 7) {
+      return 'منذ ${difference.inDays} أيام';
+    } else {
+      return DateFormat('dd MMM', 'ar').format(date);
+    }
+  }
+
+  Color _getFeelingColor(String feeling) {
+    // جميع المشاعر باللون الأزرق الفاتح
+    return AppColors.secondaryBlue; // الأزرق الفاتح
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(
-                0.8), // Using 0.8 for visibility/readability on white
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryBlue.withOpacity(0.05),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTapDown: (_) => _animationController.forward(),
+        onTapUp: (_) {
+          _animationController.reverse();
+          setState(() {
+            _isExpanded = !_isExpanded;
+          });
+        },
+        onTapCancel: () => _animationController.reverse(),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24.r(context)),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white, // خلفية بيضاء صلبة
+              borderRadius: BorderRadius.circular(24.r(context)),
+              border: Border.all(
+                color: widget.quote.isFavorite
+                    ? AppColors.primaryBlue.withOpacity(0.3)
+                    : AppColors.inputBorder,
+                width: widget.quote.isFavorite ? 1.5 : 1,
               ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.quote.isFavorite
+                      ? AppColors.primaryBlue.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.08),
+                  blurRadius: 20.r(context),
+                  offset: Offset(0, 8.h(context)),
+                  spreadRadius: widget.quote.isFavorite ? 2 : 0,
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24.w(context)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header: Feeling badge and date
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Feeling Badge
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w(context),
+                            vertical: 6.h(context),
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getFeelingColor(widget.quote.feeling)
+                                .withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20.r(context)),
+                            border: Border.all(
+                              color: _getFeelingColor(widget.quote.feeling)
+                                  .withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                widget.quote.feeling,
+                                style: TextStyle(
+                                  fontSize: 12.sp(context),
+                                  color: _getFeelingColor(widget.quote.feeling),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Date
+                        Text(
+                          _formatDate(widget.quote.createdAt),
+                          style: TextStyle(
+                            fontSize: 11.sp(context),
+                            color: AppColors.textPlaceholder,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.h(context)),
                     // Quote Text with Smart Scaling/Truncation
                     AnimatedSize(
                       duration: const Duration(milliseconds: 300),
@@ -60,10 +169,10 @@ class _QuoteCardState extends State<QuoteCard> {
                         builder: (context, constraints) {
                           final textSpan = TextSpan(
                             text: widget.quote.text,
-                            style: const TextStyle(
+                            style: TextStyle(
                               //fontFamily: 'Tajawal',
                               fontWeight: FontWeight.w500, // Medium
-                              fontSize: 16,
+                              fontSize: 16.sp(context),
                               height: 1.5,
                               color: Colors.black,
                             ),
@@ -71,7 +180,7 @@ class _QuoteCardState extends State<QuoteCard> {
 
                           final textPainter = TextPainter(
                             text: textSpan,
-                            textDirection: TextDirection.rtl,
+                            textDirection: Directionality.of(context),
                             maxLines: 5,
                           );
 
@@ -85,15 +194,15 @@ class _QuoteCardState extends State<QuoteCard> {
                                   widget.quote.text,
                                   maxLines: 5,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     //fontFamily: 'Tajawal',
                                     fontWeight: FontWeight.w500,
-                                    fontSize: 16,
+                                    fontSize: 16.sp(context),
                                     height: 1.5,
                                     color: Colors.black,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: 8.h(context)),
                                 InkWell(
                                   onTap: () =>
                                       setState(() => _isExpanded = true),
@@ -103,7 +212,7 @@ class _QuoteCardState extends State<QuoteCard> {
                                       //fontFamily: 'Tajawal',
                                       color: AppColors.primaryBlue,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                      fontSize: 14.sp(context),
                                     ),
                                   ),
                                 ),
@@ -113,10 +222,10 @@ class _QuoteCardState extends State<QuoteCard> {
                             // Expanded state or short text
                             return SelectableText(
                               widget.quote.text,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 //fontFamily: 'Tajawal',
                                 fontWeight: FontWeight.w500, // Medium
-                                fontSize: 16,
+                                fontSize: 16.sp(context),
                                 height: 1.5,
                                 color: Colors.black,
                               ),
@@ -129,32 +238,32 @@ class _QuoteCardState extends State<QuoteCard> {
                     // Notes Section
                     if (widget.quote.notes != null &&
                         widget.quote.notes!.isNotEmpty) ...[
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h(context)),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12.w(context)),
                         decoration: BoxDecoration(
                           color: const Color(
                               0xFFF8FAFC), // Slight darker subtle box
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r(context)),
                           border: Border.all(
                               color: AppColors.inputBorder.withOpacity(0.5)),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.sticky_note_2_outlined,
-                              size: 16,
+                              size: 16.sp(context),
                               color: AppColors.textSub,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w(context)),
                             Expanded(
                               child: Text(
                                 widget.quote.notes!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   //fontFamily: 'Tajawal',
-                                  fontSize: 13,
+                                  fontSize: 13.sp(context),
                                   color: AppColors.textSub,
                                   height: 1.4,
                                 ),
@@ -165,7 +274,7 @@ class _QuoteCardState extends State<QuoteCard> {
                       ),
                     ],
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: 20.h(context)),
 
                     // Footer (Book Info & Actions)
                     Row(
@@ -177,11 +286,19 @@ class _QuoteCardState extends State<QuoteCard> {
                               // Book Cover Thumbnail
                               if (widget.quote.bookCoverUrl != null)
                                 Container(
-                                  width: 24,
-                                  height: 36,
-                                  margin: const EdgeInsets.only(left: 8),
+                                  width: 32.w(context),
+                                  height: 48.h(context),
+                                  margin: EdgeInsets.only(left: 8.w(context)),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius:
+                                        BorderRadius.circular(6.r(context)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4.r(context),
+                                        offset: Offset(0, 2.h(context)),
+                                      ),
+                                    ],
                                     image: DecorationImage(
                                       image: NetworkImage(
                                           widget.quote.bookCoverUrl!),
@@ -189,52 +306,123 @@ class _QuoteCardState extends State<QuoteCard> {
                                     ),
                                   ),
                                 )
-                              else
-                                const Icon(
-                                  Icons.bookmark_outline,
-                                  size: 18,
-                                  color: AppColors.textSub,
+                              else if (widget.quote.bookTitle != null)
+                                Container(
+                                  width: 32.w(context),
+                                  height: 48.h(context),
+                                  margin: EdgeInsets.only(left: 8.w(context)),
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.circular(6.r(context)),
+                                    color:
+                                        AppColors.primaryBlue.withOpacity(0.1),
+                                    border: Border.all(
+                                      color: AppColors.primaryBlue
+                                          .withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.auto_stories,
+                                    size: 18.sp(context),
+                                    color: AppColors.primaryBlue,
+                                  ),
                                 ),
 
-                              const SizedBox(width: 8),
+                              SizedBox(width: 10.w(context)),
 
                               Expanded(
-                                child: Text(
-                                  widget.quote.bookTitle ?? 'بدون كتاب',
-                                  style: const TextStyle(
-                                    //fontFamily: 'Tajawal',
-                                    fontSize: 12,
-                                    color: AppColors.textSub,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (widget.quote.bookTitle != null)
+                                      Text(
+                                        widget.quote.bookTitle!,
+                                        style: TextStyle(
+                                          fontSize: 13.sp(context),
+                                          color: AppColors.textMain,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    if (widget.quote.bookAuthor != null) ...[
+                                      SizedBox(height: 2.h(context)),
+                                      Text(
+                                        widget.quote.bookAuthor!,
+                                        style: TextStyle(
+                                          fontSize: 11.sp(context),
+                                          color: AppColors.textSub,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ],
+                                    if (widget.quote.bookTitle == null)
+                                      Text(
+                                        'بدون كتاب',
+                                        style: TextStyle(
+                                          fontSize: 12.sp(context),
+                                          color: AppColors.textPlaceholder,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
 
-                        // Favorite Button
-                        IconButton(
-                          icon: Icon(
-                            widget.quote.isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                          ),
-                          iconSize: 22,
-                          color: widget.quote.isFavorite
-                              ? AppColors.primaryBlue // App Brand Color
-                              : AppColors.textPlaceholder,
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            context
-                                .read<QuoteCubit>()
-                                .toggleFavorite(widget.quote);
-                          },
-                          splashRadius: 24,
-                          tooltip: widget.quote.isFavorite
-                              ? 'إزالة من المفضلة'
-                              : 'إضافة للمفضلة',
+                        // Action Buttons
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Share Button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _shareQuote,
+                                borderRadius:
+                                    BorderRadius.circular(20.r(context)),
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.w(context)),
+                                  child: Icon(
+                                    Icons.share_outlined,
+                                    size: 20.sp(context),
+                                    color: AppColors.textSub,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 4.w(context)),
+                            // Favorite Button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  context
+                                      .read<QuoteCubit>()
+                                      .toggleFavorite(widget.quote);
+                                },
+                                borderRadius:
+                                    BorderRadius.circular(20.r(context)),
+                                child: Padding(
+                                  padding: EdgeInsets.all(8.w(context)),
+                                  child: Icon(
+                                    widget.quote.isFavorite
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    size: 22.sp(context),
+                                    color: widget.quote.isFavorite
+                                        ? AppColors.primaryBlue
+                                        : AppColors.textPlaceholder,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

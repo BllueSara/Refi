@@ -1,7 +1,23 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/colors.dart';
 
+/// App Theme Configuration
+///
+/// Note: This theme provides base static values. For responsive sizing,
+/// widgets should use ResponsiveUtil from '../utils/responsive_utils.dart'
+/// to override theme values (font sizes, padding, radius, etc.) when needed.
+///
+/// Example:
+/// ```dart
+/// Text(
+///   'Hello',
+///   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+///     fontSize: 16.sp(context), // Using responsive utils
+///   ),
+/// )
+/// ```refi
 class AppTheme {
   // Light Theme
   static ThemeData get lightTheme {
@@ -24,12 +40,12 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
-        
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: AppColors.textMain),
+        iconTheme: IconThemeData(
+            color: AppColors.textMain, size: getResponsiveFontSize(24)),
         titleTextStyle: GoogleFonts.tajawal(
-          fontSize: 20,
+          fontSize: getResponsiveFontSize(20),
           fontWeight: FontWeight.bold,
           color: AppColors.textMain,
         ),
@@ -37,59 +53,59 @@ class AppTheme {
 
       // Typography
       textTheme: GoogleFonts.tajawalTextTheme(
-        const TextTheme(
+        TextTheme(
           headlineLarge: TextStyle(
-            fontSize: 34,
+            fontSize: getResponsiveFontSize(34),
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
           headlineMedium: TextStyle(
-            fontSize: 20,
+            fontSize: getResponsiveFontSize(20),
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
           headlineSmall: TextStyle(
-            fontSize: 18,
+            fontSize: getResponsiveFontSize(18),
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
           titleLarge: TextStyle(
-            fontSize: 20,
+            fontSize: getResponsiveFontSize(20),
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
           titleMedium: TextStyle(
-            fontSize: 16,
+            fontSize: getResponsiveFontSize(16),
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
           titleSmall: TextStyle(
-            fontSize: 14,
+            fontSize: getResponsiveFontSize(14),
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
           bodyLarge: TextStyle(
-            fontSize: 16,
+            fontSize: getResponsiveFontSize(16),
             fontWeight: FontWeight.w500,
             color: AppColors.textMain,
           ),
           bodyMedium: TextStyle(
-            fontSize: 14,
+            fontSize: getResponsiveFontSize(14),
             fontWeight: FontWeight.w500,
             color: AppColors.textSub,
           ),
           bodySmall: TextStyle(
-            fontSize: 12,
+            fontSize: getResponsiveFontSize(12),
             fontWeight: FontWeight.normal,
             color: AppColors.textPlaceholder,
           ),
           labelLarge: TextStyle(
-            fontSize: 14,
+            fontSize: getResponsiveFontSize(14),
             fontWeight: FontWeight.bold,
             color: AppColors.textMain,
           ),
           labelSmall: TextStyle(
-            fontSize: 12,
+            fontSize: getResponsiveFontSize(12),
             fontWeight: FontWeight.bold,
             color: AppColors.textSub,
           ),
@@ -100,13 +116,15 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(getResponsiveRadius(24))),
       ),
 
       // Bottom Sheet Theme
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(
+              top: Radius.circular(getResponsiveRadius(24))),
         ),
       ),
 
@@ -114,28 +132,30 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 16,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: getResponsiveWidth(24),
+          vertical: getResponsiveHeight(16),
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(getResponsiveRadius(24)),
           borderSide: const BorderSide(color: AppColors.inputBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(getResponsiveRadius(24)),
           borderSide: const BorderSide(color: AppColors.inputBorder),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
+          borderRadius: BorderRadius.circular(getResponsiveRadius(24)),
+          borderSide: BorderSide(
+              color: AppColors.primaryBlue, width: getResponsiveWidth(2)),
         ),
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
           color: AppColors.textPlaceholder,
-          fontSize: 14,
+          fontSize: getResponsiveFontSize(14),
         ),
       ),
-      iconTheme: const IconThemeData(color: AppColors.primaryBlue, size: 24),
+      iconTheme: IconThemeData(
+          color: AppColors.primaryBlue, size: getResponsiveFontSize(24)),
     );
   }
 
@@ -166,68 +186,69 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: darkTextMain),
+        iconTheme:
+            IconThemeData(color: darkTextMain, size: getResponsiveFontSize(24)),
         titleTextStyle: GoogleFonts.tajawal(
-          fontSize: 20,
+          fontSize: getResponsiveFontSize(20),
           fontWeight: FontWeight.bold,
           color: darkTextMain,
         ),
       ),
 
       textTheme: GoogleFonts.tajawalTextTheme(
-        const TextTheme(
+        TextTheme(
           headlineLarge: TextStyle(
-            fontSize: 34,
+            fontSize: getResponsiveFontSize(34),
             fontWeight: FontWeight.bold,
             color: darkTextMain,
           ),
           headlineMedium: TextStyle(
-            fontSize: 20,
+            fontSize: getResponsiveFontSize(20),
             fontWeight: FontWeight.bold,
             color: darkTextMain,
           ),
           headlineSmall: TextStyle(
-            fontSize: 18,
+            fontSize: getResponsiveFontSize(18),
             fontWeight: FontWeight.bold,
             color: darkTextMain,
           ),
           titleLarge: TextStyle(
-            fontSize: 20,
+            fontSize: getResponsiveFontSize(20),
             fontWeight: FontWeight.bold,
             color: darkTextMain,
           ),
           titleMedium: TextStyle(
-            fontSize: 16,
+            fontSize: getResponsiveFontSize(16),
             fontWeight: FontWeight.bold,
             color: darkTextMain,
           ),
           titleSmall: TextStyle(
-            fontSize: 14,
+            fontSize: getResponsiveFontSize(14),
             fontWeight: FontWeight.bold,
             color: darkTextMain,
           ),
           bodyLarge: TextStyle(
-            fontSize: 16,
+            fontSize: getResponsiveFontSize(16),
             fontWeight: FontWeight.w500,
             color: darkTextMain,
           ),
           bodyMedium: TextStyle(
-            fontSize: 14,
+            fontSize: getResponsiveFontSize(14),
             fontWeight: FontWeight.w500,
             color: darkTextSub,
           ),
           bodySmall: TextStyle(
-            fontSize: 12,
+            fontSize: getResponsiveFontSize(12),
             fontWeight: FontWeight.normal,
             color: darkTextSub,
           ),
           labelLarge: TextStyle(
-            fontSize: 14,
+            fontSize: getResponsiveFontSize(14),
             fontWeight: FontWeight.bold,
             color: darkTextMain,
           ),
           labelSmall: TextStyle(
-            fontSize: 12,
+            fontSize: getResponsiveFontSize(12),
             fontWeight: FontWeight.bold,
             color: darkTextSub,
           ),
@@ -237,38 +258,73 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: darkSurface,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(getResponsiveRadius(24))),
       ),
 
       // Bottom Sheet Theme
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(
+              top: Radius.circular(getResponsiveRadius(24))),
         ),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: darkSurface,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 16,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: getResponsiveWidth(24),
+          vertical: getResponsiveHeight(16),
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(getResponsiveRadius(24)),
           borderSide: BorderSide(color: darkSurface),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(getResponsiveRadius(24)),
           borderSide: BorderSide(color: darkSurface),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: darkPrimary, width: 2),
+          borderRadius: BorderRadius.circular(getResponsiveRadius(24)),
+          borderSide:
+              BorderSide(color: darkPrimary, width: getResponsiveWidth(2)),
         ),
-        hintStyle: const TextStyle(color: darkTextSub, fontSize: 14),
+        hintStyle:
+            TextStyle(color: darkTextSub, fontSize: getResponsiveFontSize(14)),
       ),
-      iconTheme: const IconThemeData(color: darkPrimary, size: 24),
+      iconTheme:
+          IconThemeData(color: darkPrimary, size: getResponsiveFontSize(24)),
     );
+  }
+
+  // Responsive Helper Methods
+  // These methods can be used for responsive calculations based on design size (390x844)
+  static double getResponsiveWidth(double width) {
+    final screenWidth =
+        ui.PlatformDispatcher.instance.views.first.physicalSize.width /
+            ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+    return (width / 390.0) * screenWidth;
+  }
+
+  static double getResponsiveHeight(double height) {
+    final screenHeight =
+        ui.PlatformDispatcher.instance.views.first.physicalSize.height /
+            ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+    return (height / 844.0) * screenHeight;
+  }
+
+  static double getResponsiveFontSize(double fontSize) {
+    final screenWidth =
+        ui.PlatformDispatcher.instance.views.first.physicalSize.width /
+            ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+    return (fontSize / 390.0) * screenWidth;
+  }
+
+  static double getResponsiveRadius(double radius) {
+    final screenWidth =
+        ui.PlatformDispatcher.instance.views.first.physicalSize.width /
+            ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+    return (radius / 390.0) * screenWidth;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../cubit/book_details/book_details_state.dart';
 
 class ProgressCard extends StatelessWidget {
@@ -15,15 +16,15 @@ class ProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w(context)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            blurRadius: 15.r(context),
+            offset: Offset(0, 5.h(context)),
           ),
         ],
       ),
@@ -48,17 +49,17 @@ class ProgressCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h(context)),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r(context)),
             child: LinearProgressIndicator(
               value: state.progress,
-              minHeight: 10,
+              minHeight: 10.h(context),
               backgroundColor: AppColors.inputBorder,
               color: AppColors.primaryBlue,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h(context)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -70,11 +71,11 @@ class ProgressCard extends StatelessWidget {
               ),
               InkWell(
                 onTap: onUpdatePressed,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r(context)),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 8.w(context),
+                    vertical: 4.h(context),
                   ),
                   child: Text(
                     "تحديث",

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/dimensions.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../domain/entities/book_entity.dart';
 import '../../domain/usecases/update_book_usecase.dart';
@@ -38,7 +39,7 @@ class BookDetailsPage extends StatelessWidget {
           elevation: 0,
           centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: AppColors.textMain),
+            icon: Icon(Icons.arrow_back_ios, color: AppColors.textMain, size: 20.sp(context)),
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
@@ -48,26 +49,26 @@ class BookDetailsPage extends StatelessWidget {
             AppStrings.detailsTitle,
             style: Theme.of(
               context,
-            ).textTheme.headlineMedium?.copyWith(fontSize: 20),
+            ).textTheme.headlineMedium?.copyWith(fontSize: 20.sp(context)),
           ),
         ),
         body: BlocBuilder<BookDetailsCubit, BookDetailsState>(
           builder: (context, state) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: EdgeInsets.all(AppDimensions.paddingL.w(context)),
               child: Column(
                 children: [
                   // Cover
                   Container(
-                    width: 140,
-                    height: 210,
+                    width: 140.w(context),
+                    height: 210.h(context),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r(context)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.15),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          blurRadius: 20.r(context),
+                          offset: Offset(0, 10.h(context)),
                         ),
                       ],
                       // Fallback color if image fails or doesn't exist
@@ -82,7 +83,7 @@ class BookDetailsPage extends StatelessWidget {
                               return Center(
                                 child: Icon(
                                   Icons.book,
-                                  size: 48,
+                                  size: 48.sp(context),
                                   color: Colors.white.withOpacity(0.5),
                                 ),
                               );
@@ -91,12 +92,12 @@ class BookDetailsPage extends StatelessWidget {
                         : Center(
                             child: Icon(
                               Icons.book,
-                              size: 48,
+                              size: 48.sp(context),
                               color: Colors.white.withOpacity(0.5),
                             ),
                           ),
                   ),
-                  const SizedBox(height: AppDimensions.paddingL),
+                  SizedBox(height: AppDimensions.paddingL.h(context)),
 
                   // Title & Author
                   Text(
@@ -104,9 +105,9 @@ class BookDetailsPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: Theme.of(
                       context,
-                    ).textTheme.headlineMedium?.copyWith(fontSize: 24),
+                    ).textTheme.headlineMedium?.copyWith(fontSize: 24.sp(context)),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h(context)),
                   Text(
                     book.author,
                     textAlign: TextAlign.center,
@@ -116,14 +117,14 @@ class BookDetailsPage extends StatelessWidget {
                   ),
 
                   // Status Chips Selection (Simple View)
-                  const SizedBox(height: AppDimensions.paddingM),
+                  SizedBox(height: AppDimensions.paddingM.h(context)),
                   BookStatusSelector(
                     currentStatus: state.status,
                     onStatusChanged: (s) =>
                         context.read<BookDetailsCubit>().changeStatus(s),
                   ),
 
-                  const SizedBox(height: AppDimensions.paddingL),
+                  SizedBox(height: AppDimensions.paddingL.h(context)),
 
                   // Progress (Only if reading or completed)
                   if (state.status == BookStatus.reading ||
@@ -133,7 +134,7 @@ class BookDetailsPage extends StatelessWidget {
                       onUpdatePressed: () => _showUpdateDialog(context),
                     ),
 
-                  const SizedBox(height: AppDimensions.paddingXL),
+                  SizedBox(height: AppDimensions.paddingXL.h(context)),
 
                   // Quotes List Section
                   _buildQuotesSection(context, state),
@@ -167,31 +168,31 @@ class BookDetailsPage extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.paddingM),
+        SizedBox(height: AppDimensions.paddingM.h(context)),
         if (state.quotes.isEmpty)
           Container(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32.w(context)),
             width: double.infinity,
             decoration: BoxDecoration(
               color: AppColors.inputBorder.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24.r(context)),
               border: Border.all(color: AppColors.inputBorder),
             ),
             child: Column(
               children: [
                 Icon(
                   Icons.format_quote,
-                  size: 48,
+                  size: 48.sp(context),
                   color: AppColors.textPlaceholder.withValues(alpha: 0.5),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h(context)),
                 Text(
                   AppStrings.noQuotesTitle,
                   style: Theme.of(
                     context,
                   ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h(context)),
                 Text(
                   AppStrings.noQuotesBody,
                   textAlign: TextAlign.center,
@@ -205,14 +206,14 @@ class BookDetailsPage extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: state.quotes.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => SizedBox(height: 12.h(context)),
             itemBuilder: (context, index) {
               final quote = state.quotes[index];
               return Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w(context)),
                 decoration: BoxDecoration(
                   color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r(context)),
                   border: Border.all(
                     color: AppColors.inputBorder.withValues(alpha: 0.5),
                   ),
@@ -224,38 +225,38 @@ class BookDetailsPage extends StatelessWidget {
                       quote.text,
                       style: GoogleFonts.tajawal(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 14.sp(context),
                         height: 1.6,
                       ),
                     ),
                     if (quote.notes != null && quote.notes!.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h(context)),
                       Text(
                         quote.notes!,
                         style: GoogleFonts.tajawal(
-                          fontSize: 12,
+                          fontSize: 12.sp(context),
                           color: AppColors.textSub,
                         ),
                       ),
                     ],
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h(context)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w(context),
+                            vertical: 4.h(context),
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r(context)),
                           ),
                           child: Text(
                             quote.feeling,
-                            style: const TextStyle(
+                            style: TextStyle(
                               //fontFamily: 'Tajawal',
-                              fontSize: 10,
+                              fontSize: 10.sp(context),
                               color: AppColors.primaryBlue,
                               fontWeight: FontWeight.bold,
                             ),
@@ -287,14 +288,14 @@ class BookDetailsPage extends StatelessWidget {
         final formKey = GlobalKey<FormState>();
         return Container(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-            left: 24,
-            right: 24,
-            top: 24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24.h(ctx),
+            left: 24.w(ctx),
+            right: 24.w(ctx),
+            top: 24.h(ctx),
           ),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r(ctx))),
           ),
           child: Form(
             key: formKey,
@@ -305,27 +306,27 @@ class BookDetailsPage extends StatelessWidget {
               children: [
                 Center(
                   child: Container(
-                    width: 40,
-                    height: 4,
+                    width: 40.w(ctx),
+                    height: 4.h(ctx),
                     decoration: BoxDecoration(
                       color: AppColors.inactiveDot,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(2.r(ctx)),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h(ctx)),
                 Text(
                   "تحديث القراءة",
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h(ctx)),
                 TextFormField(
                   controller: controller,
                   keyboardType: TextInputType.number,
                   autofocus: true,
-                  style: const TextStyle(
+                  style: TextStyle(
                     //fontFamily: 'Tajawal',
-                    fontSize: 18,
+                    fontSize: 18.sp(ctx),
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
@@ -333,20 +334,20 @@ class BookDetailsPage extends StatelessWidget {
                     hintText: "مثال: 50",
                     suffixText: "من ${cubit.state.totalPages}",
                     // Error Styles
-                    errorStyle: const TextStyle(
+                    errorStyle: TextStyle(
                       //fontFamily: 'Tajawal',
-                      fontSize: 12,
+                      fontSize: 12.sp(ctx),
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFFD32F2F),
+                      color: const Color(0xFFD32F2F),
                     ),
                     errorMaxLines: 2,
                     errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r(ctx)),
                       borderSide:
                           const BorderSide(color: Color(0xFFD32F2F), width: 1),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r(ctx)),
                       borderSide: const BorderSide(
                           color: Color(0xFFD32F2F), width: 1.5),
                     ),
@@ -354,7 +355,7 @@ class BookDetailsPage extends StatelessWidget {
                     filled: true,
                     fillColor: AppColors.inputBorder.withValues(alpha: 0.3),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r(ctx)),
                       borderSide: BorderSide.none,
                     ),
                   ),
@@ -375,7 +376,7 @@ class BookDetailsPage extends StatelessWidget {
                     return null;
                   },
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h(ctx)),
                 RefiButton(
                   label: "حفظ التقدم",
                   onTap: () {
@@ -404,10 +405,10 @@ class BookDetailsPage extends StatelessWidget {
                                (book.source == null && book.googleBookId == null);
 
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert, color: AppColors.textMain),
-      offset: const Offset(0, 50),
+      icon: Icon(Icons.more_vert, color: AppColors.textMain, size: 24.sp(context)),
+      offset: Offset(0, 50.h(context)),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r(context)),
       ),
       onSelected: (value) {
         if (value == 'edit') {
@@ -435,14 +436,14 @@ class BookDetailsPage extends StatelessWidget {
               value: 'edit',
               child: Row(
                 children: [
-                  const Icon(Icons.edit_outlined,
-                      size: 20, color: AppColors.textMain),
-                  const SizedBox(width: 12),
+                  Icon(Icons.edit_outlined,
+                      size: 20.sp(context), color: AppColors.textMain),
+                  SizedBox(width: 12.w(context)),
                   Text(
                     "تعديل معلومات الكتاب",
                     style: GoogleFonts.tajawal(
                       fontWeight: FontWeight.w500,
-                      fontSize: 14,
+                      fontSize: 14.sp(context),
                       color: AppColors.textMain,
                     ),
                   ),
@@ -453,13 +454,13 @@ class BookDetailsPage extends StatelessWidget {
               value: 'delete',
               child: Row(
                 children: [
-                  const Icon(Icons.delete_outline, size: 20, color: Colors.red),
-                  const SizedBox(width: 12),
+                  Icon(Icons.delete_outline, size: 20.sp(context), color: Colors.red),
+                  SizedBox(width: 12.w(context)),
                   Text(
                     "حذف الكتاب",
                     style: GoogleFonts.tajawal(
                       fontWeight: FontWeight.w500,
-                      fontSize: 14,
+                      fontSize: 14.sp(context),
                       color: Colors.red,
                     ),
                   ),
@@ -475,13 +476,13 @@ class BookDetailsPage extends StatelessWidget {
             value: 'delete',
             child: Row(
               children: [
-                const Icon(Icons.delete_outline, size: 20, color: Colors.red),
-                const SizedBox(width: 12),
+                Icon(Icons.delete_outline, size: 20.sp(context), color: Colors.red),
+                SizedBox(width: 12.w(context)),
                 Text(
                   "حذف الكتاب",
                   style: GoogleFonts.tajawal(
                     fontWeight: FontWeight.w500,
-                    fontSize: 14,
+                    fontSize: 14.sp(context),
                     color: Colors.red,
                   ),
                 ),
@@ -504,37 +505,37 @@ class BookDetailsPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
           ),
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.w(context)),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(28.r(context)),
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w(context)),
                   decoration: BoxDecoration(
                     color: Colors.red.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.delete_forever_rounded,
                     color: Colors.red,
-                    size: 32,
+                    size: 32.sp(context),
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h(context)),
                 Text(
                   "هل أنت متأكد من حذف هذا الكتاب من مكتبتك؟",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.tajawal(
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 18.sp(context),
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h(context)),
                 Row(
                   children: [
                     Expanded(
@@ -545,16 +546,17 @@ class BookDetailsPage extends StatelessWidget {
                           style: GoogleFonts.tajawal(
                             color: AppColors.textSub,
                             fontWeight: FontWeight.bold,
+                            fontSize: 14.sp(context),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w(context)),
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.red,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r(context)),
                         ),
                         child: TextButton(
                           onPressed: () {
@@ -568,6 +570,7 @@ class BookDetailsPage extends StatelessWidget {
                             style: GoogleFonts.tajawal(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
+                              fontSize: 14.sp(context),
                             ),
                           ),
                         ),

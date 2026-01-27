@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../pages/book_quotes_details_page.dart';
 
@@ -36,12 +37,12 @@ class QuotesByBookView extends StatelessWidget {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      padding: EdgeInsets.all(16.w(context)),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.75, // Book cover ratio
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: 16.w(context),
+        mainAxisSpacing: 16.h(context),
       ),
       itemCount: bookKeys.length,
       itemBuilder: (context, index) {
@@ -81,17 +82,17 @@ class QuotesByBookView extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r(context)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  blurRadius: 10.r(context),
+                  offset: Offset(0, 4.h(context)),
                 ),
               ],
               border: Border.all(color: AppColors.inputBorder),
             ),
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w(context)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -107,7 +108,7 @@ class QuotesByBookView extends StatelessWidget {
                         color: bookCoverUrl == null
                             ? null
                             : Colors.grey[200], // Fallback while loading
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r(context)),
                         image: bookCoverUrl != null
                             ? DecorationImage(
                                 image: NetworkImage(bookCoverUrl),
@@ -119,7 +120,7 @@ class QuotesByBookView extends StatelessWidget {
                           ? Center(
                               child: Icon(
                                 Icons.book_outlined,
-                                size: 40,
+                                size: 40.sp(context),
                                 color: AppColors.primaryBlue.withOpacity(0.5),
                               ),
                             )
@@ -127,36 +128,36 @@ class QuotesByBookView extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h(context)),
 
                 // Book Title
                 Text(
                   bookTitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     //fontFamily: 'Tajawal',
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 14.sp(context),
                     height: 1.3,
                     color: AppColors.textMain,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h(context)),
 
                 // Badge
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      EdgeInsets.symmetric(horizontal: 8.w(context), vertical: 4.h(context)),
                   decoration: BoxDecoration(
                     color: AppColors.primaryBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r(context)),
                   ),
                   child: Text(
                     '$quoteCount اقتباسات',
-                    style: const TextStyle(
+                    style: TextStyle(
                       //fontFamily: 'Tajawal',
-                      fontSize: 11,
+                      fontSize: 11.sp(context),
                       fontWeight: FontWeight.w500,
                       color: AppColors.primaryBlue,
                     ),

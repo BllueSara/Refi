@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/widgets/scale_button.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/widgets/main_navigation_screen.dart';
 import '../../domain/entities/home_entity.dart';
 import '../../../library/domain/entities/book_entity.dart';
@@ -37,7 +38,7 @@ class HomePopulatedBody extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 24.w(context), vertical: 16.h(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -50,41 +51,41 @@ class HomePopulatedBody extends StatelessWidget {
               },
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h(context)),
 
             // Stats Label
             Text(
               "إحصائياتك",
               style: GoogleFonts.tajawal(
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                fontSize: 18.sp(context),
                 color: AppColors.textMain,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h(context)),
 
             // Stats Grid
             HomeStatsRow(data: data),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h(context)),
 
             // Currently Reading Section
             if (data.currentlyReading.isEmpty)
               Center(
                 child: Column(
                   children: [
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h(context)),
                     const FloatingBookIllustration(),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h(context)),
                     Text(
                       "لم تبدأ قراءة أي كتاب بعد",
                       style: GoogleFonts.tajawal(
-                        fontSize: 16,
+                        fontSize: 16.sp(context),
                         color: AppColors.textMain,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h(context)),
                     ScaleButton(
                       onTap: () {
                         // Navigate to Search Screen directly
@@ -102,15 +103,15 @@ class HomePopulatedBody extends StatelessWidget {
                       },
                       child: Container(
                         width: double.infinity,
-                        height: 56,
+                        height: 56.h(context),
                         decoration: BoxDecoration(
                           gradient: AppColors.refiMeshGradient,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r(context)),
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.primaryBlue.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
+                              blurRadius: 12.r(context),
+                              offset: Offset(0, 6.h(context)),
                             ),
                           ],
                         ),
@@ -119,7 +120,7 @@ class HomePopulatedBody extends StatelessWidget {
                             "أضف كتابك الأول",
                             style: GoogleFonts.tajawal(
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontSize: 16.sp(context),
                               color: Colors.white,
                             ),
                           ),
@@ -138,7 +139,7 @@ class HomePopulatedBody extends StatelessWidget {
                     AppStrings.currentlyReading,
                     style: GoogleFonts.tajawal(
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                      fontSize: 18.sp(context),
                       color: AppColors.textMain,
                     ),
                   ),
@@ -155,16 +156,17 @@ class HomePopulatedBody extends StatelessWidget {
                       AppStrings.viewAll,
                       style: GoogleFonts.tajawal(
                         color: AppColors.secondaryBlue,
+                        fontSize: 14.sp(context),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h(context)),
 
               // List
               SizedBox(
-                height: 140,
+                height: 140.h(context),
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: data.currentlyReading.length,
@@ -207,7 +209,7 @@ class HomePopulatedBody extends StatelessWidget {
               ),
             ],
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h(context)),
           ],
         ),
       ),
@@ -231,10 +233,10 @@ class HomePopulatedBody extends StatelessWidget {
           builder: (context, setState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                left: 24,
-                right: 24,
-                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24.h(context),
+                left: 24.w(context),
+                right: 24.w(context),
+                top: 24.h(context),
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
@@ -251,35 +253,35 @@ class HomePopulatedBody extends StatelessWidget {
                           // Handle bar
                           Center(
                             child: Container(
-                              width: 40,
-                              height: 4,
+                              width: 40.w(context),
+                              height: 4.h(context),
                               decoration: BoxDecoration(
                                 color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(2),
+                                borderRadius: BorderRadius.circular(2.r(context)),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24.h(context)),
 
                           Text(
                             "هدفك للقراءة في ${DateTime.now().year}",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.tajawal(
-                              fontSize: 20,
+                              fontSize: 20.sp(context),
                               fontWeight: FontWeight.bold,
                               color: AppColors.textMain,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h(context)),
                           Text(
                             "كم كتاباً تتحدى نفسك لقراءته هذا العام؟",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.tajawal(
-                              fontSize: 14,
+                              fontSize: 14.sp(context),
                               color: AppColors.textSub,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(height: 32.h(context)),
 
                           // Big Number Display
                           ShaderMask(
@@ -291,7 +293,7 @@ class HomePopulatedBody extends StatelessWidget {
                               "$selectedGoal",
                               textAlign: TextAlign.center,
                               style: GoogleFonts.tajawal(
-                                fontSize: 64,
+                                fontSize: 64.sp(context),
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                                 height: 1,
@@ -302,12 +304,12 @@ class HomePopulatedBody extends StatelessWidget {
                             "كتاب",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.tajawal(
-                              fontSize: 16,
+                              fontSize: 16.sp(context),
                               color: AppColors.textSub,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(height: 32.h(context)),
 
                           // Slider
                           SliderTheme(
@@ -320,7 +322,7 @@ class HomePopulatedBody extends StatelessWidget {
                               overlayColor:
                                   AppColors.primaryBlue.withOpacity(0.1),
                               trackHeight:
-                                  8, // Thicker track for better gradient visibility
+                                  8.h(context), // Thicker track for better gradient visibility
                             ),
                             child: Slider(
                               value: selectedGoal.toDouble(),
@@ -336,7 +338,7 @@ class HomePopulatedBody extends StatelessWidget {
                             ),
                           ),
 
-                          const SizedBox(height: 32),
+                          SizedBox(height: 32.h(context)),
 
                           // Save Button
                           ScaleButton(
@@ -354,16 +356,16 @@ class HomePopulatedBody extends StatelessWidget {
                             },
                             child: Container(
                               width: double.infinity,
-                              height: 56,
+                              height: 56.h(context),
                               decoration: BoxDecoration(
                                 gradient: AppColors.refiMeshGradient,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(16.r(context)),
                                 boxShadow: [
                                   BoxShadow(
                                     color:
                                         AppColors.primaryBlue.withOpacity(0.3),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
+                                    blurRadius: 10.r(context),
+                                    offset: Offset(0, 4.h(context)),
                                   ),
                                 ],
                               ),
@@ -372,14 +374,14 @@ class HomePopulatedBody extends StatelessWidget {
                                   "حفظ الهدف",
                                   style: GoogleFonts.tajawal(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: 16.sp(context),
                                     color: Colors.white,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h(context)),
                         ],
                       ),
               ),
@@ -395,39 +397,39 @@ class HomePopulatedBody extends StatelessWidget {
       key: const ValueKey('SuccessView'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h(context)),
         // Glowing Icon
         // Success Animation
         Lottie.asset(
           'assets/images/Success.json',
-          width: 200,
-          height: 200,
+          width: 200.w(context),
+          height: 200.h(context),
           repeat: false,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h(context)),
         Text(
           "تم تحديد هدفك بنجاح!",
           style: GoogleFonts.tajawal(
             fontWeight: FontWeight.bold,
-            fontSize: 22,
+            fontSize: 22.sp(context),
             color: AppColors.textMain,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h(context)),
         Text(
           "رحلة الألف ميل تبدأ بكتاب واحد...",
           style: GoogleFonts.tajawal(
-            fontSize: 14,
+            fontSize: 14.sp(context),
             color: AppColors.textSub,
           ),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: 32.h(context)),
         // Summary Card
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w(context)),
           decoration: BoxDecoration(
             color: AppColors.inputBorder.withOpacity(0.3), // Light Grey
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r(context)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -438,16 +440,16 @@ class HomePopulatedBody extends StatelessWidget {
                   Text(
                     "هدفك السنوي",
                     style: GoogleFonts.tajawal(
-                      fontSize: 12,
+                      fontSize: 12.sp(context),
                       color: AppColors.textSub,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h(context)),
                   Text(
                     "$goal كتاباً في ${DateTime.now().year}",
                     style: GoogleFonts.tajawal(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 16.sp(context),
                       color: AppColors.textMain,
                     ),
                   ),
@@ -456,7 +458,7 @@ class HomePopulatedBody extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: 32.h(context)),
         // Continue Button
         ScaleButton(
           onTap: () {
@@ -465,15 +467,15 @@ class HomePopulatedBody extends StatelessWidget {
           },
           child: Container(
             width: double.infinity,
-            height: 56,
+            height: 56.h(context),
             decoration: BoxDecoration(
               gradient: AppColors.refiMeshGradient,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r(context)),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primaryBlue.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  blurRadius: 10.r(context),
+                  offset: Offset(0, 4.h(context)),
                 ),
               ],
             ),
@@ -482,14 +484,14 @@ class HomePopulatedBody extends StatelessWidget {
                 "فلنبدأ القراءة ←",
                 style: GoogleFonts.tajawal(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp(context),
                   color: Colors.white,
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h(context)),
       ],
     );
   }

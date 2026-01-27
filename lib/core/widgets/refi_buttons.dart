@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
+import '../utils/responsive_utils.dart';
 
 class RefiButton extends StatelessWidget {
   final String label;
@@ -22,7 +23,7 @@ class RefiButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 56.h(context),
       child: ElevatedButton(
         onPressed: isLoading
             ? null
@@ -37,17 +38,17 @@ class RefiButton extends StatelessWidget {
           shadowColor:
               isSecondary ? null : AppColors.primaryBlue.withOpacity(0.4),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(24.r(context)),
             side: isSecondary
                 ? const BorderSide(color: AppColors.inputBorder)
                 : BorderSide.none,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: 24.w(context)),
         ),
         child: isLoading
             ? SizedBox(
-                height: 24,
-                width: 24,
+                height: 24.h(context),
+                width: 24.w(context),
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: isSecondary ? AppColors.primaryBlue : Colors.white,
@@ -57,14 +58,14 @@ class RefiButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(icon, size: 20.sp(context)),
+                    SizedBox(width: 8.w(context)),
                   ],
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       //fontFamily: 'Tajawal',
-                      fontSize: 16,
+                      fontSize: 16.sp(context),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

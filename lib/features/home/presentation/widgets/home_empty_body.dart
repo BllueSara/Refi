@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/scale_button.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/home_entity.dart';
 import '../../../add_book/presentation/screens/search_screen.dart';
 import 'annual_goal_card.dart';
@@ -31,7 +32,7 @@ class HomeEmptyBody extends StatelessWidget {
         );
       },
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 24.w(context), vertical: 16.h(context)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -44,50 +45,50 @@ class HomeEmptyBody extends StatelessWidget {
               },
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h(context)),
 
             // Stats Label
             Text(
               "إحصائياتك",
               style: GoogleFonts.tajawal(
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                fontSize: 18.sp(context),
                 color: AppColors.textMain,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h(context)),
 
             // Stats Grid (Reused)
             HomeStatsRow(data: data),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h(context)),
 
             // Currently Reading Header
             Text(
               AppStrings.currentlyReading,
               style: GoogleFonts.tajawal(
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                fontSize: 18.sp(context),
                 color: AppColors.textMain,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h(context)),
 
             // Empty Reading List Content
             Center(
               child: Column(
                 children: [
                   const FloatingBookIllustration(),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h(context)),
                   Text(
                     "مكتبتك هادئة.. ما رأيك أن تبدأ رحلة جديدة؟",
                     style: GoogleFonts.tajawal(
-                      fontSize: 16,
+                      fontSize: 16.sp(context),
                       color: AppColors.textSub,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h(context)),
                   ScaleButton(
                     onTap: () {
                       Navigator.push(
@@ -99,15 +100,15 @@ class HomeEmptyBody extends StatelessWidget {
                     },
                     child: Container(
                       width: double.infinity,
-                      height: 56,
+                      height: 56.h(context),
                       decoration: BoxDecoration(
                         gradient: AppColors.refiMeshGradient,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r(context)),
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.primaryBlue.withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
+                            blurRadius: 12.r(context),
+                            offset: Offset(0, 6.h(context)),
                           ),
                         ],
                       ),
@@ -116,7 +117,7 @@ class HomeEmptyBody extends StatelessWidget {
                           AppStrings.addBookFirst,
                           style: GoogleFonts.tajawal(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 16.sp(context),
                             color: Colors.white,
                           ),
                         ),
@@ -127,7 +128,7 @@ class HomeEmptyBody extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h(context)),
           ],
         ),
       ),
@@ -151,10 +152,10 @@ class HomeEmptyBody extends StatelessWidget {
           builder: (context, setState) {
             return Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                left: 24,
-                right: 24,
-                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24.h(context),
+                left: 24.w(context),
+                right: 24.w(context),
+                top: 24.h(context),
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
@@ -171,35 +172,35 @@ class HomeEmptyBody extends StatelessWidget {
                           // Handle bar
                           Center(
                             child: Container(
-                              width: 40,
-                              height: 4,
+                              width: 40.w(context),
+                              height: 4.h(context),
                               decoration: BoxDecoration(
                                 color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(2),
+                                borderRadius: BorderRadius.circular(2.r(context)),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24.h(context)),
 
                           Text(
                             "هدفك للقراءة في ${DateTime.now().year}",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.tajawal(
-                              fontSize: 20,
+                              fontSize: 20.sp(context),
                               fontWeight: FontWeight.bold,
                               color: AppColors.textMain,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h(context)),
                           Text(
                             "كم كتاباً تتحدى نفسك لقراءته هذا العام؟",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.tajawal(
-                              fontSize: 14,
+                              fontSize: 14.sp(context),
                               color: AppColors.textSub,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(height: 32.h(context)),
 
                           // Big Number Display
                           ShaderMask(
@@ -211,7 +212,7 @@ class HomeEmptyBody extends StatelessWidget {
                               "$selectedGoal",
                               textAlign: TextAlign.center,
                               style: GoogleFonts.tajawal(
-                                fontSize: 64,
+                                fontSize: 64.sp(context),
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                                 height: 1,
@@ -222,12 +223,12 @@ class HomeEmptyBody extends StatelessWidget {
                             "كتاب",
                             textAlign: TextAlign.center,
                             style: GoogleFonts.tajawal(
-                              fontSize: 16,
+                              fontSize: 16.sp(context),
                               color: AppColors.textSub,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(height: 32.h(context)),
 
                           // Slider
                           SliderTheme(
@@ -239,7 +240,7 @@ class HomeEmptyBody extends StatelessWidget {
                               thumbColor: AppColors.primaryBlue,
                               overlayColor:
                                   AppColors.primaryBlue.withOpacity(0.1),
-                              trackHeight: 8,
+                              trackHeight: 8.h(context),
                             ),
                             child: Slider(
                               value: selectedGoal.toDouble(),
@@ -255,20 +256,20 @@ class HomeEmptyBody extends StatelessWidget {
                             ),
                           ),
 
-                          const SizedBox(height: 32),
+                          SizedBox(height: 32.h(context)),
 
                           // Save Button
                           Container(
                             width: double.infinity,
-                            height: 56,
+                            height: 56.h(context),
                             decoration: BoxDecoration(
                               gradient: AppColors.refiMeshGradient,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16.r(context)),
                               boxShadow: [
                                 BoxShadow(
                                   color: AppColors.primaryBlue.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
+                                  blurRadius: 10.r(context),
+                                  offset: Offset(0, 4.h(context)),
                                 ),
                               ],
                             ),
@@ -283,13 +284,13 @@ class HomeEmptyBody extends StatelessWidget {
                                     isSuccess = true;
                                   });
                                 },
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(16.r(context)),
                                 child: Center(
                                   child: Text(
                                     "حفظ الهدف",
                                     style: GoogleFonts.tajawal(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                      fontSize: 16.sp(context),
                                       color: Colors.white,
                                     ),
                                   ),
@@ -297,7 +298,7 @@ class HomeEmptyBody extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h(context)),
                         ],
                       ),
               ),

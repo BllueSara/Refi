@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../cubit/onboarding_cubit.dart';
 
 import '../widgets/onboarding_skip_button.dart';
@@ -63,13 +64,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.white,
           elevation: 0,
-          leadingWidth: 80,
+          leadingWidth: 80.w(context),
           leading: Builder(
             builder: (context) {
               return OnboardingSkipButton(onTap: () => _onSkipTap(context));
             },
           ),
-          actions: const [SizedBox(width: AppSizes.p16)],
+          actions: [SizedBox(width: AppSizes.p16.w(context))],
         ),
         body: BlocBuilder<OnboardingCubit, int>(
           builder: (context, currentIndex) {

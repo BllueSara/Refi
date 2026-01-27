@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/book_entity.dart';
 
 class BookStatusSelector extends StatelessWidget {
@@ -18,9 +19,9 @@ class BookStatusSelector extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _statusChip(context, BookStatus.wishlist),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w(context)),
         _statusChip(context, BookStatus.reading),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w(context)),
         _statusChip(context, BookStatus.completed),
       ],
     );
@@ -32,18 +33,19 @@ class BookStatusSelector extends StatelessWidget {
       onTap: () => onStatusChanged(status),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12.w(context), vertical: 8.h(context)),
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primaryBlue
               : AppColors.inputBorder.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r(context)),
         ),
         child: Text(
           status.label,
           style: TextStyle(
             color: isSelected ? Colors.white : AppColors.textSub,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 14.sp(context),
             //fontFamily: 'Tajawal',
           ),
         ),

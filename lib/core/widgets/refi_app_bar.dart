@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_strings.dart';
 import '../constants/colors.dart';
 import '../constants/sizes.dart';
+import '../utils/responsive_utils.dart';
 
 class RefiAppBar extends StatelessWidget implements PreferredSizeWidget {
   final TextEditingController searchController;
@@ -18,12 +19,12 @@ class RefiAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: AppColors.white,
       elevation: 0,
-      titleSpacing: AppSizes.p24,
+      titleSpacing: AppSizes.p24.w(context),
       title: Container(
-        height: 48,
+        height: 48.h(context),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(AppSizes.inputRadius),
+          borderRadius: BorderRadius.circular(AppSizes.inputRadius.r(context)),
           border: Border.all(color: AppColors.inputBorder),
         ),
         child: TextField(
@@ -31,24 +32,24 @@ class RefiAppBar extends StatelessWidget implements PreferredSizeWidget {
           onTap: onSearchTap,
           textAlign: TextAlign.right, // RTL
           textDirection: TextDirection.rtl,
-          decoration: const InputDecoration(
+          style: TextStyle(
+            color: AppColors.textMain,
+            fontSize: 14.sp(context),
+            ////fontFamily: 'Tajawal',
+          ),
+          decoration: InputDecoration(
             hintText: AppStrings.searchHint,
             hintStyle: TextStyle(
               color: AppColors.textPlaceholder,
-              fontSize: 14,
+              fontSize: 14.sp(context),
               ////fontFamily: 'Tajawal',
             ),
-            prefixIcon: Icon(Icons.search, color: AppColors.textPlaceholder),
+            prefixIcon: Icon(Icons.search, color: AppColors.textPlaceholder, size: 20.sp(context)),
             border: InputBorder.none,
             contentPadding: EdgeInsets.symmetric(
-              horizontal: AppSizes.p16,
-              vertical: 12,
+              horizontal: AppSizes.p16.w(context),
+              vertical: 12.h(context),
             ),
-          ),
-          style: const TextStyle(
-            color: AppColors.textMain,
-            fontSize: 14,
-            ////fontFamily: 'Tajawal',
           ),
         ),
       ),

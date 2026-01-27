@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/refi_skeleton.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class LibrarySkeleton extends StatelessWidget {
   const LibrarySkeleton({super.key});
@@ -10,46 +11,46 @@ class LibrarySkeleton extends StatelessWidget {
       children: [
         // Tabs Skeleton
         Container(
-          height: 50,
-          margin: const EdgeInsets.symmetric(vertical: 16),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          height: 50.h(context),
+          margin: EdgeInsets.symmetric(vertical: 16.h(context)),
+          padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
           child: Row(
-            children: const [
-              RefiSkeleton(width: 80, height: 40, radius: 24),
-              SizedBox(width: 12),
-              RefiSkeleton(width: 80, height: 40, radius: 24),
-              SizedBox(width: 12),
-              RefiSkeleton(width: 80, height: 40, radius: 24),
+            children: [
+              RefiSkeleton(width: 80.w(context), height: 40.h(context), radius: 24.r(context)),
+              SizedBox(width: 12.w(context)),
+              RefiSkeleton(width: 80.w(context), height: 40.h(context), radius: 24.r(context)),
+              SizedBox(width: 12.w(context)),
+              RefiSkeleton(width: 80.w(context), height: 40.h(context), radius: 24.r(context)),
             ],
           ),
         ),
 
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w(context)),
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               childAspectRatio: 0.65,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 24,
+              crossAxisSpacing: 16.w(context),
+              mainAxisSpacing: 24.h(context),
             ),
             itemCount: 6,
             itemBuilder: (context, index) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Expanded(
                     child: RefiSkeleton(
                       width: double.infinity,
                       height: double.infinity,
-                      radius: 24,
+                      radius: 24.r(context),
                     ),
                   ),
-                  SizedBox(height: 12),
-                  RefiSkeleton(width: 100, height: 16),
-                  SizedBox(height: 8),
-                  RefiSkeleton(width: 60, height: 12),
+                  SizedBox(height: 12.h(context)),
+                  RefiSkeleton(width: 100.w(context), height: 16.h(context)),
+                  SizedBox(height: 8.h(context)),
+                  RefiSkeleton(width: 60.w(context), height: 12.h(context)),
                 ],
               );
             },

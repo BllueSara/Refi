@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class StatCard extends StatelessWidget {
   final String label;
@@ -18,17 +19,17 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w(context)),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(
               alpha: 0.04,
             ), // Replaced withOpacity for compatibility if needed
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            blurRadius: 16.r(context),
+            offset: Offset(0, 4.h(context)),
           ),
         ],
         border: Border.all(color: AppColors.inputBorder),
@@ -39,23 +40,23 @@ class StatCard extends StatelessWidget {
           Icon(
             icon,
             color: AppColors.primaryBlue, // #1E3A8A
-            size: 28,
+            size: 28.sp(context),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h(context)),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 20,
+              fontSize: 20.sp(context),
               color: AppColors.primaryBlue,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h(context)),
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: 12.sp(context),
               color: AppColors.textSub,
             ),
           ),

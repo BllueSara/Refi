@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/dimensions.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../../../features/auth/presentation/screens/forgot_password_screen.dart';
@@ -44,7 +45,7 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
           AppStrings.profileTitle,
           style: Theme.of(
             context,
-          ).textTheme.headlineMedium?.copyWith(fontSize: 20),
+          ).textTheme.headlineMedium?.copyWith(fontSize: 20.sp(context)),
         ),
         automaticallyImplyLeading: false,
       ),
@@ -59,11 +60,13 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
+                  Text(state.message,
+                      style: TextStyle(fontSize: 14.sp(context))),
+                  SizedBox(height: 16.h(context)),
                   ElevatedButton(
                     onPressed: () => context.read<ProfileCubit>().loadProfile(),
-                    child: const Text('Retry'),
+                    child: Text('Retry',
+                        style: TextStyle(fontSize: 14.sp(context))),
                   ),
                 ],
               ),
@@ -71,7 +74,7 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
           } else if (state is ProfileLoaded) {
             final profile = state.profile;
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: EdgeInsets.all(AppDimensions.paddingL.w(context)),
               child: Column(
                 children: [
                   // Editable Identity
@@ -103,14 +106,14 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                       );
                     },
                   ),
-                  const SizedBox(height: AppDimensions.paddingXL),
+                  SizedBox(height: AppDimensions.paddingXL.h(context)),
 
                   // Stats Section
                   _StatsSection(
                     finishedBooks: profile.finishedBooksCount,
                     totalQuotes: profile.totalQuotesCount,
                   ),
-                  const SizedBox(height: AppDimensions.paddingL),
+                  SizedBox(height: AppDimensions.paddingL.h(context)),
 
                   // Settings Section
                   ProfileOptionTile(
@@ -127,7 +130,7 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                       // Open Annual Goal Edit
                     },
                   ),
-                  const SizedBox(height: AppDimensions.paddingM),
+                  SizedBox(height: AppDimensions.paddingM.h(context)),
                   ProfileOptionTile(
                     title: AppStrings.changePassword,
                     showArrow: true,
@@ -144,7 +147,7 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                     },
                   ),
 
-                  const SizedBox(height: AppDimensions.paddingXL),
+                  SizedBox(height: AppDimensions.paddingXL.h(context)),
 
                   // Logout Section
                   SizedBox(
@@ -163,14 +166,14 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        padding: EdgeInsets.symmetric(vertical: 18.h(context)),
                         side: const BorderSide(
                           color: AppColors.errorRed,
                           // width: 1.5,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppDimensions.radiusS),
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusS.r(context)),
                         ),
                       ),
                       child: Text(
@@ -178,17 +181,17 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: AppColors.errorRed,
-                              fontSize: 16,
+                              fontSize: 16.sp(context),
                             ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.paddingL),
+                  SizedBox(height: AppDimensions.paddingL.h(context)),
                   Text(
                     "${AppStrings.appVersion} 1.0.0",
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSub,
-                          fontSize: 12,
+                          fontSize: 12.sp(context),
                         ),
                   ),
                 ],
@@ -215,15 +218,15 @@ class _StatsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: EdgeInsets.all(AppDimensions.paddingL.w(context)),
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color ?? Colors.white,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusM.r(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 10.r(context),
+            offset: Offset(0, 4.h(context)),
           ),
         ],
       ),
@@ -237,7 +240,7 @@ class _StatsSection extends StatelessWidget {
           ),
           Container(
             width: 1,
-            height: 40,
+            height: 40.h(context),
             color: AppColors.inputBorder,
           ),
           Expanded(
@@ -270,15 +273,15 @@ class _StatItem extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.primaryBlue,
-                fontSize: 28,
+                fontSize: 28.sp(context),
               ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h(context)),
         Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSub,
-                fontSize: 14,
+                fontSize: 14.sp(context),
               ),
           textAlign: TextAlign.center,
         ),
@@ -350,8 +353,8 @@ class _EditableIdentityState extends State<_EditableIdentity> {
           child: Stack(
             children: [
               Container(
-                width: 100,
-                height: 100,
+                width: 100.w(context),
+                height: 100.h(context),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color:
@@ -361,13 +364,14 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                     BoxShadow(
                       color:
                           AppColors.primaryBlue.withOpacity(0.3), // Blue Glow
-                      blurRadius: 15,
-                      offset: const Offset(0, 4),
+                      blurRadius: 15.r(context),
+                      offset: Offset(0, 4.h(context)),
                     ),
                   ],
                 ),
                 child: widget.avatarUrl == null
-                    ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                    ? Icon(Icons.person,
+                        size: 50.sp(context), color: Colors.grey)
                     : widget.avatarUrl!.contains('/svg') ||
                             widget.avatarUrl!.endsWith('.svg')
                         ? ClipOval(
@@ -376,8 +380,8 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                               fit: BoxFit.cover,
                               placeholderBuilder: (context) => Container(
                                 color: AppColors.inputBorder,
-                                child: const Icon(Icons.person,
-                                    size: 50, color: Colors.grey),
+                                child: Icon(Icons.person,
+                                    size: 50.sp(context), color: Colors.grey),
                               ),
                             ),
                           )
@@ -388,8 +392,8 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
                                 color: AppColors.inputBorder,
-                                child: const Icon(Icons.person,
-                                    size: 50, color: Colors.grey),
+                                child: Icon(Icons.person,
+                                    size: 50.sp(context), color: Colors.grey),
                               ),
                             ),
                           ),
@@ -399,7 +403,7 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                 left:
                     0, // Using Left since RTL might be active or standard visual
                 child: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: EdgeInsets.all(6.w(context)),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -407,14 +411,14 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        blurRadius: 4.r(context),
+                        offset: Offset(0, 2.h(context)),
                       ),
                     ],
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.edit,
-                    size: 14,
+                    size: 14.sp(context),
                     color: AppColors.primaryBlue,
                   ),
                 ),
@@ -422,7 +426,7 @@ class _EditableIdentityState extends State<_EditableIdentity> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h(context)),
 
         // Editable Name
         Row(
@@ -434,9 +438,9 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                   controller: _nameController,
                   focusNode: _focusNode,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     //fontFamily: 'Tajawal',
-                    fontSize: 22,
+                    fontSize: 22.sp(context),
                     fontWeight: FontWeight.bold,
                     color: AppColors.textMain,
                   ),
@@ -453,7 +457,7 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w(context)),
             if (!_isEditing)
               GestureDetector(
                 onTap: () {
@@ -461,14 +465,14 @@ class _EditableIdentityState extends State<_EditableIdentity> {
                   _focusNode.requestFocus();
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.w(context)),
                   decoration: BoxDecoration(
                     color: AppColors.inputBorder.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.edit_outlined,
-                    size: 16,
+                    size: 16.sp(context),
                     color: AppColors.primaryBlue, // "Refi Blue" pencil
                   ),
                 ),
@@ -476,14 +480,14 @@ class _EditableIdentityState extends State<_EditableIdentity> {
           ],
         ),
 
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h(context)),
 
         // Read-only Email
         Text(
           widget.email,
-          style: const TextStyle(
+          style: TextStyle(
             //fontFamily: 'Tajawal',
-            fontSize: 14,
+            fontSize: 14.sp(context),
             color: AppColors.textSub,
           ),
         ),

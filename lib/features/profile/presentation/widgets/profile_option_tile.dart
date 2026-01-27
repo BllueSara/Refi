@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/dimensions.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class ProfileOptionTile extends StatelessWidget {
   final String title;
@@ -20,9 +21,9 @@ class ProfileOptionTile extends StatelessWidget {
     return GestureDetector(
       onTap: showArrow ? onTap : null,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: 20,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingL.w(context),
+          vertical: 20.h(context),
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).cardTheme.color ?? Colors.white,
@@ -30,12 +31,12 @@ class ProfileOptionTile extends StatelessWidget {
               Theme.of(context).cardTheme.shape is RoundedRectangleBorder
               ? (Theme.of(context).cardTheme.shape as RoundedRectangleBorder)
                     .borderRadius
-              : BorderRadius.circular(AppDimensions.radiusM),
+              : BorderRadius.circular(AppDimensions.radiusM.r(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              blurRadius: 10.r(context),
+              offset: Offset(0, 4.h(context)),
             ),
           ],
         ),
@@ -48,18 +49,18 @@ class ProfileOptionTile extends StatelessWidget {
                   context,
                 ).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 16.sp(context),
                 ),
               ),
             ),
             if (trailing != null) ...[
               trailing!,
-              if (showArrow) const SizedBox(width: 12),
+              if (showArrow) SizedBox(width: 12.w(context)),
             ],
             if (showArrow)
               Icon(
                 Icons.arrow_forward_ios,
-                size: 14,
+                size: 14.sp(context),
                 color: Theme.of(context).colorScheme.onSurface.withValues(
                   alpha: 0.4,
                 ),

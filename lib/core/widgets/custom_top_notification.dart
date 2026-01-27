@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
+import '../utils/responsive_utils.dart';
 
 class CustomTopNotification extends StatefulWidget {
   final String message;
@@ -74,9 +75,9 @@ class _CustomTopNotificationState extends State<CustomTopNotification>
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: MediaQuery.of(context).padding.top + 16,
-      left: 16,
-      right: 16,
+      top: MediaQuery.of(context).padding.top + 16.h(context),
+      left: 16.w(context),
+      right: 16.w(context),
       child: Material(
         color: Colors.transparent,
         child: SlideTransition(
@@ -84,17 +85,20 @@ class _CustomTopNotificationState extends State<CustomTopNotification>
           child: FadeTransition(
             opacity: _fadeAnimation,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(
+                horizontal: 16.w(context),
+                vertical: 12.h(context),
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(24.r(context)),
                 border: Border.all(
                     color: AppColors.primaryBlue.withOpacity(0.3), width: 1),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primaryBlue.withOpacity(0.15),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+                    blurRadius: 20.r(context),
+                    offset: Offset(0, 10.h(context)),
                   ),
                 ],
               ),
@@ -109,14 +113,14 @@ class _CustomTopNotificationState extends State<CustomTopNotification>
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
-                      minimumSize: const Size(50, 30),
+                      minimumSize: Size(50.w(context), 30.h(context)),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: Text(
                       widget.actionLabel,
                       style: GoogleFonts.tajawal(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 14.sp(context),
                         color: AppColors.primaryBlue,
                       ),
                     ),
@@ -135,16 +139,16 @@ class _CustomTopNotificationState extends State<CustomTopNotification>
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.tajawal(
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 14.sp(context),
                               color: AppColors.textMain,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(
+                        SizedBox(width: 8.w(context)),
+                        Icon(
                           Icons.info_rounded,
                           color: AppColors.primaryBlue,
-                          size: 20,
+                          size: 20.sp(context),
                         ),
                       ],
                     ),

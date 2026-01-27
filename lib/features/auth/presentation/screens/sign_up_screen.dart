@@ -5,6 +5,7 @@ import '../../../../core/constants/app_svgs.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/widgets/main_navigation_screen.dart';
 import '../cubit/auth_cubit.dart';
 import '../widgets/auth_header.dart';
@@ -114,7 +115,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.p24),
+              padding: EdgeInsets.all(AppSizes.p24.w(context)),
               child: Column(
                 children: [
                   // Back Button
@@ -124,6 +125,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       icon: Icon(
                         Icons.arrow_back,
                         color: Theme.of(context).iconTheme.color,
+                        size: 24.sp(context),
                       ),
                       onPressed: () => Navigator.pushReplacement(
                         context,
@@ -133,7 +135,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h(context)),
                   // Header
                   const AuthHeader(
                     title: AppStrings.joinRefi,
@@ -147,56 +149,56 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       RefiAuthField(
                         controller: _nameController,
                         hintText: AppStrings.fullNameHint,
-                        suffixIcon: const Icon(Icons.person),
+                        suffixIcon: Icon(Icons.person, size: 20.sp(context)),
                         errorText: _nameError,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h(context)),
 
                       // Email
                       RefiAuthField(
                         controller: _emailController,
                         hintText: AppStrings.emailHint,
                         keyboardType: TextInputType.emailAddress,
-                        suffixIcon: const Icon(Icons.email_outlined),
+                        suffixIcon: Icon(Icons.email_outlined, size: 20.sp(context)),
                         errorText: _emailError,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h(context)),
 
                       // Password
                       RefiAuthField(
                         controller: _passwordController,
                         hintText: AppStrings.passwordDots,
                         isPassword: true,
-                        suffixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: Icon(Icons.lock_outline, size: 20.sp(context)),
                         errorText: _passwordError,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h(context)),
 
                       // Confirm Password
                       RefiAuthField(
                         controller: _confirmPasswordController,
                         hintText: AppStrings.passwordDots,
                         isPassword: true,
-                        suffixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: Icon(Icons.lock_outline, size: 20.sp(context)),
                         errorText: _confirmPasswordError,
                       ),
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h(context)),
 
                       // Create Account Button
                       Container(
                         width: double.infinity,
-                        height: 56,
+                        height: 56.h(context),
                         decoration: BoxDecoration(
                           gradient: AppColors.refiMeshGradient,
                           borderRadius: BorderRadius.circular(
-                            AppSizes.buttonRadius,
+                            AppSizes.buttonRadius.r(context),
                           ),
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.primaryBlue.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              blurRadius: 10.r(context),
+                              offset: Offset(0, 4.h(context)),
                             ),
                           ],
                         ),
@@ -207,18 +209,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
-                                AppSizes.buttonRadius,
+                                AppSizes.buttonRadius.r(context),
                               ),
                             ),
                           ),
                           child: state is AuthLoading
-                              ? const CircularProgressIndicator(
+                              ? CircularProgressIndicator(
                                   color: Colors.white,
+                                  strokeWidth: 3.w(context),
                                 )
-                              : const Text(
+                              : Text(
                                   AppStrings.createAccount,
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 16.sp(context),
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -228,7 +231,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h(context)),
 
                   // Social + Back to login
                   Column(
@@ -238,16 +241,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         children: [
                           Expanded(child: Divider(color: Colors.grey[200])),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
                             child: Text(
                               AppStrings.orSocialSignUp,
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: 12.sp(context),
+                              ),
                             ),
                           ),
                           Expanded(child: Divider(color: Colors.grey[200])),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h(context)),
                       Row(
                         children: [
                           Expanded(
@@ -255,8 +260,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               label: AppStrings.google,
                               icon: SvgPicture.string(
                                 AppSvgs.googleLogo,
-                                width: 24,
-                                height: 24,
+                                width: 24.w(context),
+                                height: 24.h(context),
                               ),
                               onTap: () {
                                 context.read<AuthCubit>().signInWithGoogle();
@@ -266,7 +271,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h(context)),
 
                       // Back to Login
                       Row(
@@ -274,7 +279,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         children: [
                           Text(
                             AppStrings.haveAccount,
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 14.sp(context),
+                            ),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -285,11 +292,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                               );
                             },
-                            child: const Text(
+                            child: Text(
                               AppStrings.loginLink,
                               style: TextStyle(
                                 color: AppColors.primaryBlue,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 14.sp(context),
                               ),
                             ),
                           ),

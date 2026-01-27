@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/refi_skeleton.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class HomeSkeleton extends StatelessWidget {
   const HomeSkeleton({super.key});
@@ -7,7 +8,7 @@ class HomeSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: 24.w(context), vertical: 16.h(context)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -18,56 +19,56 @@ class HomeSkeleton extends StatelessWidget {
           // Hero Quote Card Skeleton (Matches HomeHeroQuote)
           Container(
             width: double.infinity,
-            height: 220, // Approx height of quote card
+            height: 220.h(context), // Approx height of quote card
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24.r(context)),
               color: Colors.white,
             ),
-            child: const RefiSkeleton(
+            child: RefiSkeleton(
               width: double.infinity,
-              height: 220,
-              radius: 24,
+              height: 220.h(context),
+              radius: 24.r(context),
             ),
           ),
 
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h(context)),
 
           // Stats Label
-          const RefiSkeleton(width: 80, height: 24),
-          const SizedBox(height: 16),
+          RefiSkeleton(width: 80.w(context), height: 24.h(context)),
+          SizedBox(height: 16.h(context)),
 
           // Stats Grid (Matches StatCard layout)
           Row(
             children: [
-              Expanded(child: _buildStatCardSkeleton()),
-              const SizedBox(width: 12),
-              Expanded(child: _buildStatCardSkeleton()),
-              const SizedBox(width: 12),
-              Expanded(child: _buildStatCardSkeleton()),
+              Expanded(child: _buildStatCardSkeleton(context)),
+              SizedBox(width: 12.w(context)),
+              Expanded(child: _buildStatCardSkeleton(context)),
+              SizedBox(width: 12.w(context)),
+              Expanded(child: _buildStatCardSkeleton(context)),
             ],
           ),
 
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h(context)),
 
           // Currently Reading Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              RefiSkeleton(width: 100, height: 24),
-              RefiSkeleton(width: 60, height: 16),
+            children: [
+              RefiSkeleton(width: 100.w(context), height: 24.h(context)),
+              RefiSkeleton(width: 60.w(context), height: 16.h(context)),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h(context)),
 
           // Reading List (Matches BookCard)
           SizedBox(
-            height: 140,
+            height: 140.h(context),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(width: 16),
+              separatorBuilder: (_, __) => SizedBox(width: 16.w(context)),
               itemBuilder: (context, index) {
-                return _buildBookCardSkeleton();
+                return _buildBookCardSkeleton(context);
               },
             ),
           ),
@@ -76,29 +77,29 @@ class HomeSkeleton extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCardSkeleton() {
+  Widget _buildStatCardSkeleton(BuildContext context) {
     return Container(
-      height: 100, // Approx stat card height
+      height: 100.h(context), // Approx stat card height
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r(context)),
         // color: Colors.white, // Handled by shimmer
       ),
-      child: const RefiSkeleton(
+      child: RefiSkeleton(
         width: double.infinity,
-        height: 100,
-        radius: 16,
+        height: 100.h(context),
+        radius: 16.r(context),
       ),
     );
   }
 
-  Widget _buildBookCardSkeleton() {
+  Widget _buildBookCardSkeleton(BuildContext context) {
     return SizedBox(
-      width: 100, // Matches BookCard width typically
+      width: 100.w(context), // Matches BookCard width typically
       child: Column(
-        children: const [
-          RefiSkeleton(width: 100, height: 110, radius: 16), // Cover
-          SizedBox(height: 8),
-          RefiSkeleton(width: 80, height: 12), // Title
+        children: [
+          RefiSkeleton(width: 100.w(context), height: 110.h(context), radius: 16.r(context)), // Cover
+          SizedBox(height: 8.h(context)),
+          RefiSkeleton(width: 80.w(context), height: 12.h(context)), // Title
         ],
       ),
     );

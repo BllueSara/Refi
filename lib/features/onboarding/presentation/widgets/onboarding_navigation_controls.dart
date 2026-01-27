@@ -3,6 +3,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
+import '../../../../core/utils/responsive_utils.dart';
 
 class OnboardingNavigationControls extends StatelessWidget {
   final PageController pageController;
@@ -19,39 +20,39 @@ class OnboardingNavigationControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSizes.p24),
+      padding: EdgeInsets.all(AppSizes.p24.w(context)),
       child: Column(
         children: [
           // Dots
           SmoothPageIndicator(
             controller: pageController,
             count: 3,
-            effect: const ExpandingDotsEffect(
+            effect: ExpandingDotsEffect(
               activeDotColor: AppColors.primaryBlue,
               dotColor: AppColors.inactiveDot,
-              dotHeight: 8,
-              dotWidth: 8,
+              dotHeight: 8.h(context),
+              dotWidth: 8.w(context),
               expansionFactor: 4,
-              spacing: 8,
+              spacing: 8.w(context),
             ),
           ),
-          const SizedBox(height: AppSizes.p32),
+          SizedBox(height: AppSizes.p32.h(context)),
 
           // Dynamic Button
           AnimatedSlide(
             duration: const Duration(milliseconds: 450),
             curve: Curves.easeOutCubic,
-            offset: const Offset(0, 0.04),
+            offset: Offset(0, 0.04.h(context)),
             child: AnimatedOpacity(
               duration: const Duration(milliseconds: 450),
               curve: Curves.easeOutCubic,
               opacity: 1,
               child: Container(
                 width: double.infinity,
-                height: 56,
+                height: 56.h(context),
                 decoration: BoxDecoration(
                   gradient: AppColors.refiMeshGradient,
-                  borderRadius: BorderRadius.circular(AppSizes.buttonRadius),
+                  borderRadius: BorderRadius.circular(AppSizes.buttonRadius.r(context)),
                 ),
                 child: ElevatedButton(
                   onPressed: onNextTap,
@@ -60,7 +61,7 @@ class OnboardingNavigationControls extends StatelessWidget {
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
-                        AppSizes.buttonRadius,
+                        AppSizes.buttonRadius.r(context),
                       ),
                     ),
                   ),
@@ -68,7 +69,7 @@ class OnboardingNavigationControls extends StatelessWidget {
                     duration: const Duration(milliseconds: 250),
                     transitionBuilder: (child, animation) {
                       final offsetAnimation = Tween<Offset>(
-                        begin: const Offset(0.08, 0),
+                        begin: Offset(0.08.w(context), 0),
                         end: Offset.zero,
                       ).animate(
                         CurvedAnimation(
@@ -89,29 +90,30 @@ class OnboardingNavigationControls extends StatelessWidget {
                         ? Row(
                             key: const ValueKey('next'),
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Text(
                                 AppStrings.next,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.sp(context),
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.white,
                                   ////fontFamily: 'Tajawal',
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              SizedBox(width: 8.w(context)),
                               Icon(
                                 Icons
                                     .arrow_forward, // Mirrors to point Left in RTL (Next)
                                 color: AppColors.white,
+                                size: 20.sp(context),
                               ),
                             ],
                           )
-                        : const Text(
-                            key: ValueKey('start'),
+                        : Text(
+                            key: const ValueKey('start'),
                             AppStrings.startJourney,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.sp(context),
                               fontWeight: FontWeight.bold,
                               color: AppColors.white,
                               ////fontFamily: 'Tajawal',

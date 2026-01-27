@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/sizes.dart';
+import '../utils/responsive_utils.dart';
 
 class RefiBookCard extends StatelessWidget {
   final String title;
@@ -25,17 +26,17 @@ class RefiBookCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius.r(context)),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryBlue.withOpacity(0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+            blurRadius: 24.r(context),
+            offset: Offset(0, 12.h(context)),
           ),
           BoxShadow(
             color: Colors.black.withOpacity(0.01),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            blurRadius: 6.r(context),
+            offset: Offset(0, 2.h(context)),
           ),
         ],
       ),
@@ -43,20 +44,21 @@ class RefiBookCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+          borderRadius: BorderRadius.circular(AppSizes.cardRadius.r(context)),
           child: Padding(
-            padding: const EdgeInsets.all(AppSizes.p12),
+            padding: EdgeInsets.all(AppSizes.p12.w(context)),
             child: Row(
               children: [
                 // Book Cover
                 Hero(
                   tag: heroTag ?? title,
                   child: Container(
-                    width: 80,
-                    height: 120,
+                    width: 80.w(context),
+                    height: 120.h(context),
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(AppSizes.p12),
+                      borderRadius:
+                          BorderRadius.circular(AppSizes.p12.r(context)),
                       image: coverUrl != null
                           ? DecorationImage(
                               image: NetworkImage(coverUrl!),
@@ -66,17 +68,18 @@ class RefiBookCard extends StatelessWidget {
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                          blurRadius: 8.r(context),
+                          offset: Offset(0, 4.h(context)),
                         ),
                       ],
                     ),
                     child: coverUrl == null
-                        ? Icon(Icons.book, color: Colors.grey[400], size: 40)
+                        ? Icon(Icons.book,
+                            color: Colors.grey[400], size: 40.sp(context))
                         : null,
                   ),
                 ),
-                const SizedBox(width: AppSizes.p16),
+                SizedBox(width: AppSizes.p16.w(context)),
                 // Content
                 Expanded(
                   child: Column(
@@ -84,44 +87,44 @@ class RefiBookCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16.sp(context),
+                                ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: AppSizes.p4),
+                      SizedBox(height: AppSizes.p4.h(context)),
                       Text(
                         author,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSub,
-                          fontSize: 14,
-                        ),
+                              color: AppColors.textSub,
+                              fontSize: 14.sp(context),
+                            ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: AppSizes.p16),
+                      SizedBox(height: AppSizes.p16.h(context)),
                       // Progress Bar
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(4.r(context)),
                         child: LinearProgressIndicator(
                           value: progress,
                           backgroundColor: AppColors.inputBorder,
                           valueColor: const AlwaysStoppedAnimation<Color>(
                             AppColors.primaryBlue,
                           ),
-                          minHeight: 6,
+                          minHeight: 6.h(context),
                         ),
                       ),
-                      const SizedBox(height: AppSizes.p4),
+                      SizedBox(height: AppSizes.p4.h(context)),
                       Text(
                         '${(progress * 100).toInt()}% مكتمل',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppColors.secondaryBlue,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: AppColors.secondaryBlue,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ],
                   ),

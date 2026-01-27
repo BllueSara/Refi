@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../cubit/quote_cubit.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../widgets/quote_card.dart';
 import '../widgets/quotes_empty_view.dart';
 import '../widgets/quotes_by_book_view.dart';
+import '../widgets/quotes_skeleton.dart';
 
 class QuotesPage extends StatefulWidget {
   const QuotesPage({super.key});
@@ -15,8 +17,10 @@ class QuotesPage extends StatefulWidget {
   State<QuotesPage> createState() => _QuotesPageState();
 }
 
-class _QuotesPageState extends State<QuotesPage> {
+class _QuotesPageState extends State<QuotesPage>
+    with SingleTickerProviderStateMixin {
   String _activeTab = AppStrings.tabAll;
+  late AnimationController _tabAnimationController;
 
   final List<String> _tabs = [
     AppStrings.tabAll,
@@ -27,8 +31,18 @@ class _QuotesPageState extends State<QuotesPage> {
   @override
   void initState() {
     super.initState();
+    _tabAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
     // Load quotes when page opens
     context.read<QuoteCubit>().loadUserQuotes();
+  }
+
+  @override
+  void dispose() {
+    _tabAnimationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -40,56 +54,170 @@ class _QuotesPageState extends State<QuotesPage> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.search, color: AppColors.textMain, size: 28),
-          onPressed: () {},
+          icon: Icon(Icons.search,
+              color: AppColors.textMain, size: 28.sp(context)),
+          onPressed: () {
+            // TODO: Implement search functionality
+          },
         ),
-        title: const Text(
-          AppStrings.quotesVaultTitle,
-          style: TextStyle(
-            //fontFamily: 'Tajawal',
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: AppColors.textMain,
-          ),
+        title: BlocBuilder<QuoteCubit, QuoteState>(
+          builder: (context, state) {
+            int quoteCount = 0;
+            if (state is QuotesLoaded) {
+              quoteCount = state.quotes.length;
+            }
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppStrings.quotesVaultTitle,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20.sp(context),
+                    color: AppColors.textMain,
+                  ),
+                ),
+                if (quoteCount > 0) ...[
+                  SizedBox(width: 8.w(context)),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w(context),
+                      vertical: 4.h(context),
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.refiMeshGradient,
+                      borderRadius: BorderRadius.circular(12.r(context)),
+                    ),
+                    child: Text(
+                      '$quoteCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.sp(context),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
         ),
-        actions: const [SizedBox(width: 48)],
+        actions: [SizedBox(width: 48.w(context))],
       ),
       body: Column(
         children: [
           // Filter Tabs
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            child: Row(
-              children: _tabs.map((tab) {
-                final isActive = _activeTab == tab;
-                return Padding(
-                  padding: const EdgeInsets.only(left: 12.0),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _activeTab = tab),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: isActive ? AppColors.refiMeshGradient : null,
-                        color: isActive ? null : AppColors.inputBorder,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Text(
-                        tab,
-                        style: TextStyle(
-                          //fontFamily: 'Tajawal',
-                          fontWeight: FontWeight.bold,
-                          color: isActive ? Colors.white : AppColors.textSub,
+          BlocBuilder<QuoteCubit, QuoteState>(
+            builder: (context, state) {
+              int allCount = 0;
+              int favoritesCount = 0;
+              int booksCount = 0;
+
+              if (state is QuotesLoaded) {
+                allCount = state.quotes.length;
+                favoritesCount = state.quotes.where((q) => q.isFavorite).length;
+                booksCount = state.quotes
+                    .where((q) => q.bookId != null || q.bookTitle != null)
+                    .length;
+              }
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(
+                    vertical: 16.h(context), horizontal: 16.w(context)),
+                child: Row(
+                  children: _tabs.map((tab) {
+                    final isActive = _activeTab == tab;
+
+                    int count = 0;
+                    if (tab == AppStrings.tabAll) {
+                      count = allCount;
+                    } else if (tab == AppStrings.filterFavorites) {
+                      count = favoritesCount;
+                    } else if (tab == AppStrings.filterByBook) {
+                      count = booksCount;
+                    }
+
+                    return Padding(
+                      padding: EdgeInsets.only(left: 12.0.w(context)),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 24.w(context),
+                          vertical: 10.h(context),
+                        ),
+                        decoration: BoxDecoration(
+                          gradient:
+                              isActive ? AppColors.refiMeshGradient : null,
+                          color: isActive ? null : AppColors.inputBorder,
+                          borderRadius: BorderRadius.circular(24.r(context)),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color:
+                                        AppColors.primaryBlue.withOpacity(0.3),
+                                    blurRadius: 8.r(context),
+                                    offset: Offset(0, 4.h(context)),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _activeTab = tab;
+                            });
+                            _tabAnimationController.forward(from: 0.0);
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                tab,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: isActive
+                                      ? Colors.white
+                                      : AppColors.textSub,
+                                  fontSize: 14.sp(context),
+                                ),
+                              ),
+                              if (count > 0) ...[
+                                SizedBox(width: 6.w(context)),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 6.w(context),
+                                    vertical: 2.h(context),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? Colors.white.withOpacity(0.3)
+                                        : AppColors.textSub.withOpacity(0.2),
+                                    borderRadius:
+                                        BorderRadius.circular(10.r(context)),
+                                  ),
+                                  child: Text(
+                                    '$count',
+                                    style: TextStyle(
+                                      color: isActive
+                                          ? Colors.white
+                                          : AppColors.textSub,
+                                      fontSize: 11.sp(context),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
           ),
 
           // Quote List
@@ -97,36 +225,38 @@ class _QuotesPageState extends State<QuotesPage> {
             child: BlocBuilder<QuoteCubit, QuoteState>(
               builder: (context, state) {
                 if (state is QuoteLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const QuotesSkeleton();
                 }
 
                 if (state is QuoteError) {
                   return Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: EdgeInsets.all(24.0.w(context)),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.error_outline,
-                            size: 64,
+                            size: 64.sp(context),
                             color: AppColors.textPlaceholder,
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h(context)),
                           Text(
                             state.message,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               //fontFamily: 'Tajawal',
                               color: AppColors.textSub,
+                              fontSize: 14.sp(context),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h(context)),
                           ElevatedButton(
                             onPressed: () {
                               context.read<QuoteCubit>().loadUserQuotes();
                             },
-                            child: const Text('إعادة المحاولة'),
+                            child: Text('إعادة المحاولة',
+                                style: TextStyle(fontSize: 14.sp(context))),
                           ),
                         ],
                       ),
@@ -152,26 +282,36 @@ class _QuotesPageState extends State<QuotesPage> {
                     } else {
                       // Empty state for "By Book" if no books found
                       return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.auto_stories_outlined,
-                              size: 80,
-                              color: AppColors.textPlaceholder.withOpacity(0.3),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'لم تضف أي اقتباسات لهذا الكتاب بعد..\nابدأ بالمسح الآن!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                //fontFamily: 'Tajawal',
-                                fontSize: 16,
-                                color: AppColors.textMain,
-                                height: 1.5,
+                        child: Padding(
+                          padding: EdgeInsets.all(24.0.w(context)),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(24.w(context)),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryBlue.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.auto_stories_outlined,
+                                  size: 64.sp(context),
+                                  color: AppColors.primaryBlue.withOpacity(0.7),
+                                ),
                               ),
-                            ),
-                          ],
+                              SizedBox(height: 24.h(context)),
+                              Text(
+                                'لم تضف أي اقتباسات لهذا الكتاب بعد..\nابدأ بالمسح الآن!',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16.sp(context),
+                                  color: AppColors.textMain,
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -180,26 +320,51 @@ class _QuotesPageState extends State<QuotesPage> {
                         quotes.where((q) => q.isFavorite).toList();
                     if (displayedQuotes.isEmpty) {
                       return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.favorite_border,
-                              size: 80,
-                              color: AppColors.textPlaceholder.withOpacity(0.3),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'لم تقم بإضافة أي اقتباسات للمفضلة بعد',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                //fontFamily: 'Tajawal',
-                                fontSize: 16,
-                                color: AppColors.textMain,
-                                height: 1.5,
+                        child: Padding(
+                          padding: EdgeInsets.all(24.0.w(context)),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(24.w(context)),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppColors.primaryBlue.withOpacity(0.1),
+                                      AppColors.secondaryBlue.withOpacity(0.1),
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.favorite_border,
+                                  size: 64.sp(context),
+                                  color: AppColors.primaryBlue.withOpacity(0.7),
+                                ),
                               ),
-                            ),
-                          ],
+                              SizedBox(height: 24.h(context)),
+                              Text(
+                                'لم تقم بإضافة أي اقتباسات للمفضلة بعد',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16.sp(context),
+                                  color: AppColors.textMain,
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 8.h(context)),
+                              Text(
+                                'اضغط على أيقونة القلب لحفظ اقتباساتك المفضلة',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13.sp(context),
+                                  color: AppColors.textSub,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -209,17 +374,20 @@ class _QuotesPageState extends State<QuotesPage> {
                     onRefresh: () async {
                       context.read<QuoteCubit>().loadUserQuotes();
                     },
+                    color: AppColors.primaryBlue,
                     child: ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      // Optimization: set itemExtent if height is fixed, prevents layout jumps.
-                      // However cards have variable height due to content, so we cannot use itemExtent.
-                      // We rely on standard ListView builder optimization.
+                      padding: EdgeInsets.all(16.w(context)),
                       addAutomaticKeepAlives: true,
                       itemCount: displayedQuotes.length,
-                      separatorBuilder: (c, i) => const SizedBox(height: 16),
+                      separatorBuilder: (c, i) =>
+                          SizedBox(height: 16.h(context)),
                       itemBuilder: (context, index) {
                         final quote = displayedQuotes[index];
-                        return QuoteCard(quote: quote);
+                        return AnimatedOpacity(
+                          opacity: 1.0,
+                          duration: Duration(milliseconds: 300 + (index * 50)),
+                          child: QuoteCard(quote: quote),
+                        );
                       },
                     ),
                   );
