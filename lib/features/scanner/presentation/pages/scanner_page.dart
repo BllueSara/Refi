@@ -1,11 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_strings.dart';
-import '../../../../core/constants/colors.dart';
-import '../../../quotes/presentation/widgets/quote_review_modal.dart';
-
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import '../../../../core/constants/colors.dart';
+import '../../../quotes/presentation/widgets/quote_review_modal.dart';
 import '../cubit/scanner_cubit.dart';
 
 class ScannerPage extends StatefulWidget {
@@ -17,10 +17,6 @@ class ScannerPage extends StatefulWidget {
 
 class _ScannerPageState extends State<ScannerPage>
     with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-  int _selectedModeIndex = 1; // 0: File, 1: Quote (Default), 2: Translate
-
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
@@ -29,18 +25,7 @@ class _ScannerPageState extends State<ScannerPage>
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(_pulseController);
-
     _initializeCamera();
-
-    // Simulate detecting text after 3 seconds for demo ? Or leave it manual trigger
   }
 
   Future<void> _initializeCamera() async {
@@ -54,25 +39,12 @@ class _ScannerPageState extends State<ScannerPage>
           enableAudio: false,
         );
         await _cameraController!.initialize();
-
-        // Set initial flash mode
-        // The camera plugin will handle errors gracefully if flash is not available
-        try {
-          await _cameraController!.setFlashMode(_currentFlashMode);
-          debugPrint(
-              "Flash mode set to ${_currentFlashMode} on camera initialization");
-        } catch (e) {
-          debugPrint(
-              "Could not set flash mode (flash may not be available): $e");
-        }
-
         if (mounted) {
           setState(() {
             _isCameraInitialized = true;
           });
         }
       } else {
-        debugPrint("No cameras found");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('لم يتم العثور على الكاميرا')),
@@ -82,67 +54,89 @@ class _ScannerPageState extends State<ScannerPage>
     } catch (e) {
       debugPrint("Camera error: $e");
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('خطأ في تشغيل الكاميرا: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في تشغيل الكاميرا: $e')),
+        );
       }
     }
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
     _cameraController?.dispose();
     super.dispose();
   }
 
-  void _onShutterPressed() async {
-    if (_cameraController == null || !_isCameraInitialized || _isProcessing) {
-      return;
-    }
-
-    setState(() => _isProcessing = true);
+  Future<void> _toggleFlash() async {
+    if (_cameraController == null || !_isCameraInitialized) return;
 
     try {
-      // Use the current flash mode setting (user can toggle it)
-      // The camera plugin will handle errors gracefully if flash is not available
-      try {
-        await _cameraController!.setFlashMode(_currentFlashMode);
-        debugPrint("Flash set to ${_currentFlashMode} before capture");
-        // Wait to ensure the flash mode is applied
-        await Future.delayed(const Duration(milliseconds: 300));
-      } catch (e) {
-        debugPrint("Could not set flash mode (flash may not be available): $e");
-      }
+      FlashMode newFlashMode =
+          _currentFlashMode == FlashMode.off ? FlashMode.torch : FlashMode.off;
 
-      // Take picture
+      await _cameraController!.setFlashMode(newFlashMode);
+      setState(() {
+        _currentFlashMode = newFlashMode;
+      });
+    } catch (e) {
+      debugPrint("Could not toggle flash: $e");
+    }
+  }
+
+  Future<void> _onShutterPressed() async {
+    if (_cameraController == null || !_isCameraInitialized || _isProcessing)
+      return;
+
+    // Do not show full blocking loader yet, just block button interaction via _isProcessing check if needed,
+    // but the user wants to see the cropper immediately without "Processing..." overlay.
+    // We will simple capture and await.
+
+    try {
       final XFile image = await _cameraController!.takePicture();
-      debugPrint("Picture taken: ${image.path}");
-
-      // Restore flash mode after capture (workaround for some Android devices)
-      try {
-        await _cameraController!.setFlashMode(_currentFlashMode);
-        debugPrint("Flash restored to ${_currentFlashMode} after capture");
-      } catch (e) {
-        debugPrint("Could not set flash mode after capture: $e");
-      }
-
       if (!mounted) return;
 
-      // Use ScannerCubit to scan
-      context.read<ScannerCubit>().scanImageFromPath(image.path);
+      // Crop the image
+      final croppedFile = await _cropImage(File(image.path));
+
+      if (croppedFile != null) {
+        // Only show processing AFTER crop is confirmed
+        setState(() => _isProcessing = true);
+
+        if (!mounted) return;
+        context.read<ScannerCubit>().scanImageFromPath(croppedFile.path);
+      }
+      // If cancelled (croppedFile == null), we just stay on camera, no processing state needed.
     } catch (e) {
-      debugPrint("Error taking picture: $e");
+      debugPrint("Error capturing/cropping: $e");
       setState(() => _isProcessing = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('خطأ في التصوير: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('حدث خطأ: $e')),
+        );
+      }
     }
+  }
+
+  Future<CroppedFile?> _cropImage(File imageFile) async {
+    return await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      compressQuality: 100, // We handle compression later in service
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'قص النص',
+            toolbarColor: Colors.black,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        IOSUiSettings(
+          title: 'قص النص',
+        ),
+      ],
+    );
   }
 
   void _onScanSuccess(String text) {
     setState(() => _isProcessing = false);
-    // Show Quote Review Modal
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -158,46 +152,9 @@ class _ScannerPageState extends State<ScannerPage>
 
   void _onScanFailure(String message) {
     setState(() => _isProcessing = false);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Future<void> _toggleFlash() async {
-    if (_cameraController == null || !_isCameraInitialized) {
-      return;
-    }
-
-    try {
-      // Cycle through flash modes: off -> auto -> on -> off
-      FlashMode newFlashMode;
-      switch (_currentFlashMode) {
-        case FlashMode.off:
-          newFlashMode = FlashMode.auto;
-          break;
-        case FlashMode.auto:
-          newFlashMode = FlashMode.always;
-          break;
-        case FlashMode.always:
-        case FlashMode.torch:
-          newFlashMode = FlashMode.off;
-          break;
-      }
-
-      await _cameraController!.setFlashMode(newFlashMode);
-      setState(() {
-        _currentFlashMode = newFlashMode;
-      });
-      debugPrint("Flash mode changed to: $newFlashMode");
-    } catch (e) {
-      debugPrint("Could not toggle flash mode: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('لا يمكن تغيير وضع الفلاش'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -214,300 +171,90 @@ class _ScannerPageState extends State<ScannerPage>
         backgroundColor: Colors.black,
         body: Stack(
           children: [
-            // 1. Camera Viewfinder
+            // Camera Preview
             SizedBox.expand(
               child: _isCameraInitialized
                   ? CameraPreview(_cameraController!)
-                  : Container(
-                      color: Colors.black,
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primaryBlue,
-                        ),
-                      ),
+                  : const Center(
+                      child: CircularProgressIndicator(
+                          color: AppColors.primaryBlue),
                     ),
             ),
 
-            // 2. Dark Overlay
-            Container(color: Colors.black.withValues(alpha: 0.4)),
-
-            // 3. Top Bar
-            Positioned(
-              top: 60,
-              left: 20,
-              right: 20,
-              child: Row(
+            // Minimal Overlay
+            SafeArea(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 28,
+                  // Top Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.close,
+                              color: Colors.white, size: 30),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            _currentFlashMode == FlashMode.off
+                                ? Icons.flash_off
+                                : Icons.flash_on,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                          onPressed: _toggleFlash,
+                        ),
+                      ],
                     ),
-                    onPressed: () => Navigator.pop(context),
                   ),
-                  const Text(
-                    AppStrings.scanPointCamera,
-                    style: TextStyle(
-                      //fontFamily: 'Tajawal',
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+
+                  // Bottom Bar (Shutter)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: _onShutterPressed,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 4),
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                          child: const Icon(Icons.camera,
+                              color: Colors.transparent),
+                        ),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _currentFlashMode == FlashMode.off
-                          ? Icons.flash_off
-                          : _currentFlashMode == FlashMode.auto
-                              ? Icons.flash_auto
-                              : Icons.flash_on,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                    onPressed: _toggleFlash,
                   ),
                 ],
               ),
             ),
 
-            // 4. Scanning Frame (Center)
-            Center(
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.height * 0.5,
-                child: Stack(
-                  children: [
-                    // Corners
-                    _buildCorner(top: true, left: true),
-                    _buildCorner(top: true, left: false),
-                    _buildCorner(top: false, left: true),
-                    _buildCorner(top: false, left: false),
-
-                    // Text Highlights (Simulated Blue Overlays)
-                    Positioned(
-                      top: 100,
-                      left: 20,
-                      right: 40,
-                      child: Container(
-                        height: 20,
-                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    Positioned(
-                      top: 130,
-                      left: 30,
-                      right: 20,
-                      child: Container(
-                        height: 20,
-                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    Positioned(
-                      top: 180,
-                      left: 20,
-                      right: 20,
-                      child: Container(
-                        height: 20,
-                        color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // 5. Status Toast
-            Positioned(
-              bottom: 200,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
+            // Loading Overlay
+            if (_isProcessing)
+              Container(
+                color: Colors.black.withValues(alpha: 0.7),
+                child: const Center(
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      ScaleTransition(
-                        scale: _pulseAnimation,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryBlue,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        AppStrings.scanDetecting,
-                        style: TextStyle(
-                          //fontFamily: 'Tajawal',
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
+                      CircularProgressIndicator(color: AppColors.primaryBlue),
+                      SizedBox(height: 20),
+                      Text(
+                        "جاري معالجة الاقتباس...",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-
-            // 6. Controls & Mode Switcher
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.only(bottom: 40, top: 20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.8),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    // Shutter Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.photo_library,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                          onPressed: () {
-                            context.read<ScannerCubit>().scanImage(
-                                  ImageSource.gallery,
-                                );
-                          },
-                        ),
-                        GestureDetector(
-                          onTap: _onShutterPressed,
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 4),
-                              gradient: AppColors.refiMeshGradient,
-                            ),
-                            child: const Icon(
-                              Icons.camera,
-                              color: Colors.transparent,
-                            ), // Just circle
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.settings,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    // Mode Switcher
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildModeItem(AppStrings.modeFile, 0),
-                        const SizedBox(width: 24),
-                        _buildModeItem(AppStrings.modeQuote, 1),
-                        const SizedBox(width: 24),
-                        _buildModeItem(AppStrings.modeTranslate, 2),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModeItem(String label, int index) {
-    final isSelected = _selectedModeIndex == index;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedModeIndex = index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              //fontFamily: 'Tajawal',
-              color: isSelected ? AppColors.secondaryBlue : Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          if (isSelected)
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              width: 4,
-              height: 4,
-              decoration: const BoxDecoration(
-                color: AppColors.secondaryBlue,
-                shape: BoxShape.circle,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCorner({required bool top, required bool left}) {
-    return Positioned(
-      top: top ? 0 : null,
-      bottom: top ? null : 0,
-      left: left ? 0 : null,
-      right: left ? null : 0,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          border: Border(
-            top: top
-                ? const BorderSide(color: AppColors.secondaryBlue, width: 4)
-                : BorderSide.none,
-            bottom: top
-                ? BorderSide.none
-                : const BorderSide(color: AppColors.secondaryBlue, width: 4),
-            left: left
-                ? const BorderSide(color: AppColors.secondaryBlue, width: 4)
-                : BorderSide.none,
-            right: left
-                ? BorderSide.none
-                : const BorderSide(color: AppColors.secondaryBlue, width: 4),
-          ),
-          borderRadius: BorderRadius.only(
-            topLeft: (top && left) ? const Radius.circular(16) : Radius.zero,
-            topRight: (top && !left) ? const Radius.circular(16) : Radius.zero,
-            bottomLeft:
-                (!top && left) ? const Radius.circular(16) : Radius.zero,
-            bottomRight:
-                (!top && !left) ? const Radius.circular(16) : Radius.zero,
-          ),
         ),
       ),
     );

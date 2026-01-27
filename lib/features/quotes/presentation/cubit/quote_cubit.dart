@@ -5,6 +5,7 @@ import '../../domain/usecases/save_quote_usecase.dart';
 import '../../domain/usecases/get_user_quotes_usecase.dart';
 import '../../domain/usecases/get_book_quotes_usecase.dart';
 import '../../domain/usecases/toggle_favorite_usecase.dart';
+import '../../../../features/scanner/domain/usecases/extract_text_from_image_usecase.dart';
 
 // States
 abstract class QuoteState extends Equatable {
@@ -28,6 +29,15 @@ class QuotesLoaded extends QuoteState {
   List<Object> get props => [quotes];
 }
 
+class QuoteScanning extends QuoteState {}
+
+class QuoteScanned extends QuoteState {
+  final String text;
+  const QuoteScanned(this.text);
+  @override
+  List<Object> get props => [text];
+}
+
 class QuoteError extends QuoteState {
   final String message;
   const QuoteError(this.message);
@@ -41,12 +51,14 @@ class QuoteCubit extends Cubit<QuoteState> {
   final GetUserQuotesUseCase getUserQuotesUseCase;
   final GetBookQuotesUseCase getBookQuotesUseCase;
   final ToggleFavoriteUseCase toggleFavoriteUseCase;
+  final ExtractTextFromImageUseCase extractTextFromImageUseCase;
 
   QuoteCubit({
     required this.saveQuoteUseCase,
     required this.getUserQuotesUseCase,
     required this.getBookQuotesUseCase,
     required this.toggleFavoriteUseCase,
+    required this.extractTextFromImageUseCase,
   }) : super(QuoteInitial());
 
   Future<void> saveQuote({
@@ -135,6 +147,15 @@ class QuoteCubit extends Cubit<QuoteState> {
         loadUserQuotes();
       },
       (_) => null,
+    );
+  }
+
+  Future<void> scanImage(String imagePath) async {
+    emit(QuoteScanning());
+    final result = await extractTextFromImageUseCase(imagePath);
+    result.fold(
+      (failure) => emit(QuoteError(failure.message)),
+      (text) => emit(QuoteScanned(text)),
     );
   }
 }

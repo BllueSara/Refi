@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:app_links/app_links.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'core/secrets/app_secrets.dart';
@@ -20,6 +21,9 @@ import 'core/widgets/splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Environment Variables
+  await dotenv.load(fileName: ".env");
 
   // Initialize Supabase
   try {
@@ -49,14 +53,14 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void _handleOAuthDeepLinks() {
   final appLinks = AppLinks();
-  
+
   // Listen for deep links (OAuth callbacks and password reset)
   appLinks.uriLinkStream.listen((uri) {
     debugPrint('🔗 Deep link received: $uri');
-    
+
     // Handle Supabase OAuth callback
     final supabase = Supabase.instance.client;
-    
+
     // Handle OAuth deep link callback (refi://auth-callback)
     if (uri.scheme == 'refi' && uri.host == 'auth-callback') {
       // Extract the session from the deep link URL

@@ -35,9 +35,11 @@ import '../../features/profile/domain/usecases/update_profile_usecase.dart';
 import '../../features/profile/presentation/cubit/profile_cubit.dart';
 
 import '../../features/scanner/data/datasources/ocr_service.dart';
+import '../../features/scanner/data/datasources/gemini_ocr_service.dart';
 import '../../features/scanner/data/repositories/ocr_repository_impl.dart';
 import '../../features/scanner/domain/repositories/ocr_repository.dart';
 import '../../features/scanner/domain/usecases/scan_text_usecase.dart';
+import '../../features/scanner/domain/usecases/extract_text_from_image_usecase.dart';
 import '../../features/scanner/presentation/cubit/scanner_cubit.dart';
 import '../../core/services/image_picker_service.dart';
 
@@ -152,7 +154,9 @@ Future<void> init(SharedPreferences sharedPreferences) async {
   sl.registerLazySingleton<OCRRepository>(
     () => OCRRepositoryImpl(ocrService: sl()),
   );
-  sl.registerLazySingleton<OCRService>(() => OCRServiceImpl());
+  // sl.registerLazySingleton<OCRService>(() => OCRServiceImpl());
+  sl.registerLazySingleton<OCRService>(() => GeminiOCRService());
+  sl.registerLazySingleton(() => ExtractTextFromImageUseCase(sl()));
 
   // ! Features - Quotes
   sl.registerFactory(
@@ -161,6 +165,7 @@ Future<void> init(SharedPreferences sharedPreferences) async {
       getUserQuotesUseCase: sl(),
       getBookQuotesUseCase: sl(),
       toggleFavoriteUseCase: sl(),
+      extractTextFromImageUseCase: sl(),
     ),
   );
   sl.registerLazySingleton(() => SaveQuoteUseCase(sl()));

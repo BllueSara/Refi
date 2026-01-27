@@ -8,7 +8,7 @@
 PRODUCT_NAME = refi
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.refi.refi
+PRODUCT_BUNDLE_IDENTIFIER = com.sara.refi
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.refi. All rights reserved.

@@ -59,6 +59,9 @@ dependencies:
   image: ^4.7.2
   path_provider: ^2.1.5
   share_plus: ^12.0.1
+  google_generative_ai: ^0.4.7
+  image_cropper: ^11.0.0
+  flutter_image_compress: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -92,6 +95,7 @@ flutter:
 
   assets:
     - assets/images/
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
