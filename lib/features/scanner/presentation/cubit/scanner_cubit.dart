@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/services/image_picker_service.dart';
+import '../../../../core/services/subscription_manager.dart';
 import '../../domain/usecases/scan_text_usecase.dart';
 
 abstract class ScannerState extends Equatable {
@@ -34,10 +35,12 @@ class ScannerFailure extends ScannerState {
 class ScannerCubit extends Cubit<ScannerState> {
   final ScanTextUseCase scanTextUseCase;
   final ImagePickerService imagePickerService;
+  final SubscriptionManager subscriptionManager;
 
   ScannerCubit({
     required this.scanTextUseCase,
     required this.imagePickerService,
+    required this.subscriptionManager,
   }) : super(ScannerIdle());
 
   Future<void> scanImage(ImageSource source) async {
@@ -55,6 +58,12 @@ class ScannerCubit extends Cubit<ScannerState> {
 
   Future<void> scanImageFromPath(String path) async {
     emit(ScannerScanning());
+
+    // Check Premium Status
+    final isPremium = await subscriptionManager.isUserPremium();
+    // Logic for premium users (e.g. improved OCR, unlimited scans)
+    // For now we just proceed, but we are "activating" it by knowing the status.
+
     final result = await scanTextUseCase(path);
 
     result.fold(

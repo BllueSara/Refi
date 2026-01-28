@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'core/secrets/app_secrets.dart';
 import 'core/di/injection_container.dart' as di;
+import 'core/services/subscription_manager.dart';
 import 'features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/update_password_screen.dart';
@@ -41,6 +42,11 @@ Future<void> main() async {
 
   // Initialize DI
   await di.init(sharedPreferences);
+
+  // Initialize RevenueCat (Non-blocking, after DI is ready)
+  di.sl<SubscriptionManager>().init().catchError((e) {
+    debugPrint('❌ RevenueCat Init Failed: $e');
+  });
 
   // Handle OAuth deep links
   _handleOAuthDeepLinks();

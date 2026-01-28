@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
@@ -327,11 +327,20 @@ class _QuotesPageState extends State<QuotesPage>
                   if (_searchController.text.isNotEmpty) {
                     final query = _searchController.text.toLowerCase();
                     displayedQuotes = displayedQuotes.where((quote) {
-                      final textMatch = quote.text.toLowerCase().contains(query);
-                      final bookTitleMatch = quote.bookTitle?.toLowerCase().contains(query) ?? false;
-                      final bookAuthorMatch = quote.bookAuthor?.toLowerCase().contains(query) ?? false;
-                      final notesMatch = quote.notes?.toLowerCase().contains(query) ?? false;
-                      return textMatch || bookTitleMatch || bookAuthorMatch || notesMatch;
+                      final textMatch =
+                          quote.text.toLowerCase().contains(query);
+                      final bookTitleMatch =
+                          quote.bookTitle?.toLowerCase().contains(query) ??
+                              false;
+                      final bookAuthorMatch =
+                          quote.bookAuthor?.toLowerCase().contains(query) ??
+                              false;
+                      final notesMatch =
+                          quote.notes?.toLowerCase().contains(query) ?? false;
+                      return textMatch ||
+                          bookTitleMatch ||
+                          bookAuthorMatch ||
+                          notesMatch;
                     }).toList();
                   }
 
@@ -340,18 +349,27 @@ class _QuotesPageState extends State<QuotesPage>
                     List<QuoteEntity> booksQuotes = quotes
                         .where((q) => q.bookId != null || q.bookTitle != null)
                         .toList();
-                    
+
                     if (_searchController.text.isNotEmpty) {
                       final query = _searchController.text.toLowerCase();
                       booksQuotes = booksQuotes.where((quote) {
-                        final textMatch = quote.text.toLowerCase().contains(query);
-                        final bookTitleMatch = quote.bookTitle?.toLowerCase().contains(query) ?? false;
-                        final bookAuthorMatch = quote.bookAuthor?.toLowerCase().contains(query) ?? false;
-                        final notesMatch = quote.notes?.toLowerCase().contains(query) ?? false;
-                        return textMatch || bookTitleMatch || bookAuthorMatch || notesMatch;
+                        final textMatch =
+                            quote.text.toLowerCase().contains(query);
+                        final bookTitleMatch =
+                            quote.bookTitle?.toLowerCase().contains(query) ??
+                                false;
+                        final bookAuthorMatch =
+                            quote.bookAuthor?.toLowerCase().contains(query) ??
+                                false;
+                        final notesMatch =
+                            quote.notes?.toLowerCase().contains(query) ?? false;
+                        return textMatch ||
+                            bookTitleMatch ||
+                            bookAuthorMatch ||
+                            notesMatch;
                       }).toList();
                     }
-                    
+
                     // Check if valid books exist, otherwise show specific empty state
                     if (booksQuotes.isNotEmpty) {
                       return QuotesByBookView(quotes: booksQuotes);

@@ -3,6 +3,9 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../domain/entities/plan_entity.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import '../../../../core/services/subscription_manager.dart';
+import '../../../../core/di/injection_container.dart';
 import '../widgets/plan_card.dart';
 
 class MarketScreen extends StatefulWidget {
@@ -15,6 +18,25 @@ class MarketScreen extends StatefulWidget {
 class _MarketScreenState extends State<MarketScreen> {
   int _selectedBillingPeriod = 0; // 0: monthly, 1: 6 months, 2: yearly
   final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = false;
+  Offerings? _offerings;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOfferings();
+  }
+
+  Future<void> _fetchOfferings() async {
+    setState(() => _isLoading = true);
+    final offerings = await sl<SubscriptionManager>().getOfferings();
+    if (mounted) {
+      setState(() {
+        _offerings = offerings;
+        _isLoading = false;
+      });
+    }
+  }
 
   // Mock plans data
   final List<PlanEntity> _plans = const [
@@ -65,72 +87,83 @@ class _MarketScreenState extends State<MarketScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          AppStrings.marketTitle,
-          style: TextStyle(
-            fontSize: 20.sp(context),
-            fontWeight: FontWeight.bold,
-            color: AppColors.textMain,
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.textMain,
-            size: 24.sp(context),
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.w(context)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 16.h(context)),
-
-              // Subtitle
-              Center(
-                child: Text(
-                  AppStrings.marketSubtitle,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14.sp(context),
-                    color: AppColors.textSub,
-                    height: 1.5,
-                  ),
-                ),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            title: Text(
+              AppStrings.marketTitle,
+              style: TextStyle(
+                fontSize: 20.sp(context),
+                fontWeight: FontWeight.bold,
+                color: AppColors.textMain,
               ),
-              SizedBox(height: 32.h(context)),
+            ),
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: AppColors.textMain,
+                size: 24.sp(context),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 24.w(context)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 16.h(context)),
 
-              // Billing Toggle
-              _buildBillingToggle(),
-              SizedBox(height: 32.h(context)),
-
-              // Plans List
-              ..._plans.map((plan) {
-                return Padding(
-                  padding: EdgeInsets.only(bottom: 24.h(context)),
-                  child: PlanCard(
-                    plan: plan,
-                    billingPeriod: _selectedBillingPeriod,
-                    onSelect: () => _handlePlanSelection(plan),
+                  // Subtitle
+                  Center(
+                    child: Text(
+                      AppStrings.marketSubtitle,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14.sp(context),
+                        color: AppColors.textSub,
+                        height: 1.5,
+                      ),
+                    ),
                   ),
-                );
-              }),
+                  SizedBox(height: 32.h(context)),
 
-              SizedBox(height: 32.h(context)),
-            ],
+                  // Billing Toggle
+                  _buildBillingToggle(),
+                  SizedBox(height: 32.h(context)),
+
+                  // Plans List
+                  ..._plans.map((plan) {
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 24.h(context)),
+                      child: PlanCard(
+                        plan: plan,
+                        billingPeriod: _selectedBillingPeriod,
+                        onSelect: () => _handlePlanSelection(plan),
+                      ),
+                    );
+                  }),
+
+                  SizedBox(height: 32.h(context)),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+        if (_isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.5),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.primaryBlue),
+            ),
+          ),
+      ],
     );
   }
 
@@ -266,17 +299,97 @@ class _MarketScreenState extends State<MarketScreen> {
     );
   }
 
-  void _handlePlanSelection(PlanEntity plan) {
-    // Handle plan selection logic here
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('تم اختيار باقة ${plan.name}'),
-        backgroundColor: AppColors.successGreen,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r(context)),
+  Future<void> _handlePlanSelection(PlanEntity plan) async {
+    // Only process for premium plan
+    if (plan.id != 'premium') {
+      // For basic plan, maybe just show a message or do nothing as it's active by default
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('أهلاً بك في باقة ${plan.name}'),
+          backgroundColor: AppColors.successGreen,
         ),
-      ),
-    );
+      );
+      return;
+    }
+
+    if (_offerings?.current == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('عذراً، الاشتراكات غير متاحة حالياً'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    Package? packageToPurchase;
+    // Map billing period to RevenueCat package
+    switch (_selectedBillingPeriod) {
+      case 0: // Monthly
+        packageToPurchase = _offerings?.current?.monthly;
+        break;
+      case 1: // 6 Months
+        packageToPurchase = _offerings?.current?.sixMonth;
+        break;
+      case 2: // Yearly
+        packageToPurchase = _offerings?.current?.annual;
+        break;
+    }
+
+    if (packageToPurchase == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('هذه الباقة غير متاحة حالياً على المتجر'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final success =
+          await sl<SubscriptionManager>().purchasePackage(packageToPurchase);
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('تم الاشتراك بنجاح! استمتع بمميزات جليس بلس'),
+              backgroundColor: AppColors.successGreen,
+            ),
+          );
+          // Optional: Navigate away or refresh state
+        }
+      } else {
+        // success == false means cancelled (or active but issue with entitlement logic)
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('تم إلغاء عملية الاشتراك'),
+              backgroundColor: Colors.orange,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Error is already logged in manager, show generic error to user or handled inside manager rethrows
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ أثناء الاشتراك: حاول مرة أخرى'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 }

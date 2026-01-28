@@ -42,6 +42,7 @@ import '../../features/scanner/domain/usecases/scan_text_usecase.dart';
 import '../../features/scanner/domain/usecases/extract_text_from_image_usecase.dart';
 import '../../features/scanner/presentation/cubit/scanner_cubit.dart';
 import '../../core/services/image_picker_service.dart';
+import '../../core/services/subscription_manager.dart';
 
 import '../../features/quotes/data/datasources/quote_remote_data_source.dart';
 import '../../features/quotes/data/repositories/quote_repository_impl.dart';
@@ -149,7 +150,11 @@ Future<void> init(SharedPreferences sharedPreferences) async {
 
   // ! Features - Scanner
   sl.registerFactory(
-    () => ScannerCubit(scanTextUseCase: sl(), imagePickerService: sl()),
+    () => ScannerCubit(
+      scanTextUseCase: sl(),
+      imagePickerService: sl(),
+      subscriptionManager: sl<SubscriptionManager>(),
+    ),
   );
   sl.registerLazySingleton(() => ScanTextUseCase(sl()));
   sl.registerLazySingleton<OCRRepository>(
@@ -166,17 +171,17 @@ Future<void> init(SharedPreferences sharedPreferences) async {
   sl.registerLazySingleton(() => GetBookQuotesUseCase(sl()));
   sl.registerLazySingleton(() => ToggleFavoriteUseCase(sl()));
   sl.registerLazySingleton(() => DeleteQuoteUseCase(sl()));
-  
+
   // Register Repository
   sl.registerLazySingleton<QuoteRepository>(
     () => QuoteRepositoryImpl(remoteDataSource: sl()),
   );
-  
+
   // Register Data Source
   sl.registerLazySingleton<QuoteRemoteDataSource>(
     () => QuoteRemoteDataSourceImpl(supabaseClient: sl()),
   );
-  
+
   // Register Cubit last (depends on Use Cases)
   sl.registerFactory(
     () => QuoteCubit(
@@ -191,6 +196,7 @@ Future<void> init(SharedPreferences sharedPreferences) async {
 
   // ! Services
   sl.registerLazySingleton<ImagePickerService>(() => ImagePickerServiceImpl());
+  sl.registerLazySingleton(() => SubscriptionManager.instance);
 
   // ! External
   sl.registerLazySingleton(() => Supabase.instance.client);
