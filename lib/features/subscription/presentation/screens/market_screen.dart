@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
-import '../../../../core/widgets/refi_gradient_button.dart';
-import '../../../../core/widgets/refi_app_bar.dart';
 import '../../domain/entities/plan_entity.dart';
 import '../widgets/plan_card.dart';
 
@@ -15,7 +13,7 @@ class MarketScreen extends StatefulWidget {
 }
 
 class _MarketScreenState extends State<MarketScreen> {
-  bool isYearly = false;
+  int _selectedBillingPeriod = 0; // 0: monthly, 1: 6 months, 2: yearly
   final TextEditingController _searchController = TextEditingController();
 
   // Mock plans data
@@ -25,50 +23,37 @@ class _MarketScreenState extends State<MarketScreen> {
       name: AppStrings.planBasic,
       description: 'مثالية للبدء',
       monthlyPrice: 0,
+      sixMonthsPrice: 0,
       yearlyPrice: 0,
       features: [
-        'حتى 50 اقتباس',
-        'حتى 10 كتب',
-        'مسح ضوئي أساسي',
-        'تصدير PDF',
+        'كتب غير محدودة',
+        'الهدف السنوي متاح',
+        'اقتباسات يدوية: 15 حد أقصى',
+        'اقتباسات بالتصوير: 15 حد أقصى',
+        'الملاحظات والشعور متاحة مع كل اقتباس',
       ],
     ),
     PlanEntity(
       id: 'premium',
       name: AppStrings.planPremium,
       description: 'للقارئ النهم',
-      monthlyPrice: 29.99,
-      yearlyPrice: 299.99,
+      monthlyPrice: 19.99,
+      sixMonthsPrice: 99.99,
+      yearlyPrice: 149.99,
+      originalSixMonthsPrice: 119.94,
+      originalYearlyPrice: 239.88,
+      sixMonthsDiscountPercent: 17,
+      yearlyDiscountPercent: 37,
       features: [
-        AppStrings.unlimitedQuotes,
-        AppStrings.unlimitedBooks,
-        AppStrings.advancedScanning,
-        AppStrings.cloudBackup,
-        AppStrings.exportQuotes,
-        AppStrings.adFree,
+        'كتب غير محدودة',
+        'الهدف السنوي متاح',
+        'اقتباسات يدوية: غير محدودة',
+        'اقتباسات بالتصوير: غير محدودة',
+        'الملاحظات والشعور متاحة مع كل اقتباس',
+        'ملاحظة: المميزات الجديدة تشملها',
       ],
       isPopular: true,
       badge: AppStrings.mostPopular,
-    ),
-    PlanEntity(
-      id: 'pro',
-      name: AppStrings.planPro,
-      description: 'للمحترفين',
-      monthlyPrice: 49.99,
-      yearlyPrice: 499.99,
-      features: [
-        AppStrings.unlimitedQuotes,
-        AppStrings.unlimitedBooks,
-        AppStrings.advancedScanning,
-        AppStrings.cloudBackup,
-        AppStrings.exportQuotes,
-        AppStrings.prioritySupport,
-        AppStrings.customTags,
-        AppStrings.analytics,
-        AppStrings.adFree,
-      ],
-      isBestValue: true,
-      badge: AppStrings.bestValue,
     ),
   ];
 
@@ -110,7 +95,7 @@ class _MarketScreenState extends State<MarketScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.h(context)),
-              
+
               // Subtitle
               Center(
                 child: Text(
@@ -130,19 +115,17 @@ class _MarketScreenState extends State<MarketScreen> {
               SizedBox(height: 32.h(context)),
 
               // Plans List
-              ..._plans.asMap().entries.map((entry) {
-                final index = entry.key;
-                final plan = entry.value;
+              ..._plans.map((plan) {
                 return Padding(
                   padding: EdgeInsets.only(bottom: 24.h(context)),
                   child: PlanCard(
                     plan: plan,
-                    isYearly: isYearly,
+                    billingPeriod: _selectedBillingPeriod,
                     onSelect: () => _handlePlanSelection(plan),
                   ),
                 );
               }),
-              
+
               SizedBox(height: 32.h(context)),
             ],
           ),
@@ -163,16 +146,18 @@ class _MarketScreenState extends State<MarketScreen> {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => isYearly = false),
+              onTap: () => setState(() => _selectedBillingPeriod = 0),
               child: Container(
                 padding: EdgeInsets.symmetric(
                   vertical: 12.h(context),
-                  horizontal: 24.w(context),
+                  horizontal: 8.w(context),
                 ),
                 decoration: BoxDecoration(
-                  color: !isYearly ? AppColors.white : Colors.transparent,
+                  color: _selectedBillingPeriod == 0
+                      ? AppColors.white
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(20.r(context)),
-                  boxShadow: !isYearly
+                  boxShadow: _selectedBillingPeriod == 0
                       ? [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.05),
@@ -186,9 +171,11 @@ class _MarketScreenState extends State<MarketScreen> {
                   AppStrings.monthly,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14.sp(context),
-                    fontWeight: !isYearly ? FontWeight.bold : FontWeight.normal,
-                    color: !isYearly
+                    fontSize: 13.sp(context),
+                    fontWeight: _selectedBillingPeriod == 0
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: _selectedBillingPeriod == 0
                         ? AppColors.primaryBlue
                         : AppColors.textSub,
                   ),
@@ -198,16 +185,18 @@ class _MarketScreenState extends State<MarketScreen> {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => isYearly = true),
+              onTap: () => setState(() => _selectedBillingPeriod = 1),
               child: Container(
                 padding: EdgeInsets.symmetric(
                   vertical: 12.h(context),
-                  horizontal: 24.w(context),
+                  horizontal: 8.w(context),
                 ),
                 decoration: BoxDecoration(
-                  color: isYearly ? AppColors.white : Colors.transparent,
+                  color: _selectedBillingPeriod == 1
+                      ? AppColors.white
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(20.r(context)),
-                  boxShadow: isYearly
+                  boxShadow: _selectedBillingPeriod == 1
                       ? [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.05),
@@ -217,41 +206,57 @@ class _MarketScreenState extends State<MarketScreen> {
                         ]
                       : null,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      AppStrings.yearly,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14.sp(context),
-                        fontWeight:
-                            isYearly ? FontWeight.bold : FontWeight.normal,
-                        color: isYearly
-                            ? AppColors.primaryBlue
-                            : AppColors.textSub,
-                      ),
-                    ),
-                    SizedBox(width: 4.w(context)),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 6.w(context),
-                        vertical: 2.h(context),
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.successGreen,
-                        borderRadius: BorderRadius.circular(8.r(context)),
-                      ),
-                      child: Text(
-                        'توفير 20%',
-                        style: TextStyle(
-                          fontSize: 10.sp(context),
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  AppStrings.sixMonths,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.sp(context),
+                    fontWeight: _selectedBillingPeriod == 1
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: _selectedBillingPeriod == 1
+                        ? AppColors.primaryBlue
+                        : AppColors.textSub,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedBillingPeriod = 2),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  vertical: 12.h(context),
+                  horizontal: 8.w(context),
+                ),
+                decoration: BoxDecoration(
+                  color: _selectedBillingPeriod == 2
+                      ? AppColors.white
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20.r(context)),
+                  boxShadow: _selectedBillingPeriod == 2
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 8.r(context),
+                            offset: Offset(0, 2.h(context)),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  AppStrings.yearly,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.sp(context),
+                    fontWeight: _selectedBillingPeriod == 2
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                    color: _selectedBillingPeriod == 2
+                        ? AppColors.primaryBlue
+                        : AppColors.textSub,
+                  ),
                 ),
               ),
             ),

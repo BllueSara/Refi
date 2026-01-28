@@ -189,14 +189,22 @@ class AppStrings {
 
   // Market/Subscription
   static const String marketTitle = "اختر باقاتك";
-  static const String marketSubtitle = "اختر الباقة المناسبة لك واستمتع بمميزات إضافية";
-  static const String planBasic = "الأساسية";
-  static const String planPremium = "المميزة";
+  static const String marketSubtitle =
+      "اختر الباقة المناسبة لك واستمتع بمميزات إضافية";
+  static const String planBasic = "جليس";
+  static const String planPremium = "جليس";
+  static const String planPremiumMonthly = "جليس شهري";
+  static const String planPremiumExtended = "جليس ممتد";
+  static const String planPremiumYearly = "جليس سنوي";
   static const String planPro = "المحترفة";
   static const String monthly = "شهرياً";
+  static const String sixMonths = "6 أشهر";
   static const String yearly = "سنوياً";
   static const String selectPlan = "اختر الباقة";
   static const String mostPopular = "الأكثر شعبية";
+  static const String mostPopularMonthly = "الأكثر مرونة";
+  static const String mostPopularSixMonths = "الأفضل قيمة";
+  static const String mostPopularYearly = "الأكثر توفيراً";
   static const String bestValue = "الأفضل قيمة";
   static const String unlimitedQuotes = "اقتباسات غير محدودة";
   static const String unlimitedBooks = "كتب غير محدودة";
@@ -220,7 +228,8 @@ class AppStrings {
   static const String messageHint = "رسالتك...";
   static const String sendMessage = "إرسال";
   static const String messageSent = "تم إرسال رسالتك بنجاح!";
-  static const String messageSentDesc = "شكراً لتواصلك معنا. سنرد عليك في أقرب وقت ممكن.";
+  static const String messageSentDesc =
+      "شكراً لتواصلك معنا. سنرد عليك في أقرب وقت ممكن.";
   static const String messageError = "حدث خطأ أثناء إرسال الرسالة";
   static const String pleaseSelectCategory = "الرجاء اختيار نوع الرسالة";
   static const String pleaseEnterMessage = "الرجاء كتابة رسالتك";
