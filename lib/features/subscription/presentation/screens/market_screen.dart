@@ -111,6 +111,17 @@ class _MarketScreenState extends State<MarketScreen> {
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  Icons.bug_report,
+                  color: AppColors.textMain,
+                  size: 24.sp(context),
+                ),
+                onPressed: _testRevenueCat,
+                tooltip: 'اختبار RevenueCat',
+              ),
+            ],
           ),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -391,5 +402,302 @@ class _MarketScreenState extends State<MarketScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _testRevenueCat() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final manager = sl<SubscriptionManager>();
+
+      // Get all test information
+      final isInitialized = manager.isInitialized;
+      final isPremium = await manager.isUserPremium();
+      final customerInfo = await manager.getCustomerInfo();
+      final offerings = await manager.getOfferings();
+
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      // Show test results dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('نتائج اختبار RevenueCat'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTestRow(
+                    '✅ التهيئة', isInitialized ? 'نعم' : 'لا', isInitialized),
+                const SizedBox(height: 12),
+                _buildTestRow(
+                    '💎 حالة الاشتراك', isPremium ? 'مميز' : 'عادي', isPremium),
+                const SizedBox(height: 12),
+                _buildTestRow(
+                    '📦 الـ Offerings',
+                    offerings?.current != null ? 'متاحة' : 'غير متاحة',
+                    offerings?.current != null),
+                const SizedBox(height: 12),
+                if (offerings?.current != null) ...[
+                  _buildTestRow(
+                      '  - شهري',
+                      offerings!.current!.monthly != null ? 'متاح' : 'غير متاح',
+                      offerings.current!.monthly != null),
+                  _buildTestRow(
+                      '  - 6 أشهر',
+                      offerings.current!.sixMonth != null ? 'متاح' : 'غير متاح',
+                      offerings.current!.sixMonth != null),
+                  _buildTestRow(
+                      '  - سنوي',
+                      offerings.current!.annual != null ? 'متاح' : 'غير متاح',
+                      offerings.current!.annual != null),
+                  const SizedBox(height: 12),
+                ],
+                if (customerInfo != null) ...[
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Text(
+                    'معلومات المستخدم:',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14.sp(context)),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('User ID: ${customerInfo.originalAppUserId}',
+                      style: TextStyle(fontSize: 12.sp(context))),
+                  const SizedBox(height: 4),
+                  Text(
+                      'Entitlements: ${customerInfo.entitlements.all.keys.join(", ")}',
+                      style: TextStyle(fontSize: 12.sp(context))),
+                  const SizedBox(height: 4),
+                  Text(
+                      'Active Subscriptions: ${customerInfo.activeSubscriptions.length}',
+                      style: TextStyle(fontSize: 12.sp(context))),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            if (!isInitialized)
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  setState(() => _isLoading = true);
+                  try {
+                    await manager.init();
+                    if (mounted) {
+                      setState(() => _isLoading = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('تم تهيئة RevenueCat بنجاح!'),
+                          backgroundColor: AppColors.successGreen,
+                        ),
+                      );
+                      // Retry test
+                      _testRevenueCat();
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      setState(() => _isLoading = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('فشل التهيئة: $e'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 5),
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: const Text('إعادة تهيئة RevenueCat'),
+              ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                setState(() => _isLoading = true);
+                try {
+                  final restored = await manager.restorePurchases();
+                  if (mounted) {
+                    setState(() => _isLoading = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(restored
+                            ? 'تم استعادة الاشتراك بنجاح'
+                            : 'لا توجد اشتراكات للاستعادة'),
+                        backgroundColor:
+                            restored ? AppColors.successGreen : Colors.orange,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    setState(() => _isLoading = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('خطأ في الاستعادة: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('استعادة الاشتراكات'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('إغلاق'),
+            ),
+          ],
+        ),
+      );
+    } catch (e, stackTrace) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        debugPrint('❌ Error in _testRevenueCat: $e');
+        debugPrint('   Stack trace: $stackTrace');
+
+        // Show detailed error dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('خطأ في الاختبار'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'حدث خطأ أثناء اختبار RevenueCat:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('$e'),
+                  const SizedBox(height: 16),
+                  if (e.toString().contains('MissingPluginException') ||
+                      e.toString().contains('No implementation found')) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '⚠️ المشكلة: الـ Plugin غير مربوط!',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'هذا يحدث عادة عند استخدام Hot Reload بدلاً من Full Restart.',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  const Text(
+                    'الحلول المقترحة:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('1. أوقف التطبيق بالكامل (Stop)'),
+                  const Text('2. شغّل: flutter clean'),
+                  const Text('3. شغّل: flutter pub get'),
+                  const Text('4. شغّل: flutter run (Full Restart)'),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'ملاحظة: Hot Reload لا يعمل مع Native Plugins!',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  setState(() => _isLoading = true);
+                  try {
+                    await sl<SubscriptionManager>().init();
+                    if (mounted) {
+                      setState(() => _isLoading = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('تم تهيئة RevenueCat بنجاح!'),
+                          backgroundColor: AppColors.successGreen,
+                        ),
+                      );
+                      _testRevenueCat();
+                    }
+                  } catch (initError) {
+                    if (mounted) {
+                      setState(() => _isLoading = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('فشل التهيئة: $initError'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 5),
+                        ),
+                      );
+                    }
+                  }
+                },
+                child: const Text('إعادة تهيئة RevenueCat'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('إغلاق'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildTestRow(String label, String value, bool isSuccess) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14.sp(context),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: 8.w(context), vertical: 4.h(context)),
+          decoration: BoxDecoration(
+            color: isSuccess
+                ? AppColors.successGreen.withOpacity(0.2)
+                : Colors.orange.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8.r(context)),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 12.sp(context),
+              color: isSuccess ? AppColors.successGreen : Colors.orange,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

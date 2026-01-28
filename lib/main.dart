@@ -43,10 +43,16 @@ Future<void> main() async {
   // Initialize DI
   await di.init(sharedPreferences);
 
-  // Initialize RevenueCat (Non-blocking, after DI is ready)
-  di.sl<SubscriptionManager>().init().catchError((e) {
-    debugPrint('❌ RevenueCat Init Failed: $e');
-  });
+  // Initialize RevenueCat (Blocking, ensure it's ready before app starts)
+  try {
+    await di.sl<SubscriptionManager>().init();
+    debugPrint('✅ RevenueCat Initialized Successfully in main()');
+  } catch (e, stackTrace) {
+    debugPrint('❌ RevenueCat Init Failed in main(): $e');
+    debugPrint('   Stack trace: $stackTrace');
+    // Continue anyway - app can work without RevenueCat, but subscriptions won't work
+    // User can retry initialization later from the test button
+  }
 
   // Handle OAuth deep links
   _handleOAuthDeepLinks();
