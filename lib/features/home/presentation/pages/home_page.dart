@@ -17,6 +17,7 @@ import '../../../profile/domain/usecases/get_profile_usecase.dart';
 import '../../../library/domain/usecases/fetch_user_library_usecase.dart';
 import '../../../quotes/domain/usecases/get_user_quotes_usecase.dart';
 import '../../../library/presentation/cubit/library_cubit.dart';
+import 'goal_success_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -46,7 +47,22 @@ class _HomePageState extends State<HomePage> {
         },
         child: BlocListener<HomeCubit, HomeState>(
           listener: (context, state) {
-            if (state is HomeLoaded) {
+            // Show goal success page when goal is achieved
+            if (state is HomeGoalAchieved) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GoalSuccessPage(
+                    completedBooks: state.data.completedBooks,
+                    annualGoal: state.data.annualGoal ?? 0,
+                  ),
+                ),
+              ).then((_) {
+                // Mark as celebrated after closing the page
+                context.read<HomeCubit>().markGoalAsCelebrated();
+              });
+              _lastCompletedBooks = state.data.completedBooks;
+            } else if (state is HomeLoaded) {
               // Check for book completion
               if (_lastCompletedBooks != null &&
                   state.data.completedBooks > _lastCompletedBooks!) {
@@ -80,6 +96,8 @@ class _HomePageState extends State<HomePage> {
               if (state is HomeLoaded) {
                 currentData = state.data;
               } else if (state is HomeEmpty) {
+                currentData = state.data;
+              } else if (state is HomeGoalAchieved) {
                 currentData = state.data;
               } else {
                 currentData = const HomeData(
@@ -115,10 +133,14 @@ class _HomePageState extends State<HomePage> {
                             child: HomeEmptyBody(data: state.data),
                           ),
                         );
-                      } else if (state is HomeLoaded) {
+                      } else if (state is HomeLoaded || state is HomeGoalAchieved) {
+                        // Show populated body for both loaded and goal achieved states
+                        final data = (state is HomeLoaded) 
+                            ? state.data 
+                            : (state as HomeGoalAchieved).data;
                         return SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
-                            child: HomePopulatedBody(data: state.data));
+                            child: HomePopulatedBody(data: data));
                       }
                       return const SizedBox.shrink();
                     },

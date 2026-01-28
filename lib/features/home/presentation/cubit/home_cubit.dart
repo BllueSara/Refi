@@ -5,6 +5,7 @@ import '../../../profile/domain/usecases/get_profile_usecase.dart';
 import '../../../library/domain/usecases/fetch_user_library_usecase.dart';
 import '../../../library/domain/entities/book_entity.dart';
 import '../../../quotes/domain/usecases/get_user_quotes_usecase.dart';
+import '../../../../core/services/goal_achievement_tracker.dart';
 import 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
@@ -110,7 +111,17 @@ class HomeCubit extends Cubit<HomeState> {
         currentlyReading: currentlyReading,
       );
 
-      if (homeData.isEmpty) {
+      // Check if goal is achieved and not yet celebrated
+      final isGoalAchieved = GoalAchievementTracker.isGoalAchieved(
+        completedBooks,
+        annualGoal,
+      );
+      final hasCelebrated = await GoalAchievementTracker.hasCelebratedThisYear();
+
+      if (isGoalAchieved && !hasCelebrated) {
+        // Emit special state to trigger celebration
+        emit(HomeGoalAchieved(homeData));
+      } else if (homeData.isEmpty) {
         emit(HomeEmpty(homeData));
       } else {
         emit(HomeLoaded(homeData));
@@ -163,6 +174,17 @@ class HomeCubit extends Cubit<HomeState> {
           emit(currentState);
         }
       }
+    }
+  }
+
+  /// Mark goal achievement as celebrated and transition to loaded state
+  Future<void> markGoalAsCelebrated() async {
+    await GoalAchievementTracker.markAsCelebrated();
+    
+    final currentState = state;
+    if (currentState is HomeGoalAchieved) {
+      // Transition to normal loaded state
+      emit(HomeLoaded(currentState.data));
     }
   }
 }

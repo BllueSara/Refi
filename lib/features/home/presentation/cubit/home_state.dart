@@ -29,3 +29,12 @@ class HomeLoaded extends HomeState {
   @override
   List<Object?> get props => [data];
 }
+
+class HomeGoalAchieved extends HomeState {
+  final HomeData data;
+
+  const HomeGoalAchieved(this.data);
+
+  @override
+  List<Object?> get props => [data];
+}

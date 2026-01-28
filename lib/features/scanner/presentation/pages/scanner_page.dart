@@ -9,6 +9,7 @@ import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/widgets/scale_button.dart';
 import '../../../quotes/presentation/widgets/quote_review_modal.dart';
 import '../cubit/scanner_cubit.dart';
+import 'scanning_processing_page.dart';
 
 class ScannerPage extends StatefulWidget {
   const ScannerPage({super.key});
@@ -102,11 +103,21 @@ class _ScannerPageState extends State<ScannerPage>
       final croppedFile = await _cropImage(File(image.path));
 
       if (croppedFile != null) {
-        // Only show processing AFTER crop is confirmed
-        setState(() => _isProcessing = true);
-
+        // Navigate to processing page and start scanning
         if (!mounted) return;
+        
+        // Start the scanning process
         context.read<ScannerCubit>().scanImageFromPath(croppedFile.path);
+        
+        // Navigate to the scanning processing page (don't await, just push)
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ScanningProcessingPage(
+              imagePath: croppedFile.path,
+            ),
+          ),
+        );
       }
       // If cancelled (croppedFile == null), we just stay on camera, no processing state needed.
     } catch (e) {
@@ -138,39 +149,9 @@ class _ScannerPageState extends State<ScannerPage>
     );
   }
 
-  void _onScanSuccess(String text) {
-    setState(() => _isProcessing = false);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: QuoteReviewModal(initialText: text),
-      ),
-    );
-  }
-
-  void _onScanFailure(String message) {
-    setState(() => _isProcessing = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ScannerCubit, ScannerState>(
-      listener: (context, state) {
-        if (state is ScannerSuccess) {
-          _onScanSuccess(state.text);
-        } else if (state is ScannerFailure) {
-          _onScanFailure(state.message);
-        }
-      },
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.black,
         body: Stack(
           children: [
@@ -361,7 +342,6 @@ class _ScannerPageState extends State<ScannerPage>
             ),
           ],
         ),
-      ),
     );
   }
 }
