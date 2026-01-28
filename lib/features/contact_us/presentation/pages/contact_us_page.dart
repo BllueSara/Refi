@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/widgets/refi_success_widget.dart';
+import '../../../../core/di/injection_container.dart' as di;
+import '../../data/datasources/contact_remote_data_source.dart';
+import '../../data/models/contact_message_model.dart';
 
 class ContactUsPage extends StatefulWidget {
   const ContactUsPage({super.key});
@@ -17,12 +19,19 @@ class _ContactUsPageState extends State<ContactUsPage> {
   final TextEditingController _messageController = TextEditingController();
   String? _selectedCategory;
   bool _isSending = false;
+  late final ContactRemoteDataSource _contactDataSource;
 
   final List<Map<String, String>> _categories = [
     {'label': AppStrings.categoryProblem, 'value': 'مشكلة'},
     {'label': AppStrings.categorySuggestion, 'value': 'اقتراح'},
     {'label': AppStrings.categoryOther, 'value': 'شيء آخر'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _contactDataSource = di.sl<ContactRemoteDataSource>();
+  }
 
   @override
   void dispose() {
@@ -53,43 +62,28 @@ class _ContactUsPageState extends State<ContactUsPage> {
     setState(() => _isSending = true);
 
     try {
-      // Prepare email
-      final String emailAddress = 'jaleesreader@gmail.com';
-      final String subject = '[$_selectedCategory] رسالة من تطبيق جليس';
-      final String body = _messageController.text.trim();
-      
-      // Create mailto URL with proper encoding
-      final String mailtoUrl = 'mailto:$emailAddress?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
-      final Uri emailUri = Uri.parse(mailtoUrl);
+      // Create contact message
+      final message = ContactMessageModel(
+        category: _selectedCategory!,
+        message: _messageController.text.trim(),
+        createdAt: DateTime.now(),
+      );
 
-      // Try to launch email
-      try {
-        final bool launched = await launchUrl(
-          emailUri,
-          mode: LaunchMode.externalApplication,
-        );
+      // Send message to Supabase
+      await _contactDataSource.sendContactMessage(message);
 
-        if (launched) {
-          // Clear form and show success
-          if (mounted) {
-            _messageController.clear();
-            setState(() {
-              _selectedCategory = null;
-            });
-            _showSuccessDialog();
-          }
-        } else {
-          // If launchUrl returns false, try alternative method
-          await _showAlternativeDialog(emailAddress, subject, body);
-        }
-      } catch (launchError) {
-        // If launch fails, show alternative method
-        await _showAlternativeDialog(emailAddress, subject, body);
+      // Clear form and show success
+      if (mounted) {
+        _messageController.clear();
+        setState(() {
+          _selectedCategory = null;
+        });
+        _showSuccessDialog();
       }
     } catch (e) {
       if (mounted) {
         _showSnackBar(
-          'حدث خطأ غير متوقع. الرجاء المحاولة مرة أخرى.',
+          'حدث خطأ أثناء إرسال الرسالة. الرجاء المحاولة مرة أخرى.',
           AppColors.errorRed,
           Icons.error_outline,
         );
@@ -101,97 +95,6 @@ class _ContactUsPageState extends State<ContactUsPage> {
     }
   }
 
-  Future<void> _showAlternativeDialog(
-      String email, String subject, String body) async {
-    final fullMessage = 'البريد الإلكتروني: $email\n\nالموضوع: $subject\n\nالرسالة:\n$body';
-    
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r(context)),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.info_outline,
-              color: AppColors.primaryBlue,
-              size: 24.sp(context),
-            ),
-            SizedBox(width: 12.w(context)),
-            Text(
-              'تعذر فتح البريد',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18.sp(context),
-                color: AppColors.textMain,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'يمكنك نسخ المعلومات وإرسالها يدوياً:',
-              style: TextStyle(
-                fontSize: 14.sp(context),
-                color: AppColors.textSub,
-              ),
-            ),
-            SizedBox(height: 16.h(context)),
-            Container(
-              padding: EdgeInsets.all(12.w(context)),
-              decoration: BoxDecoration(
-                color: AppColors.inputBorder.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(12.r(context)),
-              ),
-              child: SelectableText(
-                fullMessage,
-                style: TextStyle(
-                  fontSize: 13.sp(context),
-                  color: AppColors.textMain,
-                  height: 1.5,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: fullMessage));
-              Navigator.pop(context);
-              _showSnackBar(
-                'تم نسخ المعلومات',
-                AppColors.primaryBlue,
-                Icons.check_circle,
-              );
-            },
-            child: Text(
-              'نسخ المعلومات',
-              style: TextStyle(
-                color: AppColors.primaryBlue,
-                fontWeight: FontWeight.bold,
-                fontSize: 14.sp(context),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'إغلاق',
-              style: TextStyle(
-                color: AppColors.textSub,
-                fontSize: 14.sp(context),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showSnackBar(String message, Color color, IconData icon) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -465,7 +368,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
             // Info Text
             Center(
               child: Text(
-                'سيتم فتح تطبيق البريد الإلكتروني لإرسال رسالتك',
+                'سيتم إرسال رسالتك مباشرة إلى فريق جليس',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12.sp(context),

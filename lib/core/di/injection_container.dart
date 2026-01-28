@@ -54,6 +54,8 @@ import '../../features/quotes/domain/usecases/toggle_favorite_usecase.dart';
 import '../../features/quotes/domain/usecases/delete_quote_usecase.dart';
 import '../../features/quotes/presentation/cubit/quote_cubit.dart';
 
+import '../../features/contact_us/data/datasources/contact_remote_data_source.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init(SharedPreferences sharedPreferences) async {
@@ -192,6 +194,11 @@ Future<void> init(SharedPreferences sharedPreferences) async {
       deleteQuoteUseCase: sl(),
       extractTextFromImageUseCase: sl(),
     ),
+  );
+
+  // ! Features - Contact Us
+  sl.registerLazySingleton<ContactRemoteDataSource>(
+    () => ContactRemoteDataSourceImpl(supabaseClient: sl()),
   );
 
   // ! Services
