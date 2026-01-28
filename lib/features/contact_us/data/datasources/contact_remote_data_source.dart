@@ -28,15 +28,21 @@ class ContactRemoteDataSourceImpl implements ContactRemoteDataSource {
         try {
           final profile = await supabaseClient
               .from('profiles')
-              .select('name')
+              .select('full_name')
               .eq('id', currentUser.id)
               .single();
           
-          if (profile['name'] != null) {
-            messageData['user_name'] = profile['name'];
+          if (profile['full_name'] != null) {
+            messageData['user_name'] = profile['full_name'];
           }
         } catch (e) {
-          // If profile fetch fails, continue without name
+          // If profile fetch fails, try getting name from user metadata
+          final name = currentUser.userMetadata?['full_name'] ?? 
+                       currentUser.userMetadata?['name'] ??
+                       currentUser.email?.split('@').first;
+          if (name != null) {
+            messageData['user_name'] = name;
+          }
         }
       }
       
