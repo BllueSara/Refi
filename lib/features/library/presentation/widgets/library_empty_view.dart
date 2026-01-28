@@ -40,11 +40,11 @@ class LibraryEmptyView extends StatelessWidget {
   String get _lottieAsset {
     switch (activeTab) {
       case AppStrings.tabReading:
-        return 'assets/images/books.json';
+        return 'assets/lottie/Student.json';
       case AppStrings.tabCompleted:
-        return 'assets/images/Success.json';
+        return 'assets/lottie/completed-book.json';
       case AppStrings.tabWishlist:
-        return 'assets/images/search imm.json';
+        return 'assets/lottie/Books stack.json';
       default:
         return 'assets/images/books.json';
     }
@@ -54,7 +54,8 @@ class LibraryEmptyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w(context), vertical: 16.h(context)),
+        padding: EdgeInsets.symmetric(
+            horizontal: 24.w(context), vertical: 16.h(context)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -122,7 +123,8 @@ class LibraryEmptyView extends StatelessWidget {
                         builder: (context) => const SearchScreen()),
                   );
                 },
-                icon: Icon(Icons.search, color: Colors.white, size: 20.sp(context)),
+                icon: Icon(Icons.search,
+                    color: Colors.white, size: 20.sp(context)),
                 label: Text(
                   "ابدأ بالبحث عن كتاب",
                   style: GoogleFonts.tajawal(

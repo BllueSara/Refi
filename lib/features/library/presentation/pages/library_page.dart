@@ -9,7 +9,6 @@ import '../widgets/library_skeleton.dart';
 import '../cubit/library_cubit.dart';
 import '../widgets/library_empty_view.dart';
 import '../widgets/library_book_card.dart';
-import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../add_book/presentation/screens/search_screen.dart';
 
 import 'book_details_page.dart';
@@ -307,62 +306,7 @@ class _LibraryPageState extends State<LibraryPage> {
                               activeTab:
                                   _activeTab) // No scroll needed - fits screen
                           : filteredBooks.isEmpty
-                              ? Center(
-                                  child: Builder(
-                                    builder: (context) {
-                                      String title = "لا توجد نتائج";
-                                      String? subtitle =
-                                          "جرب البحث بكلمات مختلفة";
-
-                                      if (_searchController.text.isEmpty) {
-                                        switch (_activeTab) {
-                                          case AppStrings.tabReading:
-                                            title =
-                                                "رفوفك الحالية فارغة.. ما هو رفيقك القادم؟";
-                                            subtitle = null;
-                                            break;
-                                          case AppStrings.tabCompleted:
-                                            title =
-                                                "مكتبة الإنجازات تنتظر بطلها الأول!";
-                                            subtitle = null;
-                                            break;
-                                          case AppStrings.tabWishlist:
-                                            title =
-                                                "قائمة الأمنيات فارغة، استكشف كتباً تثير فضولك.";
-                                            subtitle = null;
-                                            break;
-                                          default:
-                                            title =
-                                                "لا توجد كتب في هذا القسم بعد، استمر في القراءة لملئه!";
-                                            subtitle = null;
-                                        }
-                                      }
-
-                                      return EmptyStateWidget(
-                                        title: title,
-                                        subtitle: subtitle,
-                                        activeTab: _activeTab,
-                                        // Add search button for wishlist tab
-                                        actionLabel:
-                                            _activeTab == AppStrings.tabWishlist
-                                                ? "ابدأ بالبحث عن كتاب"
-                                                : null,
-                                        onAction:
-                                            _activeTab == AppStrings.tabWishlist
-                                                ? () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            const SearchScreen(),
-                                                      ),
-                                                    );
-                                                  }
-                                                : null,
-                                      );
-                                    },
-                                  ),
-                                )
+                              ? LibraryEmptyView(activeTab: _activeTab)
                               : GridView.builder(
                                   padding: EdgeInsets.all(16.w(context)),
                                   gridDelegate:

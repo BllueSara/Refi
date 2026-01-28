@@ -13,9 +13,9 @@ class GeminiOCRService implements OCRService {
       throw Exception('GEMINI_API_KEY not found in .env');
     }
 
-    // التغيير هنا: استخدم gemini-1.5-flash لضمان التوافق والسرعة
+    // استخدام gemini-pro (أكثر استقراراً) أو gemini-1.5-flash للسرعة
     _model = GenerativeModel(
-      model: 'gemini 2.5 Flash-Lite',
+      model: 'gemini-2.5-flash-lite',
       apiKey: apiKey,
     );
     print('🚀 Gemini Flash Initialized for Refi OCR');

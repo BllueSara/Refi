@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../core/constants/colors.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/responsive_utils.dart';
 
 class QuotesEmptyView extends StatefulWidget {
-  const QuotesEmptyView({super.key});
+  final String? activeTab;
+
+  const QuotesEmptyView({super.key, this.activeTab});
 
   @override
   State<QuotesEmptyView> createState() => _QuotesEmptyViewState();
@@ -50,6 +53,39 @@ class _QuotesEmptyViewState extends State<QuotesEmptyView>
     super.dispose();
   }
 
+  String get _lottieAsset {
+    switch (widget.activeTab) {
+      case AppStrings.filterByBook:
+        return 'assets/lottie/Book.json';
+      case AppStrings.filterFavorites:
+        return 'assets/lottie/Testimonials Icon.json';
+      case AppStrings.tabAll:
+      default:
+        return 'assets/images/books.json';
+    }
+  }
+
+  String get _title {
+    switch (widget.activeTab) {
+      case AppStrings.filterByBook:
+        return 'لم تضف أي اقتباسات لهذا الكتاب بعد..\nابدأ بالمسح الآن!';
+      case AppStrings.filterFavorites:
+        return 'لم تقم بإضافة أي اقتباسات للمفضلة بعد';
+      case AppStrings.tabAll:
+      default:
+        return 'كلماتك المفضلة تنتظر أن تُحفظ هنا..\nابدأ بمسح أول اقتباس.';
+    }
+  }
+
+  String? get _subtitle {
+    switch (widget.activeTab) {
+      case AppStrings.filterFavorites:
+        return 'اضغط على أيقونة القلب لحفظ اقتباساتك المفضلة';
+      default:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -70,7 +106,7 @@ class _QuotesEmptyViewState extends State<QuotesEmptyView>
                 height: 250.h(context),
                 width: 250.w(context),
                 child: Lottie.asset(
-                  'assets/images/books.json',
+                  _lottieAsset,
                   fit: BoxFit.contain,
                   repeat: true,
                 ),
@@ -79,7 +115,7 @@ class _QuotesEmptyViewState extends State<QuotesEmptyView>
 
               // Contextual Copy
               Text(
-                'كلماتك المفضلة تنتظر أن تُحفظ هنا..\nابدأ بمسح أول اقتباس.',
+                _title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18.sp(context),
@@ -88,6 +124,18 @@ class _QuotesEmptyViewState extends State<QuotesEmptyView>
                   color: AppColors.textMain,
                 ),
               ),
+              if (_subtitle != null) ...[
+                SizedBox(height: 8.h(context)),
+                Text(
+                  _subtitle!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.sp(context),
+                    height: 1.4,
+                    color: AppColors.textSub,
+                  ),
+                ),
+              ],
               SizedBox(height: 16.h(context)),
               // Decorative dots
               Row(

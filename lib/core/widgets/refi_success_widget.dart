@@ -48,19 +48,11 @@ class RefiSuccessWidget extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Lottie Animation Container - Perfectly Centered
-                  Container(
-                    width: 260.w(context),
-                    height: 260.h(context),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.05),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Lottie.asset(
-                        'assets/images/Success.json',
-                        repeat: false,
-                        fit: BoxFit.contain,
-                      ),
+                  Center(
+                    child: Lottie.asset(
+                      'assets/images/Success.json',
+                      repeat: false,
+                      fit: BoxFit.contain,
                     ),
                   ),
                   SizedBox(height: 48.h(context)),

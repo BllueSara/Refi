@@ -317,11 +317,21 @@ class _QuotesPageState extends State<QuotesPage>
                   final quotes = state.quotes;
 
                   if (quotes.isEmpty) {
-                    return const QuotesEmptyView();
+                    return QuotesEmptyView(activeTab: _activeTab);
                   }
 
                   // Filter logic based on tab
                   List<QuoteEntity> displayedQuotes = quotes;
+
+                  // Filter by tab first
+                  if (_activeTab == AppStrings.filterByBook) {
+                    displayedQuotes = quotes
+                        .where((q) => q.bookId != null || q.bookTitle != null)
+                        .toList();
+                  } else if (_activeTab == AppStrings.filterFavorites) {
+                    displayedQuotes =
+                        quotes.where((q) => q.isFavorite).toList();
+                  }
 
                   // Apply search filter
                   if (_searchController.text.isNotEmpty) {
@@ -344,124 +354,14 @@ class _QuotesPageState extends State<QuotesPage>
                     }).toList();
                   }
 
+                  // Check if filtered quotes are empty
+                  if (displayedQuotes.isEmpty) {
+                    return QuotesEmptyView(activeTab: _activeTab);
+                  }
+
+                  // Handle "By Book" view separately
                   if (_activeTab == AppStrings.filterByBook) {
-                    // Filter books by search query
-                    List<QuoteEntity> booksQuotes = quotes
-                        .where((q) => q.bookId != null || q.bookTitle != null)
-                        .toList();
-
-                    if (_searchController.text.isNotEmpty) {
-                      final query = _searchController.text.toLowerCase();
-                      booksQuotes = booksQuotes.where((quote) {
-                        final textMatch =
-                            quote.text.toLowerCase().contains(query);
-                        final bookTitleMatch =
-                            quote.bookTitle?.toLowerCase().contains(query) ??
-                                false;
-                        final bookAuthorMatch =
-                            quote.bookAuthor?.toLowerCase().contains(query) ??
-                                false;
-                        final notesMatch =
-                            quote.notes?.toLowerCase().contains(query) ?? false;
-                        return textMatch ||
-                            bookTitleMatch ||
-                            bookAuthorMatch ||
-                            notesMatch;
-                      }).toList();
-                    }
-
-                    // Check if valid books exist, otherwise show specific empty state
-                    if (booksQuotes.isNotEmpty) {
-                      return QuotesByBookView(quotes: booksQuotes);
-                    } else {
-                      // Empty state for "By Book" if no books found
-                      return Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(24.0.w(context)),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(24.w(context)),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.auto_stories_outlined,
-                                  size: 64.sp(context),
-                                  color: AppColors.primaryBlue.withOpacity(0.7),
-                                ),
-                              ),
-                              SizedBox(height: 24.h(context)),
-                              Text(
-                                'لم تضف أي اقتباسات لهذا الكتاب بعد..\nابدأ بالمسح الآن!',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 16.sp(context),
-                                  color: AppColors.textMain,
-                                  height: 1.5,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                  } else if (_activeTab == AppStrings.filterFavorites) {
-                    displayedQuotes =
-                        quotes.where((q) => q.isFavorite).toList();
-                    if (displayedQuotes.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(24.0.w(context)),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(24.w(context)),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      AppColors.primaryBlue.withOpacity(0.1),
-                                      AppColors.secondaryBlue.withOpacity(0.1),
-                                    ],
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.favorite_border,
-                                  size: 64.sp(context),
-                                  color: AppColors.primaryBlue.withOpacity(0.7),
-                                ),
-                              ),
-                              SizedBox(height: 24.h(context)),
-                              Text(
-                                'لم تقم بإضافة أي اقتباسات للمفضلة بعد',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 16.sp(context),
-                                  color: AppColors.textMain,
-                                  height: 1.5,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(height: 8.h(context)),
-                              Text(
-                                'اضغط على أيقونة القلب لحفظ اقتباساتك المفضلة',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13.sp(context),
-                                  color: AppColors.textSub,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
+                    return QuotesByBookView(quotes: displayedQuotes);
                   }
 
                   return RefreshIndicator(

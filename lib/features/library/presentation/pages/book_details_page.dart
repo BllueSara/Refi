@@ -18,6 +18,7 @@ import '../../../quotes/domain/usecases/get_book_quotes_usecase.dart';
 import '../cubit/library_cubit.dart';
 import '../../../add_book/presentation/screens/manual_entry_screen.dart';
 import '../../../quotes/presentation/pages/book_quotes_details_page.dart';
+import '../../../quotes/presentation/widgets/quote_card.dart';
 import '../../../scanner/presentation/pages/scanner_page.dart';
 
 class BookDetailsPage extends StatelessWidget {
@@ -309,10 +310,10 @@ class BookDetailsPage extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: state.quotes.length,
             separatorBuilder: (context, index) =>
-                SizedBox(height: 12.h(context)),
+                SizedBox(height: 16.h(context)),
             itemBuilder: (context, index) {
               final quote = state.quotes[index];
-              return _QuoteItemWidget(quote: quote);
+              return QuoteCard(quote: quote);
             },
           ),
       ],
@@ -637,138 +638,3 @@ class BookDetailsPage extends StatelessWidget {
   }
 }
 
-class _QuoteItemWidget extends StatefulWidget {
-  final dynamic quote; // QuoteEntity
-
-  const _QuoteItemWidget({required this.quote});
-
-  @override
-  State<_QuoteItemWidget> createState() => _QuoteItemWidgetState();
-}
-
-class _QuoteItemWidgetState extends State<_QuoteItemWidget> {
-  bool _isExpanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.w(context)),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16.r(context)),
-        border: Border.all(
-          color: AppColors.inputBorder.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final textSpan = TextSpan(
-                text: widget.quote.text,
-                style: GoogleFonts.tajawal(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14.sp(context),
-                  height: 1.6,
-                ),
-              );
-
-              final textPainter = TextPainter(
-                text: textSpan,
-                textDirection: TextDirection.rtl,
-                maxLines: 3,
-              );
-
-              textPainter.layout(maxWidth: constraints.maxWidth);
-
-              final needsExpansion =
-                  textPainter.didExceedMaxLines && !_isExpanded;
-
-              return AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: needsExpansion
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.quote.text,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.tajawal(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.sp(context),
-                              height: 1.6,
-                            ),
-                          ),
-                          SizedBox(height: 8.h(context)),
-                          GestureDetector(
-                            onTap: () {
-                              if (mounted) {
-                                setState(() {
-                                  _isExpanded = true;
-                                });
-                              }
-                            },
-                            child: Text(
-                              '... اقرأ المزيد',
-                              style: GoogleFonts.tajawal(
-                                color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14.sp(context),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : SelectableText(
-                        widget.quote.text,
-                        style: GoogleFonts.tajawal(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.sp(context),
-                          height: 1.6,
-                        ),
-                      ),
-              );
-            },
-          ),
-          if (widget.quote.notes != null && widget.quote.notes!.isNotEmpty) ...[
-            SizedBox(height: 8.h(context)),
-            Text(
-              widget.quote.notes!,
-              style: GoogleFonts.tajawal(
-                fontSize: 12.sp(context),
-                color: AppColors.textSub,
-              ),
-            ),
-          ],
-          SizedBox(height: 8.h(context)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 8.w(context),
-                  vertical: 4.h(context),
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r(context)),
-                ),
-                child: Text(
-                  widget.quote.feeling,
-                  style: TextStyle(
-                    fontSize: 10.sp(context),
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}

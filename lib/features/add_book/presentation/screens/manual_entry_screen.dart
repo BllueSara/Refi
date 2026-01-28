@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -15,6 +15,12 @@ import '../../../../core/utils/responsive_utils.dart';
 import '../../../library/domain/entities/book_entity.dart';
 import '../../../library/presentation/cubit/library_cubit.dart';
 import '../../../../core/widgets/refi_success_widget.dart';
+import '../widgets/book_cover_picker.dart';
+import '../widgets/book_form_text_field.dart';
+import '../widgets/book_status_selector.dart';
+import '../widgets/save_book_button.dart';
+import '../widgets/image_source_bottom_sheet.dart';
+import '../widgets/web_cover_search_dialog.dart';
 
 class ManualEntryScreen extends StatefulWidget {
   final BookEntity? book;
@@ -79,61 +85,18 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   }
 
   void _showImageSourceSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(24.r(context)))),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.all(24.w(context)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("اختر غلاف الكتاب",
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontSize: 18.sp(context),
-                      )),
-              SizedBox(height: 24.h(context)),
-              ListTile(
-                leading: Icon(Icons.search, size: 24.sp(context)),
-                title: Text("بحث في الإنترنت",
-                    style: TextStyle(fontSize: 14.sp(context))),
-                onTap: () {
-                  Navigator.pop(context);
-                  _searchCoverFromWeb();
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_library, size: 24.sp(context)),
-                title: Text("معرض الصور",
-                    style: TextStyle(fontSize: 14.sp(context))),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.camera_alt, size: 24.sp(context)),
-                title: Text("الكاميرا",
-                    style: TextStyle(fontSize: 14.sp(context))),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-            ],
-          ),
-        );
-      },
+    ImageSourceBottomSheet.show(
+      context,
+      onWebSearch: _searchCoverFromWeb,
+      onGalleryPick: () => _pickImage(ImageSource.gallery),
+      onCameraPick: () => _pickImage(ImageSource.camera),
     );
   }
 
   void _searchCoverFromWeb() {
     showDialog(
       context: context,
-      builder: (context) => _WebCoverSearchDialog(
+      builder: (context) => WebCoverSearchDialog(
         initialQuery: _titleController.text,
         onImageSelected: (url) {
           setState(() {
@@ -347,52 +310,111 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(AppStrings.addBookTitle,
-            style: TextStyle(fontSize: 20.sp(context))),
-        leading: IconButton(
-            icon: Icon(Icons.arrow_back, size: 24.sp(context)),
-            onPressed: () => Navigator.pop(context)),
+        elevation: 0,
+        backgroundColor: AppColors.white,
+        title: Text(
+          widget.book != null ? "تعديل الكتاب" : AppStrings.addBookTitle,
+          style: GoogleFonts.tajawal(
+            fontSize: 20.sp(context),
+            fontWeight: FontWeight.bold,
+            color: AppColors.textMain,
+          ),
+        ),
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context);
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                CupertinoIcons.back,
+                color: AppColors.textMain,
+                size: 28.sp(context),
+              ),
+            ],
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(24.w(context)),
-        child: Column(
-          children: [
-            // 1. Cover
-            _buildCoverPicker(),
-            SizedBox(height: 32.h(context)),
-            // 2. Fields
-            Form(
-              key: _formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Column(
-                children: [
-                  _buildTextField(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+              horizontal: 24.w(context), vertical: 20.h(context)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Section
+              if (widget.book == null) ...[
+                Text(
+                  "ابدأ بإضافة تفاصيل كتابك",
+                  style: GoogleFonts.tajawal(
+                    fontSize: 24.sp(context),
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textMain,
+                  ),
+                ),
+                SizedBox(height: 8.h(context)),
+                Text(
+                  "املأ المعلومات التالية لإضافة كتاب جديد إلى مكتبتك",
+                  style: GoogleFonts.tajawal(
+                    fontSize: 14.sp(context),
+                    color: AppColors.textSub,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: 32.h(context)),
+              ],
+
+              // 1. Cover Section
+              BookCoverPicker(
+                imageFile: _imageFile,
+                webImageUrl: _webImageUrl,
+                onTap: _showImageSourceSheet,
+              ),
+              SizedBox(height: 32.h(context)),
+
+              // 2. Form Fields
+              Form(
+                key: _formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    BookFormTextField(
                       label: AppStrings.bookTitleLabel,
                       hint: AppStrings.enterBookTitle,
                       controller: _titleController,
+                      icon: Icons.menu_book_rounded,
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
                           return "عذراً، هذا الحقل مطلوب";
                         }
                         return null;
-                      }),
-                  SizedBox(height: 24.h(context)),
-                  _buildTextField(
+                      },
+                    ),
+                    SizedBox(height: 24.h(context)),
+                    BookFormTextField(
                       label: AppStrings.authorNameLabel,
                       hint: AppStrings.enterAuthorName,
                       controller: _authorController,
+                      icon: Icons.person_outline_rounded,
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
                           return "عذراً، هذا الحقل مطلوب";
                         }
                         return null;
-                      }),
-                  SizedBox(height: 24.h(context)),
-                  _buildTextField(
+                      },
+                    ),
+                    SizedBox(height: 24.h(context)),
+                    BookFormTextField(
                       label: "عدد صفحات الكتاب",
                       hint: "مثال: 200",
                       controller: _pagesController,
+                      icon: Icons.numbers_rounded,
                       isNumber: true,
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
@@ -406,283 +428,53 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                           return "عدد الصفحات يجب أن يكون أكبر من صفر";
                         }
                         return null;
-                      }),
-                ],
-              ),
-            ),
-            SizedBox(height: 32.h(context)),
-
-            // 4. Status
-            _buildStatusSection(),
-            SizedBox(height: 48.h(context)),
-            // 5. Save Button
-            _isSaving
-                ? CircularProgressIndicator(strokeWidth: 3.w(context))
-                : _buildSaveButtonUI(
-                    label: AppStrings.saveBook, onTap: _saveBook),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCoverPicker() {
-    return GestureDetector(
-      onTap: _showImageSourceSheet,
-      child: Container(
-        height: 250.h(context),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(24.r(context)),
-          image: (_imageFile != null || _webImageUrl != null)
-              ? DecorationImage(
-                  image: _imageFile != null
-                      ? FileImage(_imageFile!) as ImageProvider
-                      : NetworkImage(_webImageUrl!),
-                  fit: BoxFit.cover,
-                )
-              : null,
-        ),
-        child: (_imageFile == null && _webImageUrl == null)
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_a_photo,
-                        size: 48.sp(context), color: AppColors.primaryBlue),
-                    SizedBox(height: 16.h(context)),
-                    Text(AppStrings.addBookCover,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontSize: 16.sp(context),
-                                )),
+                      },
+                    ),
                   ],
                 ),
-              )
-            : null,
-      ),
-    );
-  }
+              ),
+              SizedBox(height: 32.h(context)),
 
-  Widget _buildTextField(
-      {required String label,
-      required String hint,
-      required TextEditingController controller,
-      bool isNumber = false,
-      String? Function(String?)? validator}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontSize: 14.sp(context),
-                )),
-        SizedBox(height: 8.h(context)),
-        TextFormField(
-          controller: controller,
-          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          validator: validator,
-          inputFormatters:
-              isNumber ? [FilteringTextInputFormatter.digitsOnly] : [],
-          style: TextStyle(fontSize: 16.sp(context)),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(fontSize: 14.sp(context)),
-            // Proper Error Styling
-            errorStyle: GoogleFonts.tajawal(
-              fontSize: 12.sp(context),
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFFD32F2F),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r(context)),
-              borderSide: const BorderSide(color: Color(0xFFD32F2F), width: 1),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r(context)),
-              borderSide:
-                  const BorderSide(color: Color(0xFFD32F2F), width: 1.5),
-            ),
-            // Default Styling
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w(context), vertical: 16.h(context)),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r(context)),
-              borderSide: BorderSide(
-                  color: AppColors.inputBorder.withOpacity(0.5), width: 1),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r(context)),
-              borderSide: BorderSide(
-                  color: AppColors.inputBorder.withOpacity(0.5), width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r(context)),
-              borderSide:
-                  const BorderSide(color: AppColors.primaryBlue, width: 1.5),
-            ),
+              // 3. Status Section
+              BookStatusSelector(
+                selectedStatus: _readingStatus,
+                onStatusChanged: (status) {
+                  setState(() => _readingStatus = status);
+                },
+              ),
+              SizedBox(height: 48.h(context)),
+
+              // 4. Save Button
+              _isSaving
+                  ? Center(
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(
+                            strokeWidth: 3.w(context),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primaryBlue),
+                          ),
+                          SizedBox(height: 16.h(context)),
+                          Text(
+                            "جاري الحفظ...",
+                            style: GoogleFonts.tajawal(
+                              fontSize: 14.sp(context),
+                              color: AppColors.textSub,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SaveBookButton(
+                      label: widget.book != null
+                          ? "حفظ التعديلات"
+                          : AppStrings.saveBook,
+                      onTap: _saveBook,
+                      isEdit: widget.book != null,
+                    ),
+              SizedBox(height: 24.h(context)),
+            ],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusSection() {
-    // Order: Wishlist -> Reading -> Finished
-    final list = [
-      BookStatus.wishlist,
-      BookStatus.reading,
-      BookStatus.completed,
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(AppStrings.readingStatusLabel,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontSize: 14.sp(context),
-                )),
-        SizedBox(height: 12.h(context)),
-        Container(
-          padding: EdgeInsets.all(4.w(context)),
-          decoration: BoxDecoration(
-              color: AppColors.inputBorder.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(24.r(context))),
-          child: Row(
-            children: list.map((s) {
-              final sel = _readingStatus == s;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _readingStatus = s),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h(context)),
-                    decoration: BoxDecoration(
-                        gradient: sel ? AppColors.refiMeshGradient : null,
-                        borderRadius: BorderRadius.circular(20.r(context))),
-                    alignment: Alignment.center,
-                    child: Text(s.label,
-                        style: TextStyle(
-                            fontSize: 12.sp(context),
-                            fontWeight: FontWeight.bold,
-                            color: sel ? Colors.white : AppColors.textSub)),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSaveButtonUI(
-      {required String label, required VoidCallback onTap}) {
-    return Container(
-      width: double.infinity,
-      height: 56.h(context),
-      decoration: BoxDecoration(
-          gradient: AppColors.refiMeshGradient,
-          borderRadius: BorderRadius.circular(24.r(context))),
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24.r(context)))),
-        child: Text(label,
-            style: GoogleFonts.tajawal(
-                fontWeight: FontWeight.bold,
-                fontSize: 16.sp(context),
-                color: Colors.white)),
-      ),
-    );
-  }
-}
-
-class _WebCoverSearchDialog extends StatefulWidget {
-  final String initialQuery;
-  final Function(String) onImageSelected;
-  const _WebCoverSearchDialog(
-      {required this.initialQuery, required this.onImageSelected});
-  @override
-  State<_WebCoverSearchDialog> createState() => _WebCoverSearchDialogState();
-}
-
-class _WebCoverSearchDialogState extends State<_WebCoverSearchDialog> {
-  final TextEditingController _ctrl = TextEditingController();
-  List<String> _res = [];
-  bool _load = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl.text = widget.initialQuery;
-    if (widget.initialQuery.isNotEmpty) _search(widget.initialQuery);
-  }
-
-  Future<void> _search(String q) async {
-    setState(() => _load = true);
-    try {
-      final r = await http.get(
-          Uri.parse('https://www.google.com/search?q=$q&tbm=isch&safe=active'),
-          headers: {'User-Agent': 'Mozilla/5.0'});
-      if (r.statusCode == 200) {
-        final matches = RegExp(
-                r'src="(https://encrypted-tbn[0-9]\.gstatic\.com/images\?q=[^"]*)"')
-            .allMatches(r.body);
-        setState(() {
-          _res = matches.map((m) => m.group(1)!).toList().take(30).toList();
-          _load = false;
-        });
-      } else
-        setState(() => _load = false);
-    } catch (_) {
-      setState(() => _load = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      child: Padding(
-        padding: EdgeInsets.all(16.w(context)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-                controller: _ctrl,
-                style: TextStyle(fontSize: 16.sp(context)),
-                decoration: InputDecoration(
-                    hintText: "ابحث عن غلاف",
-                    hintStyle: TextStyle(fontSize: 14.sp(context)),
-                    prefixIcon: Icon(Icons.search, size: 24.sp(context))),
-                onSubmitted: _search),
-            SizedBox(height: 16.h(context)),
-            SizedBox(
-                height: 300.h(context),
-                child: _load
-                    ? Center(
-                        child: CircularProgressIndicator(
-                            strokeWidth: 3.w(context)))
-                    : GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 0.7,
-                            crossAxisSpacing: 8.w(context),
-                            mainAxisSpacing: 8.h(context)),
-                        itemCount: _res.length,
-                        itemBuilder: (c, i) => GestureDetector(
-                            onTap: () => widget.onImageSelected(_res[i]),
-                            child: ClipRRect(
-                                borderRadius:
-                                    BorderRadius.circular(8.r(context)),
-                                child:
-                                    Image.network(_res[i], fit: BoxFit.cover))),
-                      )),
-          ],
         ),
       ),
     );
