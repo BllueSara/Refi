@@ -6,6 +6,7 @@ import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/dimensions.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/di/injection_container.dart' as di;
+import '../../../../core/services/subscription_manager.dart';
 import '../../../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../../subscription/presentation/screens/market_screen.dart';
@@ -35,6 +36,27 @@ class ProfilePageContent extends StatefulWidget {
 }
 
 class _ProfilePageContentState extends State<ProfilePageContent> {
+  String _currentPlanName = AppStrings.planBasic;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlanName();
+  }
+
+  Future<void> _loadPlanName() async {
+    try {
+      final planName = await di.sl<SubscriptionManager>().getCurrentPlanName();
+      if (mounted) {
+        setState(() {
+          _currentPlanName = planName;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading plan name: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,7 +154,7 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                         borderRadius: BorderRadius.circular(12.r(context)),
                       ),
                       child: Text(
-                        AppStrings.planBasic, // TODO: Get from user subscription
+                        _currentPlanName,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -140,13 +162,16 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                             ),
                       ),
                     ),
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      // Navigate to market screen and refresh plan name when returning
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const MarketScreen(),
                         ),
                       );
+                      // Refresh plan name after returning from market screen
+                      _loadPlanName();
                     },
                   ),
                   SizedBox(height: AppDimensions.paddingM.h(context)),

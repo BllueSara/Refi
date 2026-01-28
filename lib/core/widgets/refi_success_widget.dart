@@ -34,7 +34,8 @@ class RefiSuccessWidget extends StatelessWidget {
             top: MediaQuery.of(context).padding.top + 16.h(context),
             right: 20.w(context),
             child: IconButton(
-              icon: Icon(Icons.close, color: AppColors.textSub, size: 28.sp(context)),
+              icon: Icon(Icons.close,
+                  color: AppColors.textSub, size: 28.sp(context)),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),

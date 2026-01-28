@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
@@ -6,6 +7,7 @@ import '../../domain/entities/plan_entity.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../../../core/services/subscription_manager.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/widgets/refi_success_widget.dart';
 import '../widgets/plan_card.dart';
 
 class MarketScreen extends StatefulWidget {
@@ -111,17 +113,6 @@ class _MarketScreenState extends State<MarketScreen> {
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  Icons.bug_report,
-                  color: AppColors.textMain,
-                  size: 24.sp(context),
-                ),
-                onPressed: _testRevenueCat,
-                tooltip: 'اختبار RevenueCat',
-              ),
-            ],
           ),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -364,17 +355,31 @@ class _MarketScreenState extends State<MarketScreen> {
           await sl<SubscriptionManager>().purchasePackage(packageToPurchase);
       if (success) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('تم الاشتراك بنجاح! استمتع بمميزات جليس بلس'),
-              backgroundColor: AppColors.successGreen,
+          setState(() => _isLoading = false);
+          // Get plan name based on selected billing period
+          final planName = _getPlanNameForBillingPeriod();
+
+          // Show success widget instead of SnackBar
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => RefiSuccessWidget(
+                title: 'تم الاشتراك بنجاح!',
+                subtitle: 'استمتع بمميزات $planName',
+                primaryButtonLabel: 'متابعة',
+                onPrimaryAction: () {
+                  Navigator.of(context).pop(); // Close success widget
+                  Navigator.of(context).pop(); // Close market screen
+                },
+              ),
             ),
           );
-          // Optional: Navigate away or refresh state
+          // Refresh offerings after successful purchase
+          _fetchOfferings();
         }
       } else {
-        // success == false means cancelled (or active but issue with entitlement logic)
+        // success == false means user cancelled the purchase
         if (mounted) {
+          setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('تم إلغاء عملية الاشتراك'),
@@ -387,317 +392,69 @@ class _MarketScreenState extends State<MarketScreen> {
           );
         }
       }
-    } catch (e) {
-      // Error is already logged in manager, show generic error to user or handled inside manager rethrows
+    } on PlatformException catch (e) {
+      // Handle specific platform exceptions
+      String errorMessage = 'حدث خطأ أثناء الاشتراك';
+
+      if (e.code == 'ENTITLEMENT_NOT_ACTIVE') {
+        errorMessage =
+            'تم الشراء لكن الاشتراك غير مفعّل. تحقق من إعدادات RevenueCat.';
+      } else if (e.code == 'NOT_INITIALIZED') {
+        errorMessage = 'RevenueCat غير مهيأ. أعد تشغيل التطبيق.';
+      } else if (e.message != null) {
+        errorMessage = 'خطأ: ${e.message}';
+      }
+
       if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('حدث خطأ أثناء الاشتراك: حاول مرة أخرى'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
+    } catch (e) {
+      // Error is already logged in manager, show generic error to user
+      debugPrint('❌ Unexpected error in _handlePlanSelection: $e');
+      debugPrint('   Error type: ${e.runtimeType}');
+
+      String errorMessage = 'حدث خطأ أثناء الاشتراك';
+
+      // Check if it's a PlatformException wrapped in something else
+      if (e.toString().contains('ENTITLEMENT_NOT_ACTIVE')) {
+        errorMessage =
+            'تم الشراء لكن الاشتراك غير مفعّل. تحقق من إعدادات RevenueCat.';
+      } else if (e.toString().contains('NOT_INITIALIZED')) {
+        errorMessage = 'RevenueCat غير مهيأ. أعد تشغيل التطبيق.';
+      } else {
+        errorMessage = 'حدث خطأ أثناء الاشتراك: ${e.toString()}';
       }
-    }
-  }
 
-  Future<void> _testRevenueCat() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final manager = sl<SubscriptionManager>();
-
-      // Get all test information
-      final isInitialized = manager.isInitialized;
-      final isPremium = await manager.isUserPremium();
-      final customerInfo = await manager.getCustomerInfo();
-      final offerings = await manager.getOfferings();
-
-      if (!mounted) return;
-
-      setState(() => _isLoading = false);
-
-      // Show test results dialog
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('نتائج اختبار RevenueCat'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildTestRow(
-                    '✅ التهيئة', isInitialized ? 'نعم' : 'لا', isInitialized),
-                const SizedBox(height: 12),
-                _buildTestRow(
-                    '💎 حالة الاشتراك', isPremium ? 'مميز' : 'عادي', isPremium),
-                const SizedBox(height: 12),
-                _buildTestRow(
-                    '📦 الـ Offerings',
-                    offerings?.current != null ? 'متاحة' : 'غير متاحة',
-                    offerings?.current != null),
-                const SizedBox(height: 12),
-                if (offerings?.current != null) ...[
-                  _buildTestRow(
-                      '  - شهري',
-                      offerings!.current!.monthly != null ? 'متاح' : 'غير متاح',
-                      offerings.current!.monthly != null),
-                  _buildTestRow(
-                      '  - 6 أشهر',
-                      offerings.current!.sixMonth != null ? 'متاح' : 'غير متاح',
-                      offerings.current!.sixMonth != null),
-                  _buildTestRow(
-                      '  - سنوي',
-                      offerings.current!.annual != null ? 'متاح' : 'غير متاح',
-                      offerings.current!.annual != null),
-                  const SizedBox(height: 12),
-                ],
-                if (customerInfo != null) ...[
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Text(
-                    'معلومات المستخدم:',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14.sp(context)),
-                  ),
-                  const SizedBox(height: 8),
-                  Text('User ID: ${customerInfo.originalAppUserId}',
-                      style: TextStyle(fontSize: 12.sp(context))),
-                  const SizedBox(height: 4),
-                  Text(
-                      'Entitlements: ${customerInfo.entitlements.all.keys.join(", ")}',
-                      style: TextStyle(fontSize: 12.sp(context))),
-                  const SizedBox(height: 4),
-                  Text(
-                      'Active Subscriptions: ${customerInfo.activeSubscriptions.length}',
-                      style: TextStyle(fontSize: 12.sp(context))),
-                ],
-              ],
-            ),
-          ),
-          actions: [
-            if (!isInitialized)
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  setState(() => _isLoading = true);
-                  try {
-                    await manager.init();
-                    if (mounted) {
-                      setState(() => _isLoading = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('تم تهيئة RevenueCat بنجاح!'),
-                          backgroundColor: AppColors.successGreen,
-                        ),
-                      );
-                      // Retry test
-                      _testRevenueCat();
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      setState(() => _isLoading = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('فشل التهيئة: $e'),
-                          backgroundColor: Colors.red,
-                          duration: const Duration(seconds: 5),
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: const Text('إعادة تهيئة RevenueCat'),
-              ),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                setState(() => _isLoading = true);
-                try {
-                  final restored = await manager.restorePurchases();
-                  if (mounted) {
-                    setState(() => _isLoading = false);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(restored
-                            ? 'تم استعادة الاشتراك بنجاح'
-                            : 'لا توجد اشتراكات للاستعادة'),
-                        backgroundColor:
-                            restored ? AppColors.successGreen : Colors.orange,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    setState(() => _isLoading = false);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('خطأ في الاستعادة: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
-              child: const Text('استعادة الاشتراكات'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('إغلاق'),
-            ),
-          ],
-        ),
-      );
-    } catch (e, stackTrace) {
       if (mounted) {
         setState(() => _isLoading = false);
-        debugPrint('❌ Error in _testRevenueCat: $e');
-        debugPrint('   Stack trace: $stackTrace');
-
-        // Show detailed error dialog
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('خطأ في الاختبار'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'حدث خطأ أثناء اختبار RevenueCat:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text('$e'),
-                  const SizedBox(height: 16),
-                  if (e.toString().contains('MissingPluginException') ||
-                      e.toString().contains('No implementation found')) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange),
-                      ),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '⚠️ المشكلة: الـ Plugin غير مربوط!',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'هذا يحدث عادة عند استخدام Hot Reload بدلاً من Full Restart.',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  const Text(
-                    'الحلول المقترحة:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('1. أوقف التطبيق بالكامل (Stop)'),
-                  const Text('2. شغّل: flutter clean'),
-                  const Text('3. شغّل: flutter pub get'),
-                  const Text('4. شغّل: flutter run (Full Restart)'),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'ملاحظة: Hot Reload لا يعمل مع Native Plugins!',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Colors.orange,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  setState(() => _isLoading = true);
-                  try {
-                    await sl<SubscriptionManager>().init();
-                    if (mounted) {
-                      setState(() => _isLoading = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('تم تهيئة RevenueCat بنجاح!'),
-                          backgroundColor: AppColors.successGreen,
-                        ),
-                      );
-                      _testRevenueCat();
-                    }
-                  } catch (initError) {
-                    if (mounted) {
-                      setState(() => _isLoading = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('فشل التهيئة: $initError'),
-                          backgroundColor: Colors.red,
-                          duration: const Duration(seconds: 5),
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: const Text('إعادة تهيئة RevenueCat'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('إغلاق'),
-              ),
-            ],
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
     }
   }
 
-  Widget _buildTestRow(String label, String value, bool isSuccess) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14.sp(context),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: 8.w(context), vertical: 4.h(context)),
-          decoration: BoxDecoration(
-            color: isSuccess
-                ? AppColors.successGreen.withOpacity(0.2)
-                : Colors.orange.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8.r(context)),
-          ),
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 12.sp(context),
-              color: isSuccess ? AppColors.successGreen : Colors.orange,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
+  String _getPlanNameForBillingPeriod() {
+    switch (_selectedBillingPeriod) {
+      case 0: // Monthly
+        return AppStrings.planPremiumMonthly;
+      case 1: // 6 Months
+        return AppStrings.planPremiumExtended;
+      case 2: // Yearly
+        return AppStrings.planPremiumYearly;
+      default:
+        return AppStrings.planPremium;
+    }
   }
 }
