@@ -121,8 +121,8 @@ class LibraryCubit extends Cubit<LibraryState> {
         if (!isClosed) emit(LibraryError(failure.message));
       },
       (_) {
-        // Confirm: Refresh to ensure consistency
-        if (!isClosed) loadLibrary(forceRefresh: true);
+        // Success: Keep optimistic update (no need to reload)
+        // The UI is already updated with the latest data
       },
     );
   }
@@ -151,8 +151,8 @@ class LibraryCubit extends Cubit<LibraryState> {
         if (!isClosed) emit(LibraryError(failure.message));
       },
       (_) {
-        // Confirm: Refresh to ensure consistency
-        if (!isClosed) loadLibrary(forceRefresh: true);
+        // Success: Keep optimistic update (no need to reload)
+        // The UI is already updated with the latest data
       },
     );
   }
@@ -184,8 +184,8 @@ class LibraryCubit extends Cubit<LibraryState> {
         if (!isClosed) emit(LibraryError(failure.message));
       },
       (_) {
-        // Confirm: Refresh to ensure consistency
-        if (!isClosed) loadLibrary(forceRefresh: true);
+        // Success: Keep optimistic update (no need to reload)
+        // The UI is already updated with the latest data
       },
     );
   }
