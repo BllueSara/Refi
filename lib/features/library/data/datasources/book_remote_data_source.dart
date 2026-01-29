@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/secrets/app_secrets.dart';
 import '../models/book_model.dart';
 
 abstract class BookRemoteDataSource {
@@ -15,6 +17,15 @@ class BookRemoteDataSourceImpl implements BookRemoteDataSource {
   final SupabaseClient supabaseClient;
   final http.Client client;
 
+  // Rate limiting: Track last request time
+  DateTime? _lastRequestTime;
+  static const Duration _minRequestInterval = Duration(milliseconds: 500);
+
+  // Cache for search results (simple in-memory cache)
+  final Map<String, List<BookModel>> _searchCache = {};
+  static const Duration _cacheExpiry = Duration(minutes: 10);
+  final Map<String, DateTime> _cacheTimestamps = {};
+
   BookRemoteDataSourceImpl({
     required this.supabaseClient,
     required this.client,
@@ -26,46 +37,126 @@ class BookRemoteDataSourceImpl implements BookRemoteDataSource {
     final sanitizedQuery = _sanitizeQuery(query);
     if (sanitizedQuery.isEmpty) return [];
 
-    // 2. API Optimization
+    // 2. Check cache first
+    final cacheKey = sanitizedQuery.toLowerCase().trim();
+    if (_searchCache.containsKey(cacheKey)) {
+      final cacheTime = _cacheTimestamps[cacheKey];
+      if (cacheTime != null &&
+          DateTime.now().difference(cacheTime) < _cacheExpiry) {
+        return _searchCache[cacheKey]!;
+      } else {
+        // Cache expired, remove it
+        _searchCache.remove(cacheKey);
+        _cacheTimestamps.remove(cacheKey);
+      }
+    }
+
+    // 3. Rate limiting: Ensure minimum time between requests
+    await _enforceRateLimit();
+
+    // 4. Build URL with API Key if available
+    final apiKey = AppSecrets.googleBooksApiKey.isNotEmpty
+        ? '&key=${Uri.encodeComponent(AppSecrets.googleBooksApiKey)}'
+        : '';
     final url = Uri.parse(
-      'https://www.googleapis.com/books/v1/volumes?q=$sanitizedQuery&langRestrict=ar&orderBy=relevance&maxResults=20',
+      'https://www.googleapis.com/books/v1/volumes?q=${Uri.encodeComponent(sanitizedQuery)}&langRestrict=ar&orderBy=relevance&maxResults=20$apiKey',
     );
 
-    try {
-      final response = await client.get(url);
+    // 5. Retry logic with exponential backoff
+    const maxRetries = 3;
+    int retryCount = 0;
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        if (data['items'] == null) return [];
+    while (retryCount < maxRetries) {
+      try {
+        final response = await client.get(url);
 
-        final List<dynamic> items = data['items'];
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> data = json.decode(response.body);
+          if (data['items'] == null) {
+            // Cache empty result
+            _searchCache[cacheKey] = [];
+            _cacheTimestamps[cacheKey] = DateTime.now();
+            return [];
+          }
 
-        // 3. Transformation & Validation
-        var books = items
-            .map((item) => BookModel.fromGoogleBooks(item))
-            .where((b) =>
-                b.title.isNotEmpty &&
-                b.title != 'No Title' &&
-                b.imageUrl != null &&
-                b.imageUrl!.isNotEmpty)
-            .toList();
+          final List<dynamic> items = data['items'];
 
-        // 4. Smart Ranking (Levenshtein)
-        final normalizedQuery = _normalizeArabic(sanitizedQuery);
+          // 6. Transformation & Validation
+          var books = items
+              .map((item) => BookModel.fromGoogleBooks(item))
+              .where((b) =>
+                  b.title.isNotEmpty &&
+                  b.title != 'No Title' &&
+                  b.imageUrl != null &&
+                  b.imageUrl!.isNotEmpty)
+              .toList();
 
-        books.sort((a, b) {
-          final distA = _getRelevanceScore(a.title, normalizedQuery);
-          final distB = _getRelevanceScore(b.title, normalizedQuery);
-          return distA.compareTo(distB);
-        });
+          // 7. Smart Ranking (Levenshtein)
+          final normalizedQuery = _normalizeArabic(sanitizedQuery);
 
-        return books;
-      } else {
-        throw ServerFailure('Google Books API Error: ${response.statusCode}');
+          books.sort((a, b) {
+            final distA = _getRelevanceScore(a.title, normalizedQuery);
+            final distB = _getRelevanceScore(b.title, normalizedQuery);
+            return distA.compareTo(distB);
+          });
+
+          // 8. Cache the result
+          _searchCache[cacheKey] = books;
+          _cacheTimestamps[cacheKey] = DateTime.now();
+
+          return books;
+        } else if (response.statusCode == 429) {
+          // Rate limit exceeded - exponential backoff
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            throw ServerFailure(
+              'تم تجاوز الحد المسموح من طلبات البحث. يرجى المحاولة بعد قليل.',
+            );
+          }
+
+          // Exponential backoff: 2^retryCount seconds
+          final waitTime = Duration(seconds: 1 << retryCount);
+          await Future.delayed(waitTime);
+
+          // Also enforce rate limit after waiting
+          await _enforceRateLimit();
+          continue;
+        } else {
+          throw ServerFailure(
+            'Google Books API Error: ${response.statusCode}. ${response.statusCode == 403 ? "يرجى التحقق من API Key" : ""}',
+          );
+        }
+      } catch (e) {
+        // If it's a ServerFailure, rethrow it
+        if (e is ServerFailure) {
+          rethrow;
+        }
+
+        // For network errors, retry with exponential backoff
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          throw ServerFailure(
+            'فشل الاتصال بخدمة البحث. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.',
+          );
+        }
+
+        final waitTime = Duration(seconds: 1 << retryCount);
+        await Future.delayed(waitTime);
       }
-    } catch (e) {
-      throw ServerFailure(e.toString());
     }
+
+    throw ServerFailure('فشل البحث بعد عدة محاولات');
+  }
+
+  /// Enforces rate limiting by waiting if necessary
+  Future<void> _enforceRateLimit() async {
+    if (_lastRequestTime != null) {
+      final timeSinceLastRequest = DateTime.now().difference(_lastRequestTime!);
+      if (timeSinceLastRequest < _minRequestInterval) {
+        await Future.delayed(_minRequestInterval - timeSinceLastRequest);
+      }
+    }
+    _lastRequestTime = DateTime.now();
   }
 
   // --- Helper Methods ---

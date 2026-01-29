@@ -19,6 +19,7 @@ import 'features/scanner/presentation/cubit/scanner_cubit.dart';
 import 'features/quotes/presentation/cubit/quote_cubit.dart';
 import 'core/widgets/main_navigation_screen.dart';
 import 'core/widgets/splash_page.dart';
+import 'core/widgets/network_aware_widget.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -154,7 +155,9 @@ class RefiApp extends StatelessWidget {
           },
           builder: (context, state) {
             if (state is AuthAuthenticated) {
-              return const MainNavigationScreen();
+              return const NetworkAwareWidget(
+                child: MainNavigationScreen(),
+              );
             } else if (state is AuthFirstTime) {
               return const OnboardingScreen();
             } else if (state is AuthUnauthenticated) {

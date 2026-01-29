@@ -46,23 +46,36 @@ class ProfileCubit extends Cubit<ProfileState> {
   }) : super(ProfileInitial());
 
   Future<void> loadProfile() async {
+    if (isClosed) return;
     emit(ProfileLoading());
+    
     final user = supabaseClient.auth.currentUser;
 
     if (user == null) {
-      emit(const ProfileError("User not logged in"));
+      if (!isClosed) emit(const ProfileError("User not logged in"));
       return;
     }
 
     final result = await getProfileUseCase(user.id);
 
-    result.fold((failure) => emit(ProfileError(failure.message)), (profile) {
-      emit(ProfileLoaded(profile: profile, email: user.email ?? ''));
-    });
+    if (isClosed) return;
+    
+    result.fold(
+      (failure) {
+        if (!isClosed) emit(ProfileError(failure.message));
+      },
+      (profile) {
+        if (!isClosed) {
+          emit(ProfileLoaded(profile: profile, email: user.email ?? ''));
+        }
+      },
+    );
   }
 
   Future<void> updateProfile(
       {String? fullName, int? annualGoal, String? avatarUrl}) async {
+    if (isClosed) return;
+    
     final user = supabaseClient.auth.currentUser;
     if (user == null) return;
 
@@ -73,11 +86,15 @@ class ProfileCubit extends Cubit<ProfileState> {
       avatarUrl: avatarUrl,
     );
 
+    if (isClosed) return;
+
     result.fold(
-      (failure) => emit(ProfileError(failure.message)),
+      (failure) {
+        if (!isClosed) emit(ProfileError(failure.message));
+      },
       (_) {
         // Reload to confirm changes
-        loadProfile();
+        if (!isClosed) loadProfile();
       },
     );
   }

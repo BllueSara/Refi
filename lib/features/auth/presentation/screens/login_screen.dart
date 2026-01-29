@@ -7,6 +7,8 @@ import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/sizes.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/widgets/main_navigation_screen.dart';
+import '../../../../core/widgets/no_internet_dialog.dart';
+import '../../../../core/services/network_connectivity_service.dart';
 import '../cubit/auth_cubit.dart';
 import '../widgets/auth_header.dart';
 import '../widgets/refi_auth_field.dart';
@@ -27,8 +29,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _emailError;
   String? _passwordError;
+  NetworkConnectivityService? _connectivityService;
 
-  void _onLogin() {
+  Future<void> _onLogin() async {
     setState(() {
       _emailError = null;
       _passwordError = null;
@@ -52,6 +55,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (hasError) return;
 
+    // Check internet connection before login
+    _connectivityService ??= NetworkConnectivityService();
+    final isConnected = await _connectivityService!.checkConnectivity();
+    if (!isConnected) {
+      NoInternetDialog.show(
+        context,
+        onRetry: () {
+          Navigator.of(context).pop();
+          _onLogin();
+        },
+      );
+      return;
+    }
+
     context.read<AuthCubit>().login(
           _emailController.text.trim(),
           _passwordController.text.trim(),
@@ -62,6 +79,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _connectivityService?.dispose();
+    _connectivityService = null;
     super.dispose();
   }
 
@@ -78,13 +97,32 @@ class _LoginScreenState extends State<LoginScreen> {
             (route) => false,
           );
         } else if (state is AuthError) {
+          final message = state.message.toLowerCase();
+
+          // Check for network/connection errors
+          if (message.contains('network') ||
+              message.contains('connection') ||
+              message.contains('internet') ||
+              message.contains('timeout') ||
+              message.contains('socket') ||
+              message.contains('failed host lookup') ||
+              message.contains('no internet')) {
+            // Show no internet dialog for network errors
+            NoInternetDialog.show(
+              context,
+              onRetry: () {
+                Navigator.of(context).pop();
+                _onLogin();
+              },
+            );
+            return;
+          }
+
+          // Security: Always show generic error message to prevent information disclosure
+          // Don't reveal whether email exists or which field is wrong
           setState(() {
-            // Assign generic errors to password field, or check content
-            if (state.message.toLowerCase().contains('email')) {
-              _emailError = state.message;
-            } else {
-              _passwordError = state.message;
-            }
+            _emailError = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+            _passwordError = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
           });
         }
       },
@@ -207,12 +245,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Expanded(child: Divider(color: Colors.grey[200])),
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
+                            padding:
+                                EdgeInsets.symmetric(horizontal: 16.w(context)),
                             child: Text(
                               AppStrings.orSocialLogin,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontSize: 12.sp(context),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    fontSize: 12.sp(context),
+                                  ),
                             ),
                           ),
                           Expanded(child: Divider(color: Colors.grey[200])),
@@ -245,9 +287,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Text(
                             AppStrings.dontHaveAccount,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 14.sp(context),
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontSize: 14.sp(context),
+                                ),
                           ),
                           GestureDetector(
                             onTap: () {

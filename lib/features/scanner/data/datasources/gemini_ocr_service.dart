@@ -17,7 +17,13 @@ class GeminiOCRService implements OCRService {
     _model = GenerativeModel(
       model: 'gemini-2.5-flash-lite',
       apiKey: apiKey,
+      generationConfig: GenerationConfig(
+        maxOutputTokens: 2048, // OCR ما يحتاج أكثر
+        temperature: 0.0, // دقة أعلى، هلاوس أقل
+        topP: 0.9,
+      ),
     );
+
     print('🚀 Gemini Flash Initialized for Refi OCR');
   }
 

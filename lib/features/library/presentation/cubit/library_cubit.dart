@@ -53,6 +53,8 @@ class LibraryCubit extends Cubit<LibraryState> {
   }) : super(LibraryInitial());
 
   Future<void> loadLibrary({bool forceRefresh = false}) async {
+    if (isClosed) return;
+    
     // Always fetch fresh data when forceRefresh is true
     if (forceRefresh) {
       // Don't show loading if we already have data (better UX)
@@ -66,104 +68,124 @@ class LibraryCubit extends Cubit<LibraryState> {
 
     // Initial load - show loading
     if (state is LibraryInitial) {
-      emit(LibraryLoading());
+      if (!isClosed) emit(LibraryLoading());
     }
 
     // Fetch data
     final result = await fetchUserLibraryUseCase();
+    
+    if (isClosed) return;
+    
     result.fold(
       (failure) {
         // If we have data, keep it and maybe show error via snackbar (not handled here completely)
         // For now, if no data, show Error.
         if (state is! LibraryLoaded) {
-          emit(LibraryError(failure.message));
+          if (!isClosed) emit(LibraryError(failure.message));
         }
       },
       (books) {
+        if (isClosed) return;
+        
         if (books.isEmpty) {
-          emit(LibraryEmpty());
+          if (!isClosed) emit(LibraryEmpty());
         } else {
           // Always emit new state to trigger rebuild
-          emit(LibraryLoaded(books));
+          if (!isClosed) emit(LibraryLoaded(books));
         }
       },
     );
   }
 
   Future<void> addBook(BookEntity book) async {
+    if (isClosed) return;
+    
     // Optimistic Update: Add book immediately to UI
     if (state is LibraryLoaded) {
       final currentBooks = (state as LibraryLoaded).books;
       final updatedBooks = [book, ...currentBooks];
-      emit(LibraryLoaded(updatedBooks)); // Instant UI update
+      if (!isClosed) emit(LibraryLoaded(updatedBooks)); // Instant UI update
     } else if (state is LibraryEmpty) {
-      emit(LibraryLoaded([book])); // Instant UI update
+      if (!isClosed) emit(LibraryLoaded([book])); // Instant UI update
     }
 
     // Then sync with backend
     final result = await addBookToLibraryUseCase(book);
+    
+    if (isClosed) return;
+    
     result.fold(
       (failure) {
         // Rollback on error: Reload from server
-        loadLibrary(forceRefresh: true);
-        emit(LibraryError(failure.message));
+        if (!isClosed) loadLibrary(forceRefresh: true);
+        if (!isClosed) emit(LibraryError(failure.message));
       },
       (_) {
         // Confirm: Refresh to ensure consistency
-        loadLibrary(forceRefresh: true);
+        if (!isClosed) loadLibrary(forceRefresh: true);
       },
     );
   }
 
   Future<void> updateBook(BookEntity book) async {
+    if (isClosed) return;
+    
     // Optimistic Update: Update book immediately in UI
     if (state is LibraryLoaded) {
       final currentBooks = (state as LibraryLoaded).books;
       final updatedBooks = currentBooks.map((b) {
         return b.id == book.id ? book : b;
       }).toList();
-      emit(LibraryLoaded(updatedBooks)); // Instant UI update
+      if (!isClosed) emit(LibraryLoaded(updatedBooks)); // Instant UI update
     }
 
     // Then sync with backend
     final result = await updateBookUseCase(book);
+    
+    if (isClosed) return;
+    
     result.fold(
       (failure) {
         // Rollback on error: Reload from server
-        loadLibrary(forceRefresh: true);
-        emit(LibraryError(failure.message));
+        if (!isClosed) loadLibrary(forceRefresh: true);
+        if (!isClosed) emit(LibraryError(failure.message));
       },
       (_) {
         // Confirm: Refresh to ensure consistency
-        loadLibrary(forceRefresh: true);
+        if (!isClosed) loadLibrary(forceRefresh: true);
       },
     );
   }
 
   Future<void> deleteBook(String bookId) async {
+    if (isClosed) return;
+    
     // Optimistic Update: Remove book immediately from UI
     if (state is LibraryLoaded) {
       final currentBooks = (state as LibraryLoaded).books;
       final updatedBooks = currentBooks.where((b) => b.id != bookId).toList();
       
       if (updatedBooks.isEmpty) {
-        emit(LibraryEmpty()); // Instant UI update
+        if (!isClosed) emit(LibraryEmpty()); // Instant UI update
       } else {
-        emit(LibraryLoaded(updatedBooks)); // Instant UI update
+        if (!isClosed) emit(LibraryLoaded(updatedBooks)); // Instant UI update
       }
     }
 
     // Then sync with backend
     final result = await deleteBookUseCase(bookId);
+    
+    if (isClosed) return;
+    
     result.fold(
       (failure) {
         // Rollback on error: Reload from server
-        loadLibrary(forceRefresh: true);
-        emit(LibraryError(failure.message));
+        if (!isClosed) loadLibrary(forceRefresh: true);
+        if (!isClosed) emit(LibraryError(failure.message));
       },
       (_) {
         // Confirm: Refresh to ensure consistency
-        loadLibrary(forceRefresh: true);
+        if (!isClosed) loadLibrary(forceRefresh: true);
       },
     );
   }

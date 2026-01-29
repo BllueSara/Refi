@@ -28,6 +28,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int? _lastCompletedBooks;
+  bool _hasShownGoalPage = false;
 
   @override
   Widget build(BuildContext context) {
@@ -47,21 +48,24 @@ class _HomePageState extends State<HomePage> {
         },
         child: BlocListener<HomeCubit, HomeState>(
           listener: (context, state) {
-            // Show goal success page when goal is achieved
-            if (state is HomeGoalAchieved) {
+            // Show goal success page when goal is achieved (only once)
+            if (state.runtimeType.toString() == 'HomeGoalAchieved' &&
+                !_hasShownGoalPage) {
+              _hasShownGoalPage = true;
+              // Mark as celebrated immediately to prevent showing again
+              final goalState = state as dynamic;
+              final cubit = context.read<HomeCubit>();
+              cubit.markGoalAsCelebrated();
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => GoalSuccessPage(
-                    completedBooks: state.data.completedBooks,
-                    annualGoal: state.data.annualGoal ?? 0,
+                    completedBooks: goalState.data.completedBooks,
+                    annualGoal: goalState.data.annualGoal ?? 0,
                   ),
                 ),
-              ).then((_) {
-                // Mark as celebrated after closing the page
-                context.read<HomeCubit>().markGoalAsCelebrated();
-              });
-              _lastCompletedBooks = state.data.completedBooks;
+              );
+              _lastCompletedBooks = goalState.data.completedBooks;
             } else if (state is HomeLoaded) {
               // Check for book completion
               if (_lastCompletedBooks != null &&
@@ -97,8 +101,9 @@ class _HomePageState extends State<HomePage> {
                 currentData = state.data;
               } else if (state is HomeEmpty) {
                 currentData = state.data;
-              } else if (state is HomeGoalAchieved) {
-                currentData = state.data;
+              } else if (state.runtimeType.toString() == 'HomeGoalAchieved') {
+                // Handle HomeGoalAchieved state - using runtime type check as workaround
+                currentData = (state as dynamic).data;
               } else {
                 currentData = const HomeData(
                   username: "...",
@@ -111,7 +116,15 @@ class _HomePageState extends State<HomePage> {
 
               return Scaffold(
                 backgroundColor: AppColors.background,
-                appBar: HomeHeader(data: currentData),
+                appBar: HomeHeader(
+                    data: currentData ??
+                        const HomeData(
+                          username: "...",
+                          streakDays: 0,
+                          completedBooks: 0,
+                          totalQuotes: 0,
+                          topTag: "",
+                        )),
                 body: RefreshIndicator(
                   onRefresh: () async {
                     await context
@@ -133,11 +146,12 @@ class _HomePageState extends State<HomePage> {
                             child: HomeEmptyBody(data: state.data),
                           ),
                         );
-                      } else if (state is HomeLoaded || state is HomeGoalAchieved) {
+                      } else if (state is HomeLoaded ||
+                          state.runtimeType.toString() == 'HomeGoalAchieved') {
                         // Show populated body for both loaded and goal achieved states
-                        final data = (state is HomeLoaded) 
-                            ? state.data 
-                            : (state as HomeGoalAchieved).data;
+                        final data = (state is HomeLoaded)
+                            ? state.data
+                            : (state as dynamic).data;
                         return SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
                             child: HomePopulatedBody(data: data));
@@ -163,7 +177,8 @@ class _HomePageState extends State<HomePage> {
       context: context,
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r(context))),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(24.r(context))),
       ),
       builder: (ctx) {
         return Container(

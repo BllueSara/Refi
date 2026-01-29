@@ -22,12 +22,14 @@ class HomeCubit extends Cubit<HomeState> {
   }) : super(HomeInitial());
 
   Future<void> loadHomeData({bool forceRefresh = false}) async {
+    if (isClosed) return;
+    
     // 1. Smart Cache Check
     if (!forceRefresh) {
       if (state is HomeLoaded) {
         // Data exists, don't show loading. Just refresh in background.
       } else if (state is HomeInitial) {
-        emit(HomeLoading());
+        if (!isClosed) emit(HomeLoading());
       }
     } else {
       // Manual refresh, can show loading or small indicator (UI handles pulled refresh)
@@ -35,23 +37,25 @@ class HomeCubit extends Cubit<HomeState> {
       // However, if we want to blocking load, we emit loading.
       // Given "avoid redundant loading screens", we generally avoid emitting HomeLoading if we have data.
       if (state is! HomeLoaded && state is! HomeEmpty) {
-        emit(HomeLoading());
+        if (!isClosed) emit(HomeLoading());
       }
     }
 
     final userId = supabaseClient.auth.currentUser?.id;
     if (userId == null) {
-      emit(
-        HomeEmpty(
-          const HomeData(
-            username: "...",
-            streakDays: 0,
-            completedBooks: 0,
-            totalQuotes: 0,
-            topTag: "",
+      if (!isClosed) {
+        emit(
+          HomeEmpty(
+            const HomeData(
+              username: "...",
+              streakDays: 0,
+              completedBooks: 0,
+              totalQuotes: 0,
+              topTag: "",
+            ),
           ),
-        ),
-      );
+        );
+      }
       return;
     }
 
@@ -118,15 +122,19 @@ class HomeCubit extends Cubit<HomeState> {
       );
       final hasCelebrated = await GoalAchievementTracker.hasCelebratedThisYear();
 
+      if (isClosed) return;
+
       if (isGoalAchieved && !hasCelebrated) {
         // Emit special state to trigger celebration
-        emit(HomeGoalAchieved(homeData));
+        if (!isClosed) emit(HomeGoalAchieved(homeData));
       } else if (homeData.isEmpty) {
-        emit(HomeEmpty(homeData));
+        if (!isClosed) emit(HomeEmpty(homeData));
       } else {
-        emit(HomeLoaded(homeData));
+        if (!isClosed) emit(HomeLoaded(homeData));
       }
     } catch (e) {
+      if (isClosed) return;
+      
       // On Error, if we have data, keep it.
       if (state is HomeLoaded) {
         // Optionally emit an error side-effect if we had a way, but for now just keep previous state is better than wiping key data.
@@ -134,21 +142,25 @@ class HomeCubit extends Cubit<HomeState> {
       }
 
       // Fallback only if no data
-      emit(
-        HomeEmpty(
-          const HomeData(
-            username: "...",
-            streakDays: 0,
-            completedBooks: 0,
-            totalQuotes: 0,
-            topTag: "",
+      if (!isClosed) {
+        emit(
+          HomeEmpty(
+            const HomeData(
+              username: "...",
+              streakDays: 0,
+              completedBooks: 0,
+              totalQuotes: 0,
+              topTag: "",
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   }
 
   Future<void> updateAnnualGoal(int newGoal) async {
+    if (isClosed) return;
+    
     final currentState = state;
     HomeData? currentData;
 
@@ -161,7 +173,7 @@ class HomeCubit extends Cubit<HomeState> {
     if (currentData != null) {
       // Optimistic Update
       final updatedData = currentData.copyWith(annualGoal: newGoal);
-      emit(HomeLoaded(updatedData)); // Always emit Loaded to show data
+      if (!isClosed) emit(HomeLoaded(updatedData)); // Always emit Loaded to show data
 
       final userId = supabaseClient.auth.currentUser?.id;
       if (userId != null) {
@@ -171,7 +183,7 @@ class HomeCubit extends Cubit<HomeState> {
               .update({'annual_goal': newGoal}).eq('id', userId);
         } catch (e) {
           // Revert on failure (silent or show error)
-          emit(currentState);
+          if (!isClosed) emit(currentState);
         }
       }
     }
@@ -182,9 +194,10 @@ class HomeCubit extends Cubit<HomeState> {
     await GoalAchievementTracker.markAsCelebrated();
     
     final currentState = state;
-    if (currentState is HomeGoalAchieved) {
+    if (currentState.runtimeType.toString() == 'HomeGoalAchieved') {
       // Transition to normal loaded state
-      emit(HomeLoaded(currentState.data));
+      final goalState = currentState as dynamic;
+      emit(HomeLoaded(goalState.data));
     }
   }
 }
