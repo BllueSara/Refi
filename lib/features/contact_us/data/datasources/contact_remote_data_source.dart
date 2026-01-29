@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/services/telegram_notification_service.dart';
 import '../models/contact_message_model.dart';
 
 abstract class ContactRemoteDataSource {
@@ -7,8 +8,12 @@ abstract class ContactRemoteDataSource {
 
 class ContactRemoteDataSourceImpl implements ContactRemoteDataSource {
   final SupabaseClient supabaseClient;
+  final TelegramNotificationService? telegramService;
 
-  ContactRemoteDataSourceImpl({required this.supabaseClient});
+  ContactRemoteDataSourceImpl({
+    required this.supabaseClient,
+    this.telegramService,
+  });
 
   @override
   Future<void> sendContactMessage(ContactMessageModel message) async {
@@ -48,6 +53,21 @@ class ContactRemoteDataSourceImpl implements ContactRemoteDataSource {
       
       // Insert message into database
       await supabaseClient.from('contact_messages').insert(messageData);
+      
+      // Send Telegram notification (optional - fails silently if not configured)
+      if (telegramService != null) {
+        try {
+          final telegramMessage = telegramService!.formatContactMessage(
+            subject: message.category,
+            message: message.message,
+            userName: messageData['user_name'] as String?,
+            userEmail: messageData['user_email'] as String?,
+          );
+          await telegramService!.sendNotification(telegramMessage);
+        } catch (_) {
+          // Ignore telegram errors - notification is optional
+        }
+      }
     } catch (e) {
       throw Exception('فشل إرسال الرسالة: ${e.toString()}');
     }

@@ -55,6 +55,7 @@ import '../../features/quotes/domain/usecases/delete_quote_usecase.dart';
 import '../../features/quotes/presentation/cubit/quote_cubit.dart';
 
 import '../../features/contact_us/data/datasources/contact_remote_data_source.dart';
+import '../../core/services/telegram_notification_service.dart';
 
 final sl = GetIt.instance;
 
@@ -198,12 +199,16 @@ Future<void> init(SharedPreferences sharedPreferences) async {
 
   // ! Features - Contact Us
   sl.registerLazySingleton<ContactRemoteDataSource>(
-    () => ContactRemoteDataSourceImpl(supabaseClient: sl()),
+    () => ContactRemoteDataSourceImpl(
+      supabaseClient: sl(),
+      telegramService: sl(),
+    ),
   );
 
   // ! Services
   sl.registerLazySingleton<ImagePickerService>(() => ImagePickerServiceImpl());
   sl.registerLazySingleton(() => SubscriptionManager.instance);
+  sl.registerLazySingleton(() => TelegramNotificationService(client: sl()));
 
   // ! External
   sl.registerLazySingleton(() => Supabase.instance.client);
