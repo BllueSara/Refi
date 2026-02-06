@@ -288,22 +288,19 @@ class _ScannerPageState extends State<ScannerPage>
                       setState(() {
                         _isManualMode = true;
                       });
-                      // Open manual quote modal
+                      // Open manual quote modal (Full Screen like Scan)
                       Future.delayed(
                         const Duration(milliseconds: 150),
                         () async {
-                          await showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (context) => Padding(
-                              padding: EdgeInsets.only(
-                                bottom:
-                                    MediaQuery.of(context).viewInsets.bottom,
-                              ),
-                              child: const QuoteReviewModal(initialText: ""),
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              fullscreenDialog: true,
+                              builder: (context) =>
+                                  const QuoteReviewModal(initialText: ""),
                             ),
                           );
+
                           // Refresh limits after modal closes (user might have added a quote)
                           if (mounted) {
                             _checkUsageLimits();

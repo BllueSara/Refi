@@ -15,26 +15,10 @@ class QuoteReviewHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w(context)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          TextButton(
-            onPressed: onCancel,
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                horizontal: 12.w(context),
-                vertical: 8.h(context),
-              ),
-            ),
-            child: Text(
-              AppStrings.cancel,
-              style: TextStyle(
-                color: AppColors.textSub,
-                fontSize: 15.sp(context),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          // Centered Title
           Text(
             AppStrings.reviewTitle,
             style: TextStyle(
@@ -43,7 +27,30 @@ class QuoteReviewHeader extends StatelessWidget {
               color: AppColors.textMain,
             ),
           ),
-          SizedBox(width: 70.w(context)), // Balance for cancel button
+
+          // Cancel Button (Far Right / Start)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton(
+              onPressed: onCancel,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12.w(context),
+                  vertical: 8.h(context),
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'إلغاء',
+                style: TextStyle(
+                  color: AppColors.textSub,
+                  fontSize: 15.sp(context),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

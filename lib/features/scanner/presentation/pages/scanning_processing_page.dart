@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math' as dart_math;
+
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/utils/responsive_utils.dart';
@@ -133,79 +133,14 @@ class _ScanningProcessingPageState extends State<ScanningProcessingPage> {
         key: const ValueKey('error'),
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // "Faded Ink" Icon Concept with Animation
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Faded Page - Pulse Animation
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.8, end: 1.0),
-                duration: const Duration(milliseconds: 2000),
-                curve: Curves.easeInOut,
-                builder: (context, val, child) {
-                  return Transform.scale(
-                    scale: val,
-                    child: Opacity(
-                      opacity: 0.3 * (2 - val), // Fades slightly as it expands
-                      child: Icon(
-                        Icons.article_outlined,
-                        size: 90.sp(context), // Slightly larger
-                        color: AppColors.primaryBrown,
-                      ),
-                    ),
-                  );
-                },
-                onEnd:
-                    () {}, // Could loop but one-shot is cleaner for short state
-              ),
-
-              // Broken Pen - Shake Animation (Error)
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: 3.0),
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.elasticIn,
-                builder: (context, val, child) {
-                  // Simple shake math: sin(val * pi) * amplitude
-                  final offset = (val < 3 && val > 0)
-                      ? (10 * (1 - (val / 3)) * (val % 2 == 0 ? 1 : -1))
-                      : 0.0;
-                  // Actually let's use a cleaner sine shake
-                  double shake = 0;
-                  if (val < 2.5) {
-                    shake = 10 *
-                        dart_math.sin(val * 4 * dart_math.pi) *
-                        (1 - val / 3);
-                  }
-
-                  return Transform.translate(
-                    offset: Offset(shake, 0),
-                    child: child,
-                  );
-                },
-                child: Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(8.r(context)),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFDFBF7),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryBrown.withOpacity(0.1),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.edit_off_rounded,
-                      size: 32.sp(context),
-                      color: AppColors.primaryBrown,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          // No Result Found Lottie Animation
+          SizedBox(
+            width: 200.w(context),
+            height: 200.h(context),
+            child: Lottie.asset(
+              'assets/lottie/no result found.json',
+              fit: BoxFit.contain,
+            ),
           ),
           SizedBox(height: 32.h(context)),
 

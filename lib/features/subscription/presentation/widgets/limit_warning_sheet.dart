@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import '../screens/market_screen.dart';
@@ -46,20 +47,14 @@ class LimitWarningSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Icon
+                // Lottie Animation
                 Center(
-                  child: Container(
-                    padding: EdgeInsets.all(16.w(context)),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isScanning
-                          ? Icons.document_scanner_rounded
-                          : Icons.edit_note_rounded,
-                      size: 40.sp(context),
-                      color: AppColors.primaryBlue,
+                  child: SizedBox(
+                    width: 200.w(context),
+                    height: 200.h(context),
+                    child: Lottie.asset(
+                      'assets/lottie/lock animation.json',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),

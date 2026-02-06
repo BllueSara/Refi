@@ -103,6 +103,32 @@ class SubscriptionManager {
     }
   }
 
+  /// Logout (Clear Cache/Sandbox)
+  Future<void> logout() async {
+    if (!_isInitialized) return;
+    try {
+      await Purchases.logOut();
+      debugPrint('👋 RevenueCat Logout Successful');
+      // Clear local cache too
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_cacheKeyIsPro);
+      _isProController.value = false;
+    } catch (e) {
+      debugPrint('❌ Error logging out: $e');
+    }
+  }
+
+  /// Force Refresh Customer Info
+  Future<void> refreshInfo() async {
+    if (!_isInitialized) return;
+    try {
+      final info = await Purchases.getCustomerInfo();
+      _updateCustomerStatus(info);
+    } catch (e) {
+      debugPrint('❌ Error refreshing info: $e');
+    }
+  }
+
   /// Check if user has active premium entitlement
   Future<bool> isUserPremium() async {
     if (!_isInitialized) return false;
