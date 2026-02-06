@@ -1,11 +1,15 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/quotes/domain/repositories/quote_repository.dart';
+import '../di/injection_container.dart'; // for sl
 import '../constants/app_strings.dart';
 
 class SubscriptionManager {
-  static const String _apiKey = 'test_moYGPLYjVYlCVVyiATwqWcfsGKb';
+  static const String _apiKey = 'appl_ooOghORcrXEDqgAlBsXigmKaQyh';
   static const String _entitlementID = 'jalees Pro';
 
   // Private constructor
@@ -16,6 +20,17 @@ class SubscriptionManager {
 
   bool _isInitialized = false;
 
+  // Stream controller for subscription status (CustomerInfo)
+  final StreamController<CustomerInfo> _customerInfoController =
+      StreamController<CustomerInfo>.broadcast();
+  Stream<CustomerInfo> get customerInfoStream => _customerInfoController.stream;
+
+  // ValueNotifier for simple boolean checks (existing)
+  final _isProController = ValueNotifier<bool>(false);
+  ValueListenable<bool> get isProNotifier => _isProController;
+
+  static const String _cacheKeyIsPro = 'jalees_is_pro_cache';
+
   /// Initialize RevenueCat
   Future<void> init() async {
     if (_isInitialized) {
@@ -24,86 +39,121 @@ class SubscriptionManager {
     }
 
     try {
+      // 1. Load Cache Immediately
+      final prefs = await SharedPreferences.getInstance();
+      final cachedIsPro = prefs.getBool(_cacheKeyIsPro) ?? false;
+      _isProController.value = cachedIsPro;
+      debugPrint('💾 Cached Pro Status Loaded: $cachedIsPro');
+
       debugPrint('🔄 Starting RevenueCat initialization...');
       await Purchases.setLogLevel(LogLevel.debug);
 
       PurchasesConfiguration configuration;
       if (Platform.isAndroid) {
         configuration = PurchasesConfiguration(_apiKey);
-        debugPrint('📱 Configuring RevenueCat for Android');
       } else if (Platform.isIOS) {
         configuration = PurchasesConfiguration(_apiKey);
-        debugPrint('🍎 Configuring RevenueCat for iOS');
       } else {
         configuration = PurchasesConfiguration(_apiKey);
-        debugPrint('🌐 Configuring RevenueCat for other platform');
       }
 
+      // 2. Configure SDK
       await Purchases.configure(configuration);
       _isInitialized = true;
       debugPrint('✅ RevenueCat Configured Successfully');
+
+      // 3. Listen for updates (This handles the future updates)
+      Purchases.addCustomerInfoUpdateListener((customerInfo) {
+        _updateCustomerStatus(customerInfo);
+      });
+
+      // 4. Trace current status (Non-blocking)
+      // We do NOT await this, so app startup is fast. Reference caching handles UI.
+      Purchases.getCustomerInfo().then((info) => _updateCustomerStatus(info));
     } on PlatformException catch (e) {
       debugPrint('❌ PlatformException during RevenueCat init: ${e.message}');
-      debugPrint('   Code: ${e.code}');
-      debugPrint('   Details: ${e.details}');
-
-      // Check if it's a MissingPluginException
-      if (e.code == 'MissingPluginException' ||
-          e.message?.contains('No implementation found') == true) {
-        debugPrint('');
-        debugPrint('⚠️⚠️⚠️ IMPORTANT: RevenueCat plugin is not linked! ⚠️⚠️⚠️');
-        debugPrint('   This usually happens when:');
-        debugPrint('   1. You used Hot Reload instead of Full Restart');
-        debugPrint(
-            '   2. The app was not fully rebuilt after adding the plugin');
-        debugPrint('   SOLUTION: Stop the app completely and run: flutter run');
-        debugPrint(
-            '   Or use: flutter clean && flutter pub get && flutter run');
-        debugPrint('');
-      }
-
       _isInitialized = false;
-      rethrow; // Rethrow to let caller know initialization failed
-    } catch (e, stackTrace) {
+    } catch (e) {
       debugPrint('❌ Failed to configure RevenueCat: $e');
-      debugPrint('   Stack trace: $stackTrace');
-
-      // Check if it's a MissingPluginException
-      if (e.toString().contains('MissingPluginException') ||
-          e.toString().contains('No implementation found')) {
-        debugPrint('');
-        debugPrint('⚠️⚠️⚠️ IMPORTANT: RevenueCat plugin is not linked! ⚠️⚠️⚠️');
-        debugPrint('   This usually happens when:');
-        debugPrint('   1. You used Hot Reload instead of Full Restart');
-        debugPrint(
-            '   2. The app was not fully rebuilt after adding the plugin');
-        debugPrint('   SOLUTION: Stop the app completely and run: flutter run');
-        debugPrint(
-            '   Or use: flutter clean && flutter pub get && flutter run');
-        debugPrint('');
-      }
-
       _isInitialized = false;
-      rethrow; // Rethrow to let caller know initialization failed
+    }
+  }
+
+  void _updateCustomerStatus(CustomerInfo customerInfo) async {
+    // 1. Update Stream
+    if (!_customerInfoController.isClosed) {
+      _customerInfoController.add(customerInfo);
+    }
+
+    // 2. Update Boolean Notifier
+    final isPro =
+        customerInfo.entitlements.all[_entitlementID]?.isActive ?? false;
+    debugPrint('📢 Customer Info Updated. isPro: $isPro');
+
+    // Only notify if changed to avoid unnecessary rebuilds, but ValueNotifier handles equality check usually.
+    _isProController.value = isPro;
+
+    // 3. Update Cache
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_cacheKeyIsPro, isPro);
+      debugPrint('💾 Pro Status Cached: $isPro');
+    } catch (e) {
+      debugPrint('⚠️ Failed to cache pro status: $e');
     }
   }
 
   /// Check if user has active premium entitlement
   Future<bool> isUserPremium() async {
-    if (!_isInitialized) {
-      debugPrint('⚠️ RevenueCat not initialized yet');
-      return false;
-    }
+    if (!_isInitialized) return false;
     try {
       CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+      // Ensure we push this latest info to stream as well
+      if (!_customerInfoController.isClosed) {
+        _customerInfoController.add(customerInfo);
+      }
       return customerInfo.entitlements.all[_entitlementID]?.isActive ?? false;
-    } on PlatformException catch (e) {
-      debugPrint('❌ Error checking premium status: ${e.message}');
-      return false;
     } catch (e) {
-      debugPrint('❌ Unexpected error checking premium status: $e');
+      debugPrint('❌ Error checking premium status: $e');
       return false;
     }
+  }
+
+  /// Get the Product Identifier of the currently active entitlement (if any)
+  /// Returns null if not active.
+  Future<String?> getActivePlanId() async {
+    try {
+      CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+      final entitlement = customerInfo.entitlements.all[_entitlementID];
+      if (entitlement?.isActive == true) {
+        return entitlement?.productIdentifier;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Check if a set of product IDs are eligible for trial/intro offers
+  /// Returns a map of ProductId -> IntroEligibilityStatus
+  Future<Map<String, IntroEligibility>> checkTrialEligibility(
+      List<String> productIdentifiers) async {
+    if (!_isInitialized) return {};
+    try {
+      final eligibility =
+          await Purchases.checkTrialOrIntroductoryPriceEligibility(
+              productIdentifiers);
+      return eligibility;
+    } on PlatformException catch (e) {
+      debugPrint('❌ Error checking trial eligibility: ${e.message}');
+      return {};
+    }
+  }
+
+  /// Check if a package is eligible for trial (Local Check for UI existence only)
+  /// Use [checkTrialEligibility] for strict network check.
+  bool hasIntroPrice(Package package) {
+    return package.storeProduct.introductoryPrice != null;
   }
 
   /// Fetch current offerings
@@ -114,11 +164,8 @@ class SubscriptionManager {
     }
     try {
       Offerings offerings = await Purchases.getOfferings();
-      if (offerings.current != null) {
-        return offerings;
-      } else {
-        debugPrint('⚠️ No current offerings found');
-      }
+      debugPrint('📦 Offerings fetched: ${offerings.all.keys.toList()}');
+      return offerings;
     } on PlatformException catch (e) {
       debugPrint('❌ Error fetching offerings: ${e.message}');
     } catch (e) {
@@ -138,85 +185,45 @@ class SubscriptionManager {
       );
     }
     try {
-      // Check current status before purchase
-      final currentCustomerInfo = await Purchases.getCustomerInfo();
-      final wasPremiumBefore =
-          currentCustomerInfo.entitlements.all[_entitlementID]?.isActive ??
-              false;
-
-      if (wasPremiumBefore) {
-        debugPrint('ℹ️ User already has active premium entitlement');
-      }
-
-      // Use dynamic to handle potential type mismatch (CustomerInfo vs PurchaseResult)
-      // Some versions/extensions might return a wrapper.
+      // Use dynamic to handle potential type difference
       dynamic result = await Purchases.purchasePackage(package);
       CustomerInfo customerInfo;
 
+      // Check if result is CustomerInfo or has .customerInfo property (PurchaseResult)
       if (result is CustomerInfo) {
         customerInfo = result;
       } else {
-        // Try to get customerInfo from wrapper if it exists (e.g. PurchaseResult)
+        // Assume it's PurchaseResult or similar wrapper
         try {
           customerInfo = result.customerInfo;
         } catch (_) {
-          // Fallback cast
-          customerInfo = result as CustomerInfo;
+          // Fallback or rethrow if we can't extract it
+          debugPrint(
+              '❌ Could not extract CustomerInfo from purchase result: $result');
+          rethrow;
         }
       }
 
-      final isPremiumAfter =
+      final isPro =
           customerInfo.entitlements.all[_entitlementID]?.isActive ?? false;
 
-      debugPrint('📊 Purchase result:');
-      debugPrint('   Was premium before: $wasPremiumBefore');
-      debugPrint('   Is premium after: $isPremiumAfter');
-      debugPrint(
-          '   Active subscriptions: ${customerInfo.activeSubscriptions.length}');
-      debugPrint(
-          '   All entitlements: ${customerInfo.entitlements.all.keys.toList()}');
-
-      if (isPremiumAfter) {
+      if (isPro) {
         debugPrint('✅ Purchase successful - Premium entitlement is active');
         return true;
       } else {
-        // Check if purchase was actually completed but entitlement is not active
-        // This might happen if entitlement ID is wrong or subscription expired
-        if (customerInfo.activeSubscriptions.isNotEmpty) {
-          debugPrint('⚠️ Purchase completed but entitlement not active');
-          debugPrint(
-              '   Active subscriptions: ${customerInfo.activeSubscriptions}');
-          debugPrint('   Looking for entitlement: $_entitlementID');
-          debugPrint(
-              '   Available entitlements: ${customerInfo.entitlements.all.keys.toList()}');
-          // This is an error case - purchase succeeded but entitlement not active
-          throw PlatformException(
-            code: 'ENTITLEMENT_NOT_ACTIVE',
-            message:
-                'Purchase completed but premium entitlement is not active. Check entitlement ID configuration.',
-          );
-        }
-        // No active subscriptions and no entitlement - likely cancelled or failed
-        debugPrint('⚠️ Purchase did not result in active subscription');
+        debugPrint('⚠️ Purchase completed but entitlement not active');
         return false;
       }
     } on PlatformException catch (e) {
       var errorCode = PurchasesErrorHelper.getErrorCode(e);
-      debugPrint('❌ PlatformException during purchase:');
-      debugPrint('   Code: ${e.code}');
-      debugPrint('   Message: ${e.message}');
-      debugPrint('   RevenueCat Error Code: $errorCode');
-
       if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
         debugPrint('ℹ️ User cancelled purchase');
         return false;
-      } else {
-        debugPrint('❌ Purchase error: ${e.message}');
-        rethrow; // Rethrow to handle in UI
       }
-    } catch (e, stackTrace) {
+      debugPrint('❌ Purchase error: ${e.message}');
+      rethrow;
+    } catch (e) {
       debugPrint('❌ Unexpected error during purchase: $e');
-      debugPrint('   Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -232,7 +239,10 @@ class SubscriptionManager {
     }
     try {
       CustomerInfo customerInfo = await Purchases.restorePurchases();
-      return customerInfo.entitlements.all[_entitlementID]?.isActive ?? false;
+      final isPro =
+          customerInfo.entitlements.all[_entitlementID]?.isActive ?? false;
+      debugPrint('♻️ Restore complete. isPro: $isPro');
+      return isPro;
     } on PlatformException catch (e) {
       debugPrint('❌ Error restoring purchases: ${e.message}');
       rethrow;
@@ -242,26 +252,7 @@ class SubscriptionManager {
     }
   }
 
-  /// Get customer info for testing/debugging
-  Future<CustomerInfo?> getCustomerInfo() async {
-    if (!_isInitialized) {
-      debugPrint('⚠️ RevenueCat not initialized yet');
-      return null;
-    }
-    try {
-      CustomerInfo customerInfo = await Purchases.getCustomerInfo();
-      return customerInfo;
-    } on PlatformException catch (e) {
-      debugPrint('❌ Error getting customer info: ${e.message}');
-      return null;
-    } catch (e) {
-      debugPrint('❌ Unexpected error getting customer info: $e');
-      return null;
-    }
-  }
-
   /// Get current plan name based on active subscription
-  /// Returns plan name like "جليس شهري", "جليس ممتد", "جليس سنوي", or "جليس" for basic
   Future<String> getCurrentPlanName() async {
     if (!_isInitialized) {
       return AppStrings.planBasic;
@@ -271,10 +262,7 @@ class SubscriptionManager {
       final entitlement = customerInfo.entitlements.all[_entitlementID];
 
       if (entitlement?.isActive == true) {
-        // Get product identifier from entitlement
         final productId = entitlement!.productIdentifier.toLowerCase();
-
-        // Map product IDs to plan names
         if (productId.contains('monthly') || productId.contains('شهري')) {
           return AppStrings.planPremiumMonthly;
         } else if (productId.contains('six') ||
@@ -285,29 +273,9 @@ class SubscriptionManager {
             productId.contains('yearly') ||
             productId.contains('سنوي')) {
           return AppStrings.planPremiumYearly;
-        } else {
-          // Check active subscriptions for more info
-          if (customerInfo.activeSubscriptions.isNotEmpty) {
-            final subscriptionId =
-                customerInfo.activeSubscriptions.first.toLowerCase();
-            if (subscriptionId.contains('monthly') ||
-                subscriptionId.contains('شهري')) {
-              return AppStrings.planPremiumMonthly;
-            } else if (subscriptionId.contains('six') ||
-                subscriptionId.contains('6') ||
-                subscriptionId.contains('ممتد')) {
-              return AppStrings.planPremiumExtended;
-            } else if (subscriptionId.contains('annual') ||
-                subscriptionId.contains('yearly') ||
-                subscriptionId.contains('سنوي')) {
-              return AppStrings.planPremiumYearly;
-            }
-          }
-          // Default to premium if active but can't determine type
-          return AppStrings.planPremium;
         }
+        return AppStrings.planPremium;
       }
-
       return AppStrings.planBasic;
     } catch (e) {
       debugPrint('❌ Error getting current plan name: $e');
@@ -315,6 +283,59 @@ class SubscriptionManager {
     }
   }
 
-  /// Check if RevenueCat is initialized
   bool get isInitialized => _isInitialized;
+
+  // --- Usage Limits Logic ---
+
+  /// Check if user can add a manual quote (Limit: 15 for free users)
+  Future<bool> canAddManualQuote() async {
+    final isPro = _isProController.value;
+    if (isPro) return true; // Unlimited for Pro
+
+    try {
+      // We need to inject QuoteRepository here or use GetIt
+      // Using GetIt service locator pattern as SubscriptionManager is a singleton
+      // and we want to avoid circular dependency if possible.
+      // Ideally, we should inject repository, but for simplicity in this existin singleton:
+      final countResult = await _getQuoteCount('manual');
+      return countResult < 15;
+    } catch (e) {
+      debugPrint('⚠️ Error checking manual quote limit: $e');
+      return true; // As fail-safe, allow adding if check fails
+    }
+  }
+
+  /// Check if user can scan an image (Limit: 15 for free users)
+  Future<bool> canScanImage() async {
+    final isPro = _isProController.value;
+    if (isPro) return true;
+
+    try {
+      final countResult = await _getQuoteCount('scan');
+      return countResult < 15;
+    } catch (e) {
+      debugPrint('⚠️ Error checking scan limit: $e');
+      return true;
+    }
+  }
+
+  // Helper to get count from repository via GetIt (Service Locator)
+  // We accept that we are accessing sl directly here.
+  // Helper to get count from repository via GetIt (Service Locator)
+  Future<int> _getQuoteCount(String source) async {
+    try {
+      final repo = sl<QuoteRepository>();
+      final result = await repo.getQuotesCount(source: source);
+      return result.fold(
+        (failure) {
+          debugPrint('⚠️ Failed to get quote count: ${failure.message}');
+          return 0; // Fallback
+        },
+        (count) => count,
+      );
+    } catch (e) {
+      debugPrint('⚠️ Error getting quote count: $e');
+      return 0;
+    }
+  }
 }

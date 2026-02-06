@@ -17,8 +17,10 @@ class AppSecrets {
   // 2. Get your bot token from BotFather
   // 3. Get chat ID: Send message to your bot, then visit:
   //    https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
-  static const String telegramBotToken = ''; // TODO: Add your Telegram Bot Token here
-  static const String telegramChatId = ''; // TODO: Add your Chat ID here
+  static const String telegramBotToken =
+      '8415072364:AAHo9RWUeO8mpkBSQawTnCx60xZrZPyC_KY'; // TODO: Add your Telegram Bot Token here
+  static const String telegramChatId =
+      '647472624'; // TODO: Add your Chat ID here
 
   // Note: Google OAuth is handled by Supabase, no need for googleServerClientId
   // Make sure to configure Google OAuth in your Supabase dashboard:

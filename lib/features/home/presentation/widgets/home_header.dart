@@ -8,6 +8,9 @@ import '../../domain/entities/home_entity.dart';
 import '../../../add_book/presentation/screens/search_screen.dart';
 import '../../../subscription/presentation/screens/market_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/subscription_manager.dart';
 
 class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   final HomeData data;
@@ -30,25 +33,30 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           // Greeting & Streak
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text("👋", style: TextStyle(fontSize: 20.sp(context))),
-                  SizedBox(width: 8.w(context)),
-                  Text(
-                    "${AppStrings.hello} ${data.username}",
-                    style: TextStyle(
-                      //fontFamily: 'Tajawal',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20.sp(context),
-                      color: AppColors.textMain,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text("👋", style: TextStyle(fontSize: 20.sp(context))),
+                    SizedBox(width: 8.w(context)),
+                    Flexible(
+                      child: Text(
+                        "${AppStrings.hello} ${data.username}",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          //fontFamily: 'Tajawal',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20.sp(context),
+                          color: AppColors.textMain,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -65,42 +73,83 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
                 ),
               );
             },
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 12.w(context),
-                vertical: 8.h(context),
-              ),
-              decoration: BoxDecoration(
-                gradient: AppColors.refiMeshGradient,
-                borderRadius: BorderRadius.circular(16.r(context)),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryBlue.withOpacity(0.2),
-                    blurRadius: 8.r(context),
-                    offset: Offset(0, 4.h(context)),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.star_rounded,
-                    color: Colors.white,
-                    size: 18.sp(context),
-                  ),
-                  SizedBox(width: 6.w(context)),
-                  Text(
-                    AppStrings.marketTitle,
-                    style: GoogleFonts.tajawal(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14.sp(context),
-                      color: Colors.white,
+            child: StreamBuilder<CustomerInfo>(
+                stream: sl<SubscriptionManager>().customerInfoStream,
+                builder: (context, snapshot) {
+                  // Determine Plan Name Logic
+                  String buttonText =
+                      AppStrings.marketTitle; // Default: 'اختر باقتك'
+                  bool isPro = false;
+
+                  if (snapshot.hasData) {
+                    final entitlements = snapshot.data!.entitlements.all;
+                    final entitlement = entitlements[
+                        'jalees Pro']; // Hardcoded ID for now/from Manager
+                    if (entitlement?.isActive == true) {
+                      isPro = true;
+                      // Map product ID to name
+                      final productId =
+                          entitlement!.productIdentifier.toLowerCase();
+                      if (productId.contains('monthly') ||
+                          productId.contains('شهري')) {
+                        buttonText = 'جليس برو - شهري';
+                      } else if (productId.contains('six') ||
+                          productId.contains('6')) {
+                        buttonText = 'جليس برو - ممتد';
+                      } else if (productId.contains('annual') ||
+                          productId.contains('yearly')) {
+                        buttonText = 'جليس برو - سنوي';
+                      } else {
+                        buttonText = 'جليس برو';
+                      }
+                    }
+                  }
+
+                  return Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w(context),
+                      vertical: 8.h(context),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                    decoration: BoxDecoration(
+                      gradient: isPro
+                          ? const LinearGradient(colors: [
+                              Color(0xFFF59E0B),
+                              Color(0xFFFFD54F)
+                            ]) // Gold for Pro
+                          : AppColors.refiMeshGradient,
+                      borderRadius: BorderRadius.circular(16.r(context)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isPro
+                                  ? const Color(0xFFF59E0B)
+                                  : AppColors.primaryBlue)
+                              .withOpacity(0.2),
+                          blurRadius: 8.r(context),
+                          offset: Offset(0, 4.h(context)),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.star_rounded,
+                          color: Colors.white,
+                          size: 18.sp(context),
+                        ),
+                        SizedBox(width: 6.w(context)),
+                        Text(
+                          buttonText,
+                          style: GoogleFonts.tajawal(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.sp(context),
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
           ),
         ),
         IconButton(
@@ -110,7 +159,8 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
               MaterialPageRoute(builder: (context) => const SearchScreen()),
             );
           },
-          icon: Icon(Icons.search, color: AppColors.textMain, size: 28.sp(context)),
+          icon: Icon(Icons.search,
+              color: AppColors.textMain, size: 28.sp(context)),
         ),
         SizedBox(width: 16.w(context)),
       ],

@@ -13,7 +13,6 @@ class GeminiOCRService implements OCRService {
       throw Exception('GEMINI_API_KEY not found in .env');
     }
 
-    // استخدام gemini-pro (أكثر استقراراً) أو gemini-1.5-flash للسرعة
     _model = GenerativeModel(
       model: 'gemini-2.5-flash-lite',
       apiKey: apiKey,
@@ -24,7 +23,7 @@ class GeminiOCRService implements OCRService {
       ),
     );
 
-    print('🚀 Gemini Flash Initialized for Refi OCR');
+    print('🚀 Gemini Flash Initialized for jalees OCR');
   }
 
   @override
@@ -47,7 +46,6 @@ class GeminiOCRService implements OCRService {
 
       // 2. Send to Gemini
 
-      // تأكد من استخدام البرومت المتفق عليه لضمان الدقة الكاملة
       final content = [
         Content.multi([
           TextPart('أنت خبير OCR لغة عربية. استخرج النص من الصورة بدقة 100%. '
@@ -61,8 +59,8 @@ class GeminiOCRService implements OCRService {
       return response.text?.trim() ?? '';
     } catch (e) {
       print('❌ Gemini OCR Error: $e');
-      // إذا استمر الخطأ، جرب تحديث بكج google_generative_ai لأحدث نسخة
-      throw Exception('Failed to extract text: $e');
+
+      throw Exception('عذراً، لم نتمكن من قراءة الصفحة بوضوح. حاول مرة أخرى.');
     }
   }
 

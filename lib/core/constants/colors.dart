@@ -15,6 +15,8 @@ class AppColors {
   static const Color successGreen = Color(0xFF10B981);
   static const Color warningOrange = Color(0xFFF59E0B);
 
+  static const Color primaryBrown = Color(0xFF8D6E63);
+
   static const Color inputBorder = Color(0xFFF1F5F9);
 
   static const LinearGradient refiMeshGradient = LinearGradient(

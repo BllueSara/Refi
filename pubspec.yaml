@@ -66,6 +66,7 @@ dependencies:
   purchases_flutter: ^9.10.7
   purchases_ui_flutter: ^9.10.7
   connectivity_plus: ^6.1.0
+  flutter_markdown: ^0.7.7+1
 
 dev_dependencies:
   flutter_test:

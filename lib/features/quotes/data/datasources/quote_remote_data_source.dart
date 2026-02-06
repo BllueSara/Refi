@@ -8,10 +8,12 @@ abstract class QuoteRemoteDataSource {
     required String feeling,
     String? notes,
     bool isFavorite = false,
+    String source = 'manual',
   });
 
   Future<List<QuoteModel>> getUserQuotes();
   Future<List<QuoteModel>> getBookQuotes(String bookId);
+  Future<int> getQuotesCount({String? source});
   Future<void> toggleFavorite(
       {required String quoteId, required bool isFavorite});
   Future<void> deleteQuote(String quoteId);
@@ -29,11 +31,13 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
     required String feeling,
     String? notes,
     bool isFavorite = false,
+    String source = 'manual',
   }) async {
     final userId = supabaseClient.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
 
-    print('🔍 Saving quote: userId=$userId, bookId=$bookId, feeling=$feeling');
+    print(
+        '🔍 Saving quote: userId=$userId, bookId=$bookId, feeling=$feeling, source=$source');
 
     try {
       await supabaseClient.from('quotes').insert({
@@ -43,11 +47,46 @@ class QuoteRemoteDataSourceImpl implements QuoteRemoteDataSource {
         'emotion': feeling,
         'personal_note': notes,
         'is_favorite': isFavorite,
+        'source': source,
       });
       print('✅ Quote saved successfully!');
     } catch (e) {
       print('❌ Error saving quote: $e');
       rethrow;
+    }
+  }
+
+  @override
+  Future<int> getQuotesCount({String? source}) async {
+    final userId = supabaseClient.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    try {
+      var query = supabaseClient
+          .from('quotes')
+          .select('id') // Select minimal data for count
+          .eq('user_id', userId);
+
+      if (source != null) {
+        query = query.eq('source', source);
+      }
+
+      final response = await query.count();
+      return response.count;
+    } catch (e) {
+      // If count isn't supported directly or old SDK, fetch and length
+      try {
+        var query =
+            supabaseClient.from('quotes').select('id').eq('user_id', userId);
+        if (source != null) {
+          query = query.eq('source', source);
+        }
+        final response = await query;
+        return (response as List).length;
+      } catch (innerError) {
+        print('❌ Error counting quotes: $innerError');
+        return 0;
+      }
     }
   }
 

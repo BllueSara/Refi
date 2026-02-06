@@ -21,4 +21,6 @@ abstract class QuoteRepository {
   });
 
   Future<Either<Failure, void>> deleteQuote(String quoteId);
+
+  Future<Either<Failure, int>> getQuotesCount({String? source});
 }

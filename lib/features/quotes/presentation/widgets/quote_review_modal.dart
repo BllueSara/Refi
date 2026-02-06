@@ -173,133 +173,121 @@ class _QuoteReviewModalState extends State<QuoteReviewModal>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(28.r(context)),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20.r(context),
-              offset: Offset(0, -5.h(context)),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag Handle
-            Container(
-              margin: EdgeInsets.only(top: 12.h(context)),
-              width: 48.w(context),
-              height: 5.h(context),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(3.r(context)),
-              ),
-            ),
-            SizedBox(height: 20.h(context)),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Column(
+            children: [
+              SizedBox(height: 20.h(context)),
 
-            // Header
-            QuoteReviewHeader(
-              onCancel: () => Navigator.pop(context),
-            ),
-
-            SizedBox(height: 28.h(context)),
-
-            Flexible(
-              child: SingleChildScrollView(
+              // Header
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.w(context)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Quote Text Field Section
-                    QuoteTextFieldSection(
-                      controller: _textController,
-                    ),
-
-                    SizedBox(height: 28.h(context)),
-
-                    // Feelings Section
-                    FeelingsSelectorSection(
-                      selectedFeeling: _selectedFeeling,
-                      onFeelingSelected: (feeling) {
-                        setState(() => _selectedFeeling = feeling);
-                      },
-                    ),
-
-                    SizedBox(height: 28.h(context)),
-
-                    // Personal Notes Section
-                    NotesFieldSection(
-                      controller: _notesController,
-                    ),
-
-                    SizedBox(height: 28.h(context)),
-
-                    // Source Book Dropdown Section
-                    BookDropdownSection(
-                      selectedBook: _selectedBook,
-                      showError: _showBookError,
-                      onBookSelected: (val) {
-                        setState(() {
-                          _selectedBook = val;
-                          _showBookError = false;
-                        });
-                      },
-                    ),
-
-                    SizedBox(height: 32.h(context)),
-
-                    // Save Button
-                    BlocConsumer<QuoteCubit, QuoteState>(
-                      listener: (context, state) {
-                        if (state is QuoteSaved) {
-                          Navigator.pop(context); // Close modal
-                          _showSuccessScreen(context);
-                          context.read<QuoteCubit>().loadUserQuotes();
-                        } else if (state is QuoteError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    color: Colors.white,
-                                    size: 20.sp(context),
-                                  ),
-                                  SizedBox(width: 12.w(context)),
-                                  Text(state.message),
-                                ],
-                              ),
-                              backgroundColor: AppColors.errorRed,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(12.r(context)),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      builder: (context, state) {
-                        final isSaving = state is QuoteSaving;
-                        return SaveQuoteButton(
-                          onSave: _handleSave,
-                          isSaving: isSaving,
-                        );
-                      },
-                    ),
-                    SizedBox(height: 24.h(context)), // Bottom padding
-                  ],
+                child: QuoteReviewHeader(
+                  onCancel: () => Navigator.pop(context),
                 ),
               ),
-            ),
-          ],
+
+              SizedBox(height: 28.h(context)),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w(context)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Quote Text Field Section
+                      QuoteTextFieldSection(
+                        controller: _textController,
+                      ),
+
+                      SizedBox(height: 28.h(context)),
+
+                      // Feelings Section
+                      FeelingsSelectorSection(
+                        selectedFeeling: _selectedFeeling,
+                        onFeelingSelected: (feeling) {
+                          setState(() => _selectedFeeling = feeling);
+                        },
+                      ),
+
+                      SizedBox(height: 28.h(context)),
+
+                      // Personal Notes Section
+                      NotesFieldSection(
+                        controller: _notesController,
+                      ),
+
+                      SizedBox(height: 28.h(context)),
+
+                      // Source Book Dropdown Section
+                      BookDropdownSection(
+                        selectedBook: _selectedBook,
+                        showError: _showBookError,
+                        onBookSelected: (val) {
+                          setState(() {
+                            _selectedBook = val;
+                            _showBookError = false;
+                          });
+                        },
+                      ),
+
+                      SizedBox(height: 32.h(context)),
+
+                      // Save Button
+                      BlocConsumer<QuoteCubit, QuoteState>(
+                        listener: (context, state) {
+                          if (state is QuoteSaved) {
+                            Navigator.pop(context); // Close page
+                            _showSuccessScreen(context);
+                            context.read<QuoteCubit>().loadUserQuotes();
+                          } else if (state is QuoteError) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: Colors.white,
+                                      size: 20.sp(context),
+                                    ),
+                                    SizedBox(width: 12.w(context)),
+                                    Expanded(
+                                      child: Text(
+                                        state.message,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: AppColors.errorRed,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(12.r(context)),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        builder: (context, state) {
+                          final isSaving = state is QuoteSaving;
+                          return SaveQuoteButton(
+                            onSave: _handleSave,
+                            isSaving: isSaving,
+                          );
+                        },
+                      ),
+                      SizedBox(height: 40.h(context)), // Bottom padding
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

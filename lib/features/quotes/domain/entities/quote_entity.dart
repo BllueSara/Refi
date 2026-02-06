@@ -11,6 +11,7 @@ class QuoteEntity extends Equatable {
   final String? notes;
   final bool isFavorite;
   final DateTime createdAt;
+  final String source;
 
   const QuoteEntity({
     required this.id,
@@ -23,6 +24,7 @@ class QuoteEntity extends Equatable {
     this.notes,
     this.isFavorite = false,
     required this.createdAt,
+    this.source = 'manual',
   });
 
   @override
@@ -37,5 +39,6 @@ class QuoteEntity extends Equatable {
         notes,
         isFavorite,
         createdAt,
+        source,
       ];
 }

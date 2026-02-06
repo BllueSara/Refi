@@ -16,6 +16,7 @@ class QuoteRepositoryImpl implements QuoteRepository {
     required String feeling,
     String? notes,
     bool isFavorite = false,
+    String source = 'manual',
   }) async {
     try {
       await remoteDataSource.saveQuote(
@@ -24,19 +25,24 @@ class QuoteRepositoryImpl implements QuoteRepository {
         feeling: feeling,
         notes: notes,
         isFavorite: isFavorite,
+        source: source,
       );
       return const Right(null);
     } catch (e) {
       if (e.toString().contains('PostgresException')) {
-        // Swallow PG exceptions to avoid showing technical errors to user.
-        // Log it internally ideally.
-        // Returning Right(null) might be misleading if it actually failed,
-        // but prevents user error. Let's return a friendly error instead OR
-        // checks specifically for foreign key violation if that's the issue.
-        // User said "Ensure... user never sees technical error text again".
         return const Left(
             ServerFailure('حدث خطأ أثناء حفظ الاقتباس، يرجى المحاولة لاحقاً'));
       }
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> getQuotesCount({String? source}) async {
+    try {
+      final count = await remoteDataSource.getQuotesCount(source: source);
+      return Right(count);
+    } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }

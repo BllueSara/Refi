@@ -12,6 +12,7 @@ class QuoteModel extends QuoteEntity {
     super.notes,
     super.isFavorite,
     required super.createdAt,
+    super.source = 'manual',
   });
 
   factory QuoteModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +27,7 @@ class QuoteModel extends QuoteEntity {
       notes: json['personal_note'] as String?, // DB uses 'personal_note'
       isFavorite: json['is_favorite'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
+      source: json['source'] as String? ?? 'manual',
     );
   }
 
@@ -36,6 +38,7 @@ class QuoteModel extends QuoteEntity {
       'emotion': feeling, // Map to DB field
       'personal_note': notes, // Map to DB field
       'is_favorite': isFavorite,
+      'source': source,
     };
   }
 }

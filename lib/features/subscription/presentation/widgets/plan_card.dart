@@ -10,12 +10,18 @@ class PlanCard extends StatelessWidget {
   final PlanEntity plan;
   final int billingPeriod; // 0: monthly, 1: 6 months, 2: yearly
   final VoidCallback onSelect;
+  final bool isActive;
+  final String? actionButtonLabel; // Custom label override
+  final bool isActionDisabled; // Allow disabling explicitly
 
   const PlanCard({
     super.key,
     required this.plan,
     required this.billingPeriod,
     required this.onSelect,
+    this.isActive = false,
+    this.actionButtonLabel,
+    this.isActionDisabled = false,
   });
 
   String _getBadgeText(String badge) {
@@ -32,12 +38,9 @@ class PlanCard extends StatelessWidget {
   }
 
   String _getPlanName(String planName, bool isFree) {
-    // الباقة المجانية تبقى "جليس" دائماً
     if (isFree) {
       return planName;
     }
-
-    // الباقة المدفوعة تتغير حسب فترة الاشتراك
     if (planName == AppStrings.planPremium) {
       if (billingPeriod == 0) {
         return AppStrings.planPremiumMonthly;
@@ -76,6 +79,9 @@ class PlanCard extends StatelessWidget {
       discountPercent = plan.yearlyDiscountPercent;
     }
 
+    // Check if it's a trial badge
+    final isTrial = plan.badge?.contains('تجربة') ?? false;
+
     return Stack(
       children: [
         Container(
@@ -84,16 +90,20 @@ class PlanCard extends StatelessWidget {
             color: AppColors.white,
             borderRadius: BorderRadius.circular(24.r(context)),
             border: Border.all(
-              color: isPopular ? AppColors.primaryBlue : AppColors.inputBorder,
-              width: isPopular ? 2 : 1,
+              color: isPopular || isActive
+                  ? AppColors.primaryBlue
+                  : AppColors.inputBorder,
+              width: isPopular || isActive ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: isPopular
+                color: isPopular || isActive
                     ? AppColors.primaryBlue.withValues(alpha: 0.1)
                     : Colors.black.withValues(alpha: 0.04),
-                blurRadius: isPopular ? 20.r(context) : 16.r(context),
-                offset: Offset(0, isPopular ? 8.h(context) : 4.h(context)),
+                blurRadius:
+                    isPopular || isActive ? 20.r(context) : 16.r(context),
+                offset: Offset(
+                    0, isPopular || isActive ? 8.h(context) : 4.h(context)),
               ),
             ],
           ),
@@ -115,7 +125,7 @@ class PlanCard extends StatelessWidget {
                         vertical: 6.h(context),
                       ),
                       decoration: BoxDecoration(
-                        gradient: isBestValue
+                        gradient: isBestValue || isTrial
                             ? AppColors.refiMeshGradient
                             : LinearGradient(
                                 colors: [
@@ -142,10 +152,10 @@ class PlanCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Plan Name & Description
+                    // Plan Name and Badge Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
                           child: Column(
@@ -156,21 +166,15 @@ class PlanCard extends StatelessWidget {
                                   final planName =
                                       _getPlanName(plan.name, isFree);
                                   String svgPath;
-
                                   if (planName == AppStrings.planBasic) {
-                                    // الباقة المجانية
                                     svgPath = 'assets/images/جليس.svg';
                                   } else if (billingPeriod == 0) {
-                                    // شهري
                                     svgPath = 'assets/images/جليس شهري.svg';
                                   } else if (billingPeriod == 1) {
-                                    // 6 أشهر
                                     svgPath = 'assets/images/جليس ممتد.svg';
                                   } else {
-                                    // سنوي
                                     svgPath = 'assets/images/جليس سنوي.svg';
                                   }
-
                                   return SvgPicture.asset(
                                     svgPath,
                                     height: 40.h(context),
@@ -194,12 +198,11 @@ class PlanCard extends StatelessWidget {
                     ),
                     SizedBox(height: 24.h(context)),
 
-                    // Price
+                    // Price Section
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (originalPrice != null && originalPrice > price) ...[
-                          // Original price (crossed out)
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -352,9 +355,8 @@ class PlanCard extends StatelessWidget {
                                     width: 20.w(context),
                                     height: 20.h(context),
                                     decoration: BoxDecoration(
-                                      color: AppColors.successGreen.withValues(
-                                        alpha: 0.1,
-                                      ),
+                                      color: AppColors.successGreen
+                                          .withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -377,14 +379,36 @@ class PlanCard extends StatelessWidget {
                               ),
                       );
                     }),
-                    SizedBox(height: 24.h(context)),
 
-                    // Select Button
-                    RefiGradientButton(
-                      text: AppStrings.selectPlan,
-                      onPressed: onSelect,
-                      height: 56,
-                    ),
+                    // Action Button
+                    if (!isFree) ...[
+                      SizedBox(height: 24.h(context)),
+                      isActionDisabled
+                          ? Container(
+                              width: double.infinity,
+                              height: 56.h(context),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius:
+                                    BorderRadius.circular(16.r(context)),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  actionButtonLabel ?? 'خطتك الحالية',
+                                  style: TextStyle(
+                                    fontSize: 16.sp(context),
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : RefiGradientButton(
+                              text: actionButtonLabel ?? 'ترقية الباقة',
+                              onPressed: onSelect,
+                              height: 56,
+                            ),
+                    ],
                   ],
                 ),
               ),
