@@ -39,6 +39,11 @@ class _LibraryPageState extends State<LibraryPage> {
     super.initState();
     // Use initialTab if provided, otherwise default to "All"
     _activeTab = widget.initialTab ?? AppStrings.tabAll;
+
+    // Ensure library data is loaded when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LibraryCubit>().loadLibrary();
+    });
   }
 
   @override
@@ -60,6 +65,7 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   List<BookEntity> _filterBooks(List<BookEntity> books) {
+    // ... existing implementation ...
     List<BookEntity> filtered = books;
 
     // Filter by tab
@@ -179,7 +185,7 @@ class _LibraryPageState extends State<LibraryPage> {
             return true;
           },
           builder: (context, state) {
-            if (state is LibraryLoading) {
+            if (state is LibraryLoading || state is LibraryInitial) {
               return const LibrarySkeleton();
             } else if (state is LibraryEmpty) {
               return LibraryEmptyView(activeTab: _activeTab);

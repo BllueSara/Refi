@@ -231,7 +231,6 @@ class _ProfilePageContentState extends State<ProfilePageContent> {
                           barrierColor: Colors.black.withOpacity(0.2),
                           builder: (context) => CustomLogoutDialog(
                             onLogout: () {
-                              Navigator.pop(context);
                               context.read<AuthCubit>().signOut();
                             },
                           ),

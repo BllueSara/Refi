@@ -64,18 +64,10 @@ class PlanCard extends StatelessWidget {
     final isPopular = plan.isPopular;
     final isBestValue = plan.isBestValue;
 
-    String billingPeriodText;
-    double? originalPrice;
     int? discountPercent;
-    if (billingPeriod == 0) {
-      billingPeriodText = AppStrings.monthly;
-    } else if (billingPeriod == 1) {
-      billingPeriodText = AppStrings.sixMonths;
-      originalPrice = plan.originalSixMonthsPrice;
+    if (billingPeriod == 1) {
       discountPercent = plan.sixMonthsDiscountPercent;
-    } else {
-      billingPeriodText = AppStrings.yearly;
-      originalPrice = plan.originalYearlyPrice;
+    } else if (billingPeriod == 2) {
       discountPercent = plan.yearlyDiscountPercent;
     }
 
@@ -202,12 +194,12 @@ class PlanCard extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (originalPrice != null && originalPrice > price) ...[
+                        if (plan.originalPriceString != null) ...[
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                originalPrice.toStringAsFixed(2),
+                                plan.originalPriceString!,
                                 style: TextStyle(
                                   fontSize: 16.sp(context),
                                   color:
@@ -217,23 +209,10 @@ class PlanCard extends StatelessWidget {
                                   decorationThickness: 2.5,
                                 ),
                               ),
-                              SizedBox(width: 4.w(context)),
-                              Transform.translate(
-                                offset: Offset(0, -5.h(context)),
-                                child: SvgPicture.asset(
-                                  'assets/images/Saudi_Riyal.svg',
-                                  width: 16.w(context),
-                                  height: 16.h(context),
-                                  colorFilter: ColorFilter.mode(
-                                    AppColors.textSub.withValues(alpha: 0.4),
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                              ),
                               if (discountPercent != null) ...[
                                 SizedBox(width: 8.w(context)),
                                 Transform.translate(
-                                  offset: Offset(0, -5.h(context)),
+                                  offset: Offset(0, -2.h(context)),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 8.w(context),
@@ -265,7 +244,8 @@ class PlanCard extends StatelessWidget {
                             Text(
                               isFree
                                   ? AppStrings.free
-                                  : price.toStringAsFixed(2),
+                                  : (plan.priceString ??
+                                      '${price.toStringAsFixed(2)}'),
                               style: TextStyle(
                                 fontSize: 32.sp(context),
                                 fontWeight: FontWeight.bold,
@@ -273,26 +253,16 @@ class PlanCard extends StatelessWidget {
                                 height: 1,
                               ),
                             ),
-                            if (!isFree) ...[
-                              SizedBox(width: 4.w(context)),
-                              Transform.translate(
-                                offset: Offset(0, -5.h(context)),
-                                child: SvgPicture.asset(
-                                  'assets/images/Saudi_Riyal.svg',
-                                  width: 20.w(context),
-                                  height: 20.h(context),
-                                  colorFilter: ColorFilter.mode(
-                                    AppColors.primaryBlue,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            // SVGs Removed - Currency is in the string
                           ],
                         ),
                         if (!isFree)
                           Text(
-                            '/ $billingPeriodText',
+                            billingPeriod == 0
+                                ? '/ شهرياً'
+                                : billingPeriod == 1
+                                    ? '/ 6 أشهر'
+                                    : '/ سنوياً',
                             style: TextStyle(
                               fontSize: 14.sp(context),
                               color: AppColors.textPlaceholder,

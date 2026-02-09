@@ -65,7 +65,8 @@ Future<void> init(SharedPreferences sharedPreferences) async {
 
   // ! Features - Auth
   // Bloc
-  sl.registerFactory(
+  // Bloc
+  sl.registerLazySingleton(
     () => AuthCubit(
       loginUseCase: sl(),
       signUpUseCase: sl(),

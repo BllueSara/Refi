@@ -14,14 +14,23 @@ class AuthRepositoryImpl implements AuthRepository {
     String email,
     String password,
   ) async {
-    try {
-      final user = await remoteDataSource.login(email, password);
-      return Right(user);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
+    int attempts = 0;
+    while (attempts < 2) {
+      try {
+        final user = await remoteDataSource.login(email, password);
+        return Right(user);
+      } on Failure catch (e) {
+        // If it's the last attempt, return the failure
+        if (attempts == 1) return Left(e);
+      } catch (e) {
+        // If it's the last attempt, return the failure
+        if (attempts == 1) return Left(ServerFailure(e.toString()));
+      }
+      attempts++;
+      // Wait a bit before retrying
+      await Future.delayed(const Duration(milliseconds: 500));
     }
+    return const Left(ServerFailure("Unknown error"));
   }
 
   @override

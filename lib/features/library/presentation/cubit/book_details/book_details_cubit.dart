@@ -23,10 +23,10 @@ class BookDetailsCubit extends Cubit<BookDetailsState> {
             status: book.status,
           ),
         ) {
-    _loadQuotes();
+    loadQuotes();
   }
 
-  Future<void> _loadQuotes() async {
+  Future<void> loadQuotes() async {
     final result = await getBookQuotesUseCase(book.id);
     result.fold(
       (failure) => null, // Just ignore error for now or handle it
@@ -77,7 +77,7 @@ class BookDetailsCubit extends Cubit<BookDetailsState> {
 
     // Optimistic Update: Update library immediately
     libraryCubit?.updateBook(updatedBook);
-    
+
     // Then sync with backend (updateBook already handles backend sync)
     // No need to call loadLibrary again as updateBook handles it
   }

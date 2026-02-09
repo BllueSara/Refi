@@ -9,6 +9,7 @@ import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../domain/entities/book_entity.dart';
 import '../../domain/usecases/update_book_usecase.dart';
+import '../../../quotes/presentation/cubit/quote_cubit.dart';
 import '../cubit/book_details/book_details_cubit.dart';
 import '../cubit/book_details/book_details_state.dart';
 import '../widgets/progress_card.dart';
@@ -35,155 +36,162 @@ class BookDetailsPage extends StatelessWidget {
         getBookQuotesUseCase: di.sl<GetBookQuotesUseCase>(),
         libraryCubit: context.read<LibraryCubit>(),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios,
-                color: AppColors.textMain, size: 20.sp(context)),
-            onPressed: () => Navigator.pop(context),
+      child: BlocListener<QuoteCubit, QuoteState>(
+        listener: (context, quoteState) {
+          if (quoteState is QuoteSaved) {
+            context.read<BookDetailsCubit>().loadQuotes();
+          }
+        },
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios,
+                  color: AppColors.textMain, size: 20.sp(context)),
+              onPressed: () => Navigator.pop(context),
+            ),
+            actions: [
+              _buildPopupMenu(context),
+            ],
+            title: Text(
+              AppStrings.detailsTitle,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontSize: 20.sp(context)),
+            ),
           ),
-          actions: [
-            _buildPopupMenu(context),
-          ],
-          title: Text(
-            AppStrings.detailsTitle,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineMedium?.copyWith(fontSize: 20.sp(context)),
-          ),
-        ),
-        body: BlocBuilder<LibraryCubit, LibraryState>(
-          builder: (context, libraryState) {
-            BookEntity updatedBook;
-            if (libraryState is LibraryLoaded) {
-              try {
-                final foundBook = libraryState.books.firstWhere(
-                  (b) => b.id == book.id,
-                );
-                updatedBook = BookEntity(
-                  id: foundBook.id,
-                  title: foundBook.title,
-                  authors: foundBook.authors,
-                  imageUrl: foundBook.imageUrl,
-                  rating: foundBook.rating,
-                  description: foundBook.description,
-                  publishedDate: foundBook.publishedDate,
-                  pageCount: foundBook.pageCount,
-                  status: foundBook.status,
-                  currentPage: foundBook.currentPage,
-                  categories: foundBook.categories,
-                  googleBookId: foundBook.googleBookId,
-                  source: foundBook.source,
-                );
-              } catch (_) {
+          body: BlocBuilder<LibraryCubit, LibraryState>(
+            builder: (context, libraryState) {
+              BookEntity updatedBook;
+              if (libraryState is LibraryLoaded) {
+                try {
+                  final foundBook = libraryState.books.firstWhere(
+                    (b) => b.id == book.id,
+                  );
+                  updatedBook = BookEntity(
+                    id: foundBook.id,
+                    title: foundBook.title,
+                    authors: foundBook.authors,
+                    imageUrl: foundBook.imageUrl,
+                    rating: foundBook.rating,
+                    description: foundBook.description,
+                    publishedDate: foundBook.publishedDate,
+                    pageCount: foundBook.pageCount,
+                    status: foundBook.status,
+                    currentPage: foundBook.currentPage,
+                    categories: foundBook.categories,
+                    googleBookId: foundBook.googleBookId,
+                    source: foundBook.source,
+                  );
+                } catch (_) {
+                  updatedBook = book;
+                }
+              } else {
                 updatedBook = book;
               }
-            } else {
-              updatedBook = book;
-            }
 
-            return BlocBuilder<BookDetailsCubit, BookDetailsState>(
-              builder: (context, state) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.all(AppDimensions.paddingL.w(context)),
-                  child: Column(
-                    children: [
-                      // Cover
-                      Container(
-                        width: 140.w(context),
-                        height: 210.h(context),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16.r(context)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 20.r(context),
-                              offset: Offset(0, 10.h(context)),
-                            ),
-                          ],
-                          color: const Color(0xFFA8C6CB),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: (updatedBook.imageUrl != null &&
-                                updatedBook.imageUrl!.isNotEmpty)
-                            ? Image.network(
-                                updatedBook.imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Center(
-                                    child: Icon(
-                                      Icons.book,
-                                      size: 48.sp(context),
-                                      color: Colors.white.withOpacity(0.5),
-                                    ),
-                                  );
-                                },
-                              )
-                            : Center(
-                                child: Icon(
-                                  Icons.book,
-                                  size: 48.sp(context),
-                                  color: Colors.white.withOpacity(0.5),
-                                ),
+              return BlocBuilder<BookDetailsCubit, BookDetailsState>(
+                builder: (context, state) {
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.all(AppDimensions.paddingL.w(context)),
+                    child: Column(
+                      children: [
+                        // Cover
+                        Container(
+                          width: 140.w(context),
+                          height: 210.h(context),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16.r(context)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 20.r(context),
+                                offset: Offset(0, 10.h(context)),
                               ),
-                      ),
-                      SizedBox(height: AppDimensions.paddingL.h(context)),
+                            ],
+                            color: const Color(0xFFA8C6CB),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: (updatedBook.imageUrl != null &&
+                                  updatedBook.imageUrl!.isNotEmpty)
+                              ? Image.network(
+                                  updatedBook.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Icon(
+                                        Icons.book,
+                                        size: 48.sp(context),
+                                        color: Colors.white.withOpacity(0.5),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Center(
+                                  child: Icon(
+                                    Icons.book,
+                                    size: 48.sp(context),
+                                    color: Colors.white.withOpacity(0.5),
+                                  ),
+                                ),
+                        ),
+                        SizedBox(height: AppDimensions.paddingL.h(context)),
 
-                      // Title & Author
-                      Text(
-                        updatedBook.title,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(
-                          context,
-                        )
-                            .textTheme
-                            .headlineMedium
-                            ?.copyWith(fontSize: 24.sp(context)),
-                      ),
-                      SizedBox(height: 8.h(context)),
-                      Text(
-                        updatedBook.author,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(
-                          context,
-                        )
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(color: AppColors.textSub),
-                      ),
-
-                      // Status Chips Selection (Simple View)
-                      SizedBox(height: AppDimensions.paddingM.h(context)),
-                      BookStatusSelector(
-                        currentStatus: state.status,
-                        onStatusChanged: (s) =>
-                            context.read<BookDetailsCubit>().changeStatus(s),
-                      ),
-
-                      SizedBox(height: AppDimensions.paddingL.h(context)),
-
-                      // Progress (Only if reading or completed)
-                      if (state.status == BookStatus.reading ||
-                          state.status == BookStatus.completed)
-                        ProgressCard(
-                          state: state,
-                          onUpdatePressed: () => _showUpdateDialog(context),
+                        // Title & Author
+                        Text(
+                          updatedBook.title,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(
+                            context,
+                          )
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(fontSize: 24.sp(context)),
+                        ),
+                        SizedBox(height: 8.h(context)),
+                        Text(
+                          updatedBook.author,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(
+                            context,
+                          )
+                              .textTheme
+                              .bodyLarge
+                              ?.copyWith(color: AppColors.textSub),
                         ),
 
-                      SizedBox(height: AppDimensions.paddingXL.h(context)),
+                        // Status Chips Selection (Simple View)
+                        SizedBox(height: AppDimensions.paddingM.h(context)),
+                        BookStatusSelector(
+                          currentStatus: state.status,
+                          onStatusChanged: (s) =>
+                              context.read<BookDetailsCubit>().changeStatus(s),
+                        ),
 
-                      // Quotes List Section
-                      _buildQuotesSection(context, state),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
+                        SizedBox(height: AppDimensions.paddingL.h(context)),
+
+                        // Progress (Only if reading or completed)
+                        if (state.status == BookStatus.reading ||
+                            state.status == BookStatus.completed)
+                          ProgressCard(
+                            state: state,
+                            onUpdatePressed: () => _showUpdateDialog(context),
+                          ),
+
+                        SizedBox(height: AppDimensions.paddingXL.h(context)),
+
+                        // Quotes List Section
+                        _buildQuotesSection(context, state),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -637,4 +645,3 @@ class BookDetailsPage extends StatelessWidget {
     );
   }
 }
-

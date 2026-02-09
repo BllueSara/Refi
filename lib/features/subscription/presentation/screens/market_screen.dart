@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/responsive_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entities/plan_entity.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../../../core/services/subscription_manager.dart';
@@ -15,7 +17,6 @@ import '../widgets/cancellation_modal.dart';
 import '../widgets/restore_status_dialog.dart';
 import '../../../../core/widgets/literary_overlay.dart';
 import 'legal_template_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MarketScreen extends StatefulWidget {
   const MarketScreen({super.key});
@@ -31,6 +32,22 @@ class _MarketScreenState extends State<MarketScreen> {
   Offerings? _offerings;
   String? _activePlanId;
   bool _isTrialEligible = false;
+
+  // Helper function to get currency symbol
+  String _getCurrencySymbol(String currencyCode) {
+    switch (currencyCode.toUpperCase()) {
+      case 'SAR':
+        return 'ر.س';
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      case 'GBP':
+        return '£';
+      default:
+        return currencyCode; // Return code if symbol not found
+    }
+  }
 
   // Default plans
   List<PlanEntity> _plans = [
@@ -128,15 +145,28 @@ class _MarketScreenState extends State<MarketScreen> {
     });
 
     try {
-      final isPro = await sl<SubscriptionManager>().restorePurchases();
+      final customerInfo = await Purchases.restorePurchases();
+      // Update local state based on customerInfo
+      final isPro = customerInfo.entitlements.all['premium']?.isActive ?? false;
 
       if (mounted) {
         setState(() => _isLoading = false);
 
-        _activePlanId = await sl<SubscriptionManager>().getActivePlanId();
-        _fetchData();
+        if (isPro) {
+          _activePlanId = await sl<SubscriptionManager>().getActivePlanId();
+          _fetchData();
+        }
 
         RestoreStatusDialog.show(context, isSuccess: isPro);
+      }
+    } on PlatformException catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        // Handle Receipt Already In Use specifically if needed,
+        // though usually restorePurchases just transfers or fails silently on some errors.
+        // However, for "Switching Accounts", the user might use Purchases.logIn which might throw.
+        // But here we are doing Restore.
+        SubscriptionErrorHandler.showPurchaseError(context, e);
       }
     } catch (e) {
       if (mounted) {
@@ -189,6 +219,12 @@ class _MarketScreenState extends State<MarketScreen> {
         if (mounted) {
           setState(() => _isLoading = false);
           _activePlanId = await sl<SubscriptionManager>().getActivePlanId();
+
+          // If this was a trial purchase (annual plan with trial), mark it as used
+          if (_selectedBillingPeriod == 2 && _isTrialEligible) {
+            await _markTrialAsUsed();
+            _isTrialEligible = false; // Update state
+          }
 
           final planName = _getPlanNameForBillingPeriod();
 
@@ -243,18 +279,27 @@ class _MarketScreenState extends State<MarketScreen> {
           debugPrint('Using Offering: ${offering.identifier}');
 
           // Check Trial Eligibility for Annual Plan
+          // Trial should only be available once per year (not per plan)
           final annualPackage = offering.annual;
           if (annualPackage != null) {
-            final eligibilityMap = await sl<SubscriptionManager>()
-                .checkTrialEligibility([annualPackage.storeProduct.identifier]);
-            final eligibility =
-                eligibilityMap[annualPackage.storeProduct.identifier];
+            // Check if user has used trial in the past year
+            final hasUsedTrialInPastYear = await _hasUsedTrialInPastYear();
+            
+            if (!hasUsedTrialInPastYear) {
+              final eligibilityMap = await sl<SubscriptionManager>()
+                  .checkTrialEligibility([annualPackage.storeProduct.identifier]);
+              final eligibility =
+                  eligibilityMap[annualPackage.storeProduct.identifier];
 
-            // Update trial eligibility state
-            _isTrialEligible = eligibility?.status ==
-                IntroEligibilityStatus.introEligibilityStatusEligible;
-            debugPrint(
-                'Trial Eligibility for ${annualPackage.storeProduct.identifier}: $_isTrialEligible');
+              // Update trial eligibility state - only if not used in past year
+              _isTrialEligible = eligibility?.status ==
+                  IntroEligibilityStatus.introEligibilityStatusEligible;
+              debugPrint(
+                  'Trial Eligibility for ${annualPackage.storeProduct.identifier}: $_isTrialEligible');
+            } else {
+              _isTrialEligible = false;
+              debugPrint('Trial not eligible: User has used trial in the past year');
+            }
           }
 
           _updatePlansWithOfferings(offering);
@@ -282,32 +327,56 @@ class _MarketScreenState extends State<MarketScreen> {
     final sixMonthPrice = sixMonth?.storeProduct.price ?? 99.99;
     final yearlyPrice = annual?.storeProduct.price ?? 149.99;
 
-    // Check Trial Eligibility (Assuming Trial is on Yearly or Monthly)
-    // We check the "current" selection context dynamically, but for global flag:
-    // We'll check if ANY package has trial to show badge optionally
-    bool hasTrial = false;
+    // Formatting currency: Pick currency code from ANY available package to ensure consistency
+    final anyProduct = monthly ?? annual ?? sixMonth;
+    final currencyCode = anyProduct?.storeProduct.currencyCode ?? 'SAR';
+    // Use the actual currency code from the product, not default to USD
+    // For original price formatting, use the same currency as the product
+    final currencyFormatter = NumberFormat.currency(
+      symbol: _getCurrencySymbol(currencyCode),
+      decimalDigits: 2,
+      locale: currencyCode == 'SAR' ? 'ar_SA' : 'en_US',
+    );
+
+    // badge Logic - التجربة المجانية فقط للباقة السنوية
     String? trialBadge;
-
-    // Check Annual specifically as per requirement
-    if (annual != null) {
-      debugPrint('Checking Annual Plan Trial Eligibility:');
-      debugPrint('Make: ${annual.storeProduct.introductoryPrice?.period}');
-      debugPrint('Price: ${annual.storeProduct.introductoryPrice?.price}');
-      debugPrint(
-          'PeriodNumberOfUnits: ${annual.storeProduct.introductoryPrice?.periodNumberOfUnits}');
-      debugPrint(
-          'PeriodUnit: ${annual.storeProduct.introductoryPrice?.periodUnit}');
-      debugPrint('Cycles: ${annual.storeProduct.introductoryPrice?.cycles}');
-      debugPrint('Full Intro Object: ${annual.storeProduct.introductoryPrice}');
-    }
-
-    if (annual != null && _isTrialEligible) {
-      hasTrial = true;
+    // Only show trial badge for annual plan (yearly) - NOT for monthly or 6 months
+    if (_selectedBillingPeriod == 2 && annual != null && _isTrialEligible) {
       trialBadge = "تجربة مجانية 7 أيام";
     }
 
+    // Determine current Display Price String based on selection
+    String? displayPriceString;
+    String? displayOriginalPriceString;
+    String? badgeText; // Secondary badge or Main Badge logic?
+    // Using main badge field in PlanEntity for the top-right badge.
+
+    if (_selectedBillingPeriod == 0) {
+      // Monthly - لا تجربة مجانية للباقة الشهرية
+      displayPriceString = monthly?.storeProduct.priceString;
+      displayOriginalPriceString = null;
+      badgeText = "الأكثر مرونة";
+    } else if (_selectedBillingPeriod == 1) {
+      // 6 Months - لا تجربة مجانية لباقة 6 أشهر
+      displayPriceString = sixMonth?.storeProduct.priceString;
+      // Original for 6 months = Monthly * 6
+      displayOriginalPriceString = currencyFormatter.format(monthlyPrice * 6);
+      badgeText = "قيمة ممتازة";
+    } else {
+      // Yearly - التجربة المجانية فقط للباقة السنوية
+      displayPriceString = annual?.storeProduct.priceString;
+      // Original for Yearly = Monthly * 12
+      displayOriginalPriceString = currencyFormatter.format(monthlyPrice * 12);
+
+      // Show trial badge only for yearly plan
+      if (trialBadge != null && _isTrialEligible) {
+        badgeText = trialBadge;
+      } else {
+        badgeText = "الأكثر توفيراً";
+      }
+    }
+
     setState(() {
-      _isTrialEligible = hasTrial;
       _plans = [
         _plans.first, // Keep Basic
         PlanEntity(
@@ -330,7 +399,10 @@ class _MarketScreenState extends State<MarketScreen> {
             'ملاحظة: المميزات الجديدة تشملها',
           ],
           isPopular: true,
-          badge: trialBadge ?? AppStrings.mostPopular,
+          // التجربة المجانية تظهر فقط في الباقة السنوية (badgeText يحتوي على trialBadge فقط للباقة السنوية)
+          badge: badgeText,
+          priceString: displayPriceString,
+          originalPriceString: displayOriginalPriceString,
         ),
       ];
     });
@@ -441,7 +513,17 @@ class _MarketScreenState extends State<MarketScreen> {
     final isSelected = _selectedBillingPeriod == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _selectedBillingPeriod = index),
+        onTap: () {
+          setState(() {
+            _selectedBillingPeriod = index;
+            if (_offerings != null) {
+              final offering = _offerings!.all['base'] ?? _offerings!.current;
+              if (offering != null) {
+                _updatePlansWithOfferings(offering);
+              }
+            }
+          });
+        },
         child: Container(
           padding: EdgeInsets.symmetric(
             vertical: 12.h(context),
@@ -506,22 +588,21 @@ class _MarketScreenState extends State<MarketScreen> {
         } else {
           // Not active plan
           if (_activePlanId != null) {
-            // If some other plan is active, this is an upgrade
-            buttonText = 'ترقية الباقة';
+            // Check if it's an upgrade/downgrade vs just different billing
+            buttonText = 'تغيير الباقة';
           } else {
             // No active plan -> fresh purchase or trial
-            if (selectedPackage != null && _isTrialEligible) {
-              buttonText = 'ابدئي أسبوعكِ المجاني';
+            // CONDITIONAL LOGIC: FREE TRIAL ONLY FOR YEARLY (Annual)
+            if (_selectedBillingPeriod == 2 && _isTrialEligible) {
+              buttonText = 'ابدأ اسبوعك المجاني';
             } else {
-              buttonText = 'اشتركي الآن';
+              buttonText = 'اشترك الآن';
             }
           }
         }
       }
     }
 
-    // Force isActive false for PlanCard to remove legacy "Subscribed" badge logic if any remained
-    // handled by buttonText and isActionDisabled
     return Padding(
       padding: EdgeInsets.only(bottom: 24.h(context)),
       child: PlanCard(
@@ -591,6 +672,37 @@ class _MarketScreenState extends State<MarketScreen> {
         return AppStrings.planPremiumYearly;
       default:
         return AppStrings.planPremium;
+    }
+  }
+
+  // Check if user has used trial in the past year
+  Future<bool> _hasUsedTrialInPastYear() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final trialUsedTimestamp = prefs.getInt('trial_used_timestamp');
+      
+      if (trialUsedTimestamp == null) {
+        return false; // Never used trial
+      }
+      
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final oneYearInMs = 365 * 24 * 60 * 60 * 1000; // 1 year in milliseconds
+      
+      // Check if trial was used within the past year
+      return (now - trialUsedTimestamp) < oneYearInMs;
+    } catch (e) {
+      debugPrint('Error checking trial usage: $e');
+      return false; // Default to allowing trial if check fails
+    }
+  }
+
+  // Mark trial as used
+  Future<void> _markTrialAsUsed() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('trial_used_timestamp', DateTime.now().millisecondsSinceEpoch);
+    } catch (e) {
+      debugPrint('Error marking trial as used: $e');
     }
   }
 }

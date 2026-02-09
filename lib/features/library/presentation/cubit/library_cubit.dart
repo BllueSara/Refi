@@ -54,7 +54,7 @@ class LibraryCubit extends Cubit<LibraryState> {
 
   Future<void> loadLibrary({bool forceRefresh = false}) async {
     if (isClosed) return;
-    
+
     // Always fetch fresh data when forceRefresh is true
     if (forceRefresh) {
       // Don't show loading if we already have data (better UX)
@@ -73,9 +73,9 @@ class LibraryCubit extends Cubit<LibraryState> {
 
     // Fetch data
     final result = await fetchUserLibraryUseCase();
-    
+
     if (isClosed) return;
-    
+
     result.fold(
       (failure) {
         // If we have data, keep it and maybe show error via snackbar (not handled here completely)
@@ -86,7 +86,7 @@ class LibraryCubit extends Cubit<LibraryState> {
       },
       (books) {
         if (isClosed) return;
-        
+
         if (books.isEmpty) {
           if (!isClosed) emit(LibraryEmpty());
         } else {
@@ -99,7 +99,7 @@ class LibraryCubit extends Cubit<LibraryState> {
 
   Future<void> addBook(BookEntity book) async {
     if (isClosed) return;
-    
+
     // Optimistic Update: Add book immediately to UI
     if (state is LibraryLoaded) {
       final currentBooks = (state as LibraryLoaded).books;
@@ -111,25 +111,45 @@ class LibraryCubit extends Cubit<LibraryState> {
 
     // Then sync with backend
     final result = await addBookToLibraryUseCase(book);
-    
+
     if (isClosed) return;
-    
+
     result.fold(
       (failure) {
         // Rollback on error: Reload from server
         if (!isClosed) loadLibrary(forceRefresh: true);
         if (!isClosed) emit(LibraryError(failure.message));
       },
-      (_) {
-        // Success: Keep optimistic update (no need to reload)
-        // The UI is already updated with the latest data
+      (savedBook) {
+        // Success: Update usage with the actual saved book (with correct ID)
+        if (!isClosed) {
+          if (state is LibraryLoaded) {
+            final currentBooks = (state as LibraryLoaded).books;
+            // Replace the optimistic book with the real one
+            // We match by the ID we optimistically used (which was likely Google ID)
+            // OR if strictly appending, we remove the first one and add the real one.
+            // Since we prepended, let's just replace the first one if it matches our optimistic book.
+
+            // A safer approach for list integrity:
+            // Remove the optimistic book we added
+            final listWithoutOptimistic =
+                currentBooks.where((b) => b != book).toList();
+            // Add the real returned book
+            final updatedBooks = [savedBook, ...listWithoutOptimistic];
+
+            emit(LibraryLoaded(updatedBooks));
+          } else if (state is LibraryEmpty) {
+            // Should not happen as we transitioned to Loaded, but safety first
+            emit(LibraryLoaded([savedBook]));
+          }
+        }
       },
     );
   }
 
   Future<void> updateBook(BookEntity book) async {
     if (isClosed) return;
-    
+
     // Optimistic Update: Update book immediately in UI
     if (state is LibraryLoaded) {
       final currentBooks = (state as LibraryLoaded).books;
@@ -141,9 +161,9 @@ class LibraryCubit extends Cubit<LibraryState> {
 
     // Then sync with backend
     final result = await updateBookUseCase(book);
-    
+
     if (isClosed) return;
-    
+
     result.fold(
       (failure) {
         // Rollback on error: Reload from server
@@ -159,12 +179,12 @@ class LibraryCubit extends Cubit<LibraryState> {
 
   Future<void> deleteBook(String bookId) async {
     if (isClosed) return;
-    
+
     // Optimistic Update: Remove book immediately from UI
     if (state is LibraryLoaded) {
       final currentBooks = (state as LibraryLoaded).books;
       final updatedBooks = currentBooks.where((b) => b.id != bookId).toList();
-      
+
       if (updatedBooks.isEmpty) {
         if (!isClosed) emit(LibraryEmpty()); // Instant UI update
       } else {
@@ -174,9 +194,9 @@ class LibraryCubit extends Cubit<LibraryState> {
 
     // Then sync with backend
     final result = await deleteBookUseCase(bookId);
-    
+
     if (isClosed) return;
-    
+
     result.fold(
       (failure) {
         // Rollback on error: Reload from server
@@ -188,5 +208,9 @@ class LibraryCubit extends Cubit<LibraryState> {
         // The UI is already updated with the latest data
       },
     );
+  }
+
+  void reset() {
+    emit(LibraryInitial());
   }
 }

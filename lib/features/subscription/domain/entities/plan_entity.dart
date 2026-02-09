@@ -13,6 +13,8 @@ class PlanEntity {
   final bool isPopular;
   final bool isBestValue;
   final String? badge;
+  final String? priceString;
+  final String? originalPriceString;
 
   const PlanEntity({
     required this.id,
@@ -29,5 +31,7 @@ class PlanEntity {
     this.isPopular = false,
     this.isBestValue = false,
     this.badge,
+    this.priceString,
+    this.originalPriceString,
   });
 }

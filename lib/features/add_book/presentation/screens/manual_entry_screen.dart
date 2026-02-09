@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image/image.dart' as img; // Pure Dart image package
 import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/constants/app_strings.dart';
@@ -201,20 +201,26 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       final targetPath =
           '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      final compressedBytes = await FlutterImageCompress.compressWithFile(
-        imageFile.absolute.path,
-        minWidth: 800,
-        minHeight: 800,
-        quality: 85,
-      );
+      // Read the file bytes
+      final bytes = await imageFile.readAsBytes();
 
-      if (compressedBytes == null) return null;
+      // Decode the image using the pure Dart 'image' package
+      final image = img.decodeImage(bytes);
+      if (image == null) return null;
+
+      // Resize the image to max 800px width/height while maintaining aspect ratio
+      img.Image resized =
+          img.copyResize(image, width: 800, height: 800, maintainAspect: true);
+
+      // Encode to JPG with quality 85
+      final jpg = img.encodeJpg(resized, quality: 85);
 
       final compressedFile = File(targetPath);
-      await compressedFile.writeAsBytes(compressedBytes);
+      await compressedFile.writeAsBytes(jpg);
 
       return compressedFile;
     } catch (e) {
+      debugPrint("Error compressing image: $e");
       return null;
     }
   }

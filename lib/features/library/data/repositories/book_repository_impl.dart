@@ -23,7 +23,7 @@ class BookRepositoryImpl implements BookRepository {
   }
 
   @override
-  Future<Either<Failure, void>> addBookToLibrary(BookEntity book) async {
+  Future<Either<Failure, BookEntity>> addBookToLibrary(BookEntity book) async {
     try {
       // Convert Entity to Model to use toSupabase
       final bookModel = BookModel(
@@ -41,8 +41,8 @@ class BookRepositoryImpl implements BookRepository {
         googleBookId: book.googleBookId,
         source: book.source,
       );
-      await remoteDataSource.addBookToLibrary(bookModel);
-      return const Right(null);
+      final savedBook = await remoteDataSource.addBookToLibrary(bookModel);
+      return Right(savedBook);
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {
@@ -52,9 +52,11 @@ class BookRepositoryImpl implements BookRepository {
 
   @override
   Future<Either<Failure, void>> updateBook(BookEntity book) async {
-    return addBookToLibrary(
+    await addBookToLibrary(
       book,
-    ); // Re-use upsert logic for now, it's efficient enough for this scale
+    );
+    return const Right(
+        null); // Re-use upsert logic for now, it's efficient enough for this scale
   }
 
   @override

@@ -4,7 +4,7 @@ import '../entities/book_entity.dart';
 
 abstract class BookRepository {
   Future<Either<Failure, List<BookEntity>>> searchBooks(String query);
-  Future<Either<Failure, void>> addBookToLibrary(BookEntity book);
+  Future<Either<Failure, BookEntity>> addBookToLibrary(BookEntity book);
   Future<Either<Failure, void>> updateBook(BookEntity book);
   Future<Either<Failure, List<BookEntity>>> fetchUserLibrary();
   Future<Either<Failure, void>> deleteBook(String bookId);

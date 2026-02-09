@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/colors.dart';
 
@@ -42,6 +43,7 @@ class AppTheme {
         scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: true,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
         iconTheme: IconThemeData(
             color: AppColors.textMain, size: getResponsiveFontSize(24)),
         titleTextStyle: GoogleFonts.tajawal(

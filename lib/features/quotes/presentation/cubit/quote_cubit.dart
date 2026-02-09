@@ -183,4 +183,8 @@ class QuoteCubit extends Cubit<QuoteState> {
       (_) => null,
     );
   }
+
+  void reset() {
+    emit(QuoteInitial());
+  }
 }

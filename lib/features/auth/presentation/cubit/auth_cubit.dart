@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
@@ -91,7 +93,10 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await loginUseCase(email, password);
     result.fold(
       (failure) => emit(AuthError(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
+      (user) {
+        Purchases.logIn(user.id);
+        emit(AuthAuthenticated(user));
+      },
     );
   }
 
@@ -100,7 +105,10 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await signUpUseCase(email, password, name);
     result.fold(
       (failure) => emit(AuthError(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
+      (user) {
+        Purchases.logIn(user.id);
+        emit(AuthAuthenticated(user));
+      },
     );
   }
 
@@ -115,9 +123,24 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> signOut() async {
     emit(AuthLoading());
-    await signOutUseCase();
-    // Always navigate to login, even if server error occurs
-    emit(AuthUnauthenticated());
+    try {
+      debugPrint('🧹 Starting logout cleanup...');
+
+      // Execute cleanup tasks
+      await Future.wait([
+        signOutUseCase(),
+        Purchases.logOut(),
+        sharedPreferences.remove('user_token'),
+      ]);
+
+      debugPrint('✨ Cleanup finished successfully');
+    } catch (e) {
+      debugPrint('⚠️ Logout cleanup error (ignored): $e');
+    } finally {
+      // Always emit unauthenticated state to trigger navigation
+      debugPrint('👋 Emitting AuthUnauthenticated state...');
+      emit(AuthUnauthenticated());
+    }
   }
 
   Future<void> signInWithGoogle() async {
@@ -125,7 +148,10 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await signInWithGoogleUseCase();
     result.fold(
       (failure) => emit(AuthError(failure.message)),
-      (user) => emit(AuthAuthenticated(user)),
+      (user) {
+        Purchases.logIn(user.id);
+        emit(AuthAuthenticated(user));
+      },
     );
   }
 

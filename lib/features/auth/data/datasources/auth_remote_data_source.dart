@@ -25,7 +25,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Use deep link for password reset redirect to avoid localhost
       // Make sure 'refi://reset-password' is added in Supabase Dashboard → Redirect URLs
       const redirectTo = 'refi://reset-password';
-      
+
       await supabaseClient.auth.resetPasswordForEmail(
         email,
         redirectTo: redirectTo,
@@ -129,7 +129,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await supabaseClient.auth.signOut();
     } catch (e) {
-      throw ServerFailure(e.toString());
+      // If sign out fails (e.g. network), we still want to clear local state
+      // ensuring the user is visually logged out.
+      // debugPrint('SignOut warning: $e');
+
+      // Force session removal if possible or just ignore error
+      // so the app behaves as if logged out.
     }
   }
 
@@ -176,7 +181,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // For mobile apps: Use deep link directly to avoid localhost redirect
       // IMPORTANT: Make sure 'refi://auth-callback' is added in Supabase Dashboard → Redirect URLs
       const redirectUrl = 'refi://auth-callback';
-      
+
       await supabaseClient.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: redirectUrl,
@@ -189,23 +194,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Use a stream subscription to wait for authentication
       final completer = Completer<UserModel>();
       late StreamSubscription<AuthState> subscription;
-      
+
       subscription = supabaseClient.auth.onAuthStateChange.listen((data) {
         final AuthChangeEvent event = data.event;
         final Session? session = data.session;
-        
+
         if (event == AuthChangeEvent.signedIn && session != null) {
           final user = session.user;
-          
+
           // Fetch or create profile
-          supabaseClient.from('profiles')
+          supabaseClient
+              .from('profiles')
               .select()
               .eq('id', user.id)
               .maybeSingle()
               .then((profile) {
-            final String? name = user.userMetadata?['full_name'] ?? 
-                                user.userMetadata?['name'] ??
-                                user.email?.split('@').first;
+            final String? name = user.userMetadata?['full_name'] ??
+                user.userMetadata?['name'] ??
+                user.email?.split('@').first;
 
             if (profile == null) {
               supabaseClient.from('profiles').upsert({
@@ -226,15 +232,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             }
           }).catchError((e) {
             subscription.cancel();
-            final String? name = user.userMetadata?['full_name'] ?? 
-                                user.userMetadata?['name'] ??
-                                user.email?.split('@').first;
+            final String? name = user.userMetadata?['full_name'] ??
+                user.userMetadata?['name'] ??
+                user.email?.split('@').first;
             completer.complete(UserModel.fromSupabase(user, name: name));
           });
         } else if (event == AuthChangeEvent.signedOut) {
           subscription.cancel();
           if (!completer.isCompleted) {
-            completer.completeError(const ServerFailure('Google Sign In was canceled'));
+            completer.completeError(
+                const ServerFailure('Google Sign In was canceled'));
           }
         }
       });

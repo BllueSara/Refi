@@ -55,20 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (hasError) return;
 
-    // Check internet connection before login
-    _connectivityService ??= NetworkConnectivityService();
-    final isConnected = await _connectivityService!.checkConnectivity();
-    if (!isConnected) {
-      NoInternetDialog.show(
-        context,
-        onRetry: () {
-          Navigator.of(context).pop();
-          _onLogin();
-        },
-      );
-      return;
-    }
-
     context.read<AuthCubit>().login(
           _emailController.text.trim(),
           _passwordController.text.trim(),

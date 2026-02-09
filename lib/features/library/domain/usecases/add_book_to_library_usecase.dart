@@ -8,7 +8,7 @@ class AddBookToLibraryUseCase {
 
   AddBookToLibraryUseCase(this.repository);
 
-  Future<Either<Failure, void>> call(BookEntity book) async {
+  Future<Either<Failure, BookEntity>> call(BookEntity book) async {
     return await repository.addBookToLibrary(book);
   }
 }

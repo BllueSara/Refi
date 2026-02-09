@@ -23,6 +23,7 @@ class _QuoteCardState extends State<QuoteCard>
   bool _isExpanded = false;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+  bool? _isFavoriteOptimistic;
 
   @override
   void initState() {
@@ -34,6 +35,23 @@ class _QuoteCardState extends State<QuoteCard>
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+    _isFavoriteOptimistic = widget.quote.isFavorite;
+  }
+
+  @override
+  void didUpdateWidget(QuoteCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.quote.isFavorite != oldWidget.quote.isFavorite) {
+      _isFavoriteOptimistic = widget.quote.isFavorite;
+    }
+  }
+
+  void _toggleFavorite() {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _isFavoriteOptimistic = !(_isFavoriteOptimistic ?? false);
+    });
+    context.read<QuoteCubit>().toggleFavorite(widget.quote);
   }
 
   @override
@@ -63,12 +81,13 @@ class _QuoteCardState extends State<QuoteCard>
   }
 
   void _showEditQuoteModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => QuoteReviewModal(
-        quote: widget.quote,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => QuoteReviewModal(
+          quote: widget.quote,
+        ),
       ),
     );
   }
@@ -131,6 +150,8 @@ class _QuoteCardState extends State<QuoteCard>
 
   @override
   Widget build(BuildContext context) {
+    final isFavorite = _isFavoriteOptimistic ?? widget.quote.isFavorite;
+
     return ScaleTransition(
       scale: _scaleAnimation,
       child: GestureDetector(
@@ -149,19 +170,19 @@ class _QuoteCardState extends State<QuoteCard>
               color: Colors.white, // خلفية بيضاء صلبة
               borderRadius: BorderRadius.circular(24.r(context)),
               border: Border.all(
-                color: widget.quote.isFavorite
+                color: isFavorite
                     ? AppColors.primaryBlue.withOpacity(0.3)
                     : AppColors.inputBorder,
-                width: widget.quote.isFavorite ? 1.5 : 1,
+                width: isFavorite ? 1.5 : 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: widget.quote.isFavorite
+                  color: isFavorite
                       ? AppColors.primaryBlue.withOpacity(0.15)
                       : Colors.black.withOpacity(0.08),
                   blurRadius: 20.r(context),
                   offset: Offset(0, 8.h(context)),
-                  spreadRadius: widget.quote.isFavorite ? 2 : 0,
+                  spreadRadius: isFavorite ? 2 : 0,
                 ),
               ],
             ),
@@ -439,22 +460,17 @@ class _QuoteCardState extends State<QuoteCard>
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                onTap: () {
-                                  HapticFeedback.mediumImpact();
-                                  context
-                                      .read<QuoteCubit>()
-                                      .toggleFavorite(widget.quote);
-                                },
+                                onTap: _toggleFavorite,
                                 borderRadius:
                                     BorderRadius.circular(20.r(context)),
                                 child: Padding(
                                   padding: EdgeInsets.all(8.w(context)),
                                   child: Icon(
-                                    widget.quote.isFavorite
+                                    isFavorite
                                         ? Icons.favorite
                                         : Icons.favorite_border,
                                     size: 22.sp(context),
-                                    color: widget.quote.isFavorite
+                                    color: isFavorite
                                         ? AppColors.primaryBlue
                                         : AppColors.textPlaceholder,
                                   ),

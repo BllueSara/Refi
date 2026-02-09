@@ -8,7 +8,7 @@ import '../models/book_model.dart';
 
 abstract class BookRemoteDataSource {
   Future<List<BookModel>> searchBooks(String query);
-  Future<void> addBookToLibrary(BookModel book);
+  Future<BookModel> addBookToLibrary(BookModel book);
   Future<List<BookModel>> fetchUserLibrary();
   Future<void> deleteBook(String bookId);
 }
@@ -224,7 +224,7 @@ class BookRemoteDataSourceImpl implements BookRemoteDataSource {
   }
 
   @override
-  Future<void> addBookToLibrary(BookModel book) async {
+  Future<BookModel> addBookToLibrary(BookModel book) async {
     final user = supabaseClient.auth.currentUser;
     if (user == null) throw const ServerFailure('User not authenticated');
 
@@ -260,7 +260,10 @@ class BookRemoteDataSourceImpl implements BookRemoteDataSource {
         bookData['id'] = existingId;
       }
 
-      await supabaseClient.from('books').upsert(bookData);
+      final response =
+          await supabaseClient.from('books').upsert(bookData).select().single();
+
+      return BookModel.fromSupabase(response);
     } catch (e) {
       throw ServerFailure(e.toString());
     }
